@@ -1,0 +1,33 @@
+@startuml diagrama_arquitectura
+
+' Componentes básicos
+rectangle "Cliente Web/Móvil" as client #FFEBEE
+rectangle "API Gateway" as gateway #4285F4
+rectangle "Keycloak" as keycloak #E8F5E9
+rectangle "Microservicio Cliente" as mscliente #4285F4
+rectangle "Microservicio Transporte" as mstransporte #4285F4
+rectangle "Microservicio Seguimiento" as msseguimiento #4285F4
+database "DB Cliente" as dbcliente #34A853
+database "DB Transporte" as dbtransporte #34A853
+database "DB Seguimiento" as dbseguimiento #34A853
+database "DB Keycloak" as dbkeycloak #34A853
+cloud "Google Maps API" as googleMaps #EA4335
+
+' Relaciones
+client --> gateway : HTTPS
+gateway --> mscliente : REST/JSON
+gateway --> mstransporte : REST/JSON
+gateway --> msseguimiento : REST/JSON
+gateway --> keycloak : Token Validation
+
+mscliente -down-> dbcliente : JPA/JDBC
+mstransporte -down-> dbtransporte : JPA/JDBC
+msseguimiento -down-> dbseguimiento : JPA/JDBC
+keycloak -down-> dbkeycloak : JDBC
+
+mscliente <--> mstransporte : REST/JSON
+mscliente <--> msseguimiento : REST/JSON
+mstransporte <--> msseguimiento : REST/JSON
+mstransporte <--> googleMaps : REST/JSON
+
+@enduml

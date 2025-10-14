@@ -1,0 +1,54 @@
+@startuml arquitectura
+!include <C4/C4_Container>
+
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5
+!include DEVICONS/java.puml
+!include DEVICONS/postgresql.puml
+!include FONTAWESOME/users.puml
+!include FONTAWESOME/server.puml
+!include FONTAWESOME/cloud.puml
+
+LAYOUT_WITH_LEGEND()
+
+Person(cliente, "Cliente", "Usuario del sistema de transporte", $sprite="users")
+Person(operador, "Operador/Administrador", "Gestiona el sistema", $sprite="users")
+Person(transportista, "Transportista", "Conductor de camión", $sprite="users")
+
+System_Boundary(c1, "Sistema Logístico de Transporte") {
+    Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Enrutamiento, seguridad, y punto único de entrada", $sprite="java")
+    
+    Container(auth_server, "Keycloak", "Auth Server", "Autenticación y autorización", $sprite="server")
+    
+    Container(ms_cliente, "Microservicio Cliente", "Spring Boot", "Gestión de clientes, contenedores y solicitudes", $sprite="java")
+    ContainerDb(db_cliente, "Base de Datos Cliente", "PostgreSQL", "Almacena datos de clientes, contenedores y solicitudes", $sprite="postgresql")
+    
+    Container(ms_transporte, "Microservicio Transporte", "Spring Boot", "Gestión de rutas, tramos, camiones y depósitos", $sprite="java")
+    ContainerDb(db_transporte, "Base de Datos Transporte", "PostgreSQL", "Almacena datos de rutas, tramos, camiones y depósitos", $sprite="postgresql")
+    
+    Container(ms_seguimiento, "Microservicio Seguimiento", "Spring Boot", "Gestión de seguimiento de contenedores", $sprite="java")
+    ContainerDb(db_seguimiento, "Base de Datos Seguimiento", "PostgreSQL", "Almacena datos de seguimiento", $sprite="postgresql")
+}
+
+System_Ext(maps_api, "Google Maps API", "API de direcciones y cálculo de rutas", $sprite="cloud")
+
+Rel(cliente, api_gateway, "Usa", "HTTPS")
+Rel(operador, api_gateway, "Usa", "HTTPS")
+Rel(transportista, api_gateway, "Usa", "HTTPS")
+
+Rel(api_gateway, auth_server, "Valida tokens", "HTTPS")
+Rel(api_gateway, ms_cliente, "Dirige solicitudes", "REST/JSON")
+Rel(api_gateway, ms_transporte, "Dirige solicitudes", "REST/JSON")
+Rel(api_gateway, ms_seguimiento, "Dirige solicitudes", "REST/JSON")
+
+Rel(ms_cliente, db_cliente, "Lee/Escribe", "JDBC")
+Rel(ms_transporte, db_transporte, "Lee/Escribe", "JDBC")
+Rel(ms_seguimiento, db_seguimiento, "Lee/Escribe", "JDBC")
+
+Rel(ms_cliente, ms_seguimiento, "Notifica cambios", "REST/JSON")
+Rel(ms_transporte, ms_seguimiento, "Notifica cambios", "REST/JSON")
+Rel(ms_cliente, ms_transporte, "Solicita servicios", "REST/JSON")
+
+Rel(ms_transporte, maps_api, "Consulta rutas", "HTTPS")
+
+@enduml

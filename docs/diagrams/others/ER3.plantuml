@@ -1,0 +1,193 @@
+@startuml "Sistema Logístico de Transporte"
+
+' Configuración visual
+hide circle
+skinparam linetype ortho
+skinparam roundcorner 15
+skinparam classAttributeIconSize 0
+skinparam backgroundColor white
+skinparam handwritten false
+
+' Estilos personalizados
+skinparam entity {
+  BackgroundColor #F8F9FA
+  BorderColor #31428E
+  FontName Arial
+  FontColor #333333
+  FontSize 14
+  FontStyle bold
+  ArrowColor #31428E
+}
+
+skinparam note {
+  BackgroundColor #FFF9C4
+  BorderColor #F9A825
+}
+
+' Definición de entidades
+entity "Usuario" as usuario {
+  **id** : int <<PK>>
+  --
+  username : varchar(50) <<unique>>
+  password : varchar(255)
+  nombre : varchar(100)
+  email : varchar(100) <<unique>>
+  telefono : varchar(20)
+  rol : enum(cliente, operador, transportista)
+  activo : boolean
+}
+
+entity "Cliente" as cliente {
+  **id** : int <<PK>>
+  --
+  usuario_id : int <<FK>>
+  cuit : varchar(20) <<unique>>
+  direccion : varchar(255)
+  datos_adicionales : text
+}
+
+entity "Contenedor" as contenedor {
+  **id** : int <<PK>>
+  --
+  identificacion : varchar(50) <<unique>>
+  peso : float
+  volumen : float
+  estado : enum(pendiente, retirado, en_viaje, en_deposito, entregado)
+  cliente_id : int <<FK>>
+}
+
+entity "Solicitud" as solicitud {
+  **id** : int <<PK>>
+  --
+  numero : varchar(20) <<unique>>
+  cliente_id : int <<FK>>
+  contenedor_id : int <<FK>>
+  tarifa_id : int <<FK>>
+  origen_direccion : varchar(255)
+  origen_latitud : float
+  origen_longitud : float
+  destino_direccion : varchar(255)
+  destino_latitud : float
+  destino_longitud : float
+  costo_estimado : float
+  tiempo_estimado : int
+  costo_final : float
+  tiempo_real : int
+  estado : enum(borrador, programada, en_transito, entregada)
+  fecha_creacion : datetime
+}
+
+entity "Ruta" as ruta {
+  **id** : int <<PK>>
+  --
+  solicitud_id : int <<FK>>
+  cantidad_tramos : int
+  cantidad_depositos : int
+  distancia_total : float
+  estado : enum(estimada, asignada, en_progreso, completada)
+}
+
+entity "Camion" as camion {
+  **id** : int <<PK>>
+  --
+  dominio : varchar(20) <<unique>>
+  nombre_transportista : varchar(100)
+  telefono : varchar(20)
+  capacidad_peso : float
+  capacidad_volumen : float
+  consumo_combustible : float
+  costo_base_km : float
+  disponible : boolean
+  transportista_id : int <<FK>>
+}
+
+entity "Deposito" as deposito {
+  **id** : int <<PK>>
+  --
+  nombre : varchar(100)
+  direccion : varchar(255)
+  latitud : float
+  longitud : float
+  costo_estadia_dia : float
+}
+
+entity "Tramo" as tramo {
+  **id** : int <<PK>>
+  --
+  ruta_id : int <<FK>>
+  origen_tipo : enum(solicitud, deposito)
+  origen_id : int
+  destino_tipo : enum(solicitud, deposito)
+  destino_id : int
+  tipo : enum(origen-deposito, deposito-deposito, deposito-destino, origen-destino)
+  estado : enum(estimado, asignado, iniciado, finalizado)
+  distancia : float
+  costo_aproximado : float
+  costo_real : float
+  fecha_hora_inicio_estimada : datetime
+  fecha_hora_fin_estimada : datetime
+  fecha_hora_inicio : datetime
+  fecha_hora_fin : datetime
+  camion_id : int <<FK>>
+  dias_estadia : int
+  costo_estadia : float
+  costo_combustible : float
+}
+
+entity "Tarifa" as tarifa {
+  **id** : int <<PK>>
+  --
+  nombre : varchar(100)
+  valor_base : float
+  valor_por_km : float
+  valor_por_peso : float
+  valor_por_volumen : float
+  valor_por_tramo : float
+  valor_litro_combustible : float
+  cargo_gestion_fijo : float
+  fecha_vigencia : date
+  activo : boolean
+}
+
+entity "Seguimiento" as seguimiento {
+  **id** : int <<PK>>
+  --
+  solicitud_id : int <<FK>>
+  estado : varchar(50)
+  descripcion : text
+  fecha_hora : datetime
+  ubicacion_latitud : float
+  ubicacion_longitud : float
+}
+
+' Relaciones
+cliente ||--o{ solicitud : "realiza"
+cliente ||--o{ contenedor : "posee"
+usuario ||-o| cliente : "puede ser"
+usuario ||-o{ camion : "opera (transportista)"
+contenedor ||--|| solicitud : "asociado a"
+solicitud ||--|| ruta : "genera"
+solicitud ||--o{ seguimiento : "tiene"
+ruta ||--o{ tramo : "compuesta por"
+camion ||--o{ tramo : "asignado a"
+tarifa ||--o{ solicitud : "aplicada a"
+deposito }o--o{ tramo : "origen/destino de"
+
+note bottom of tramo
+  origen_tipo y destino_tipo permiten que
+  un tramo pueda tener como origen/destino
+  tanto una solicitud (direcciones) como
+  un depósito intermedio
+end note
+
+note bottom of tarifa
+  Permite configurar todos los
+  componentes del costo:
+  - Valor base
+  - Costo por km
+  - Factores por peso/volumen
+  - Costo de combustible
+  - Cargos de gestión
+end note
+
+@enduml

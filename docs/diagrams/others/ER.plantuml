@@ -1,0 +1,133 @@
+@startuml "Empresa Transporte"
+
+entity Deposito {
+    * idDeposito : int <<PK>>
+    * nombre : string
+    * direccion : string
+    * latitud : float
+    * longitud : float
+    * costoEstadiaDiario : float
+}
+
+entity Contenedor {
+    * idContenedor : int <<PK>>
+    * peso : float
+    * volumen : float
+    * estado : string <<ENUM>> (pendiente, retirado, en_viaje, en_deposito, entregado)
+    * idCliente : int <<FK>>
+}
+
+entity Solicitud {
+    * idSolicitud : int <<PK>>
+    * idContenedor : int <<FK>>
+    * idCliente : int <<FK>>
+    * origen_direccion : string
+    * origen_latitud : float
+    * origen_longitud : float
+    * destino_direccion : string
+    * destino_latitud : float
+    * destino_longitud : float
+    * costoEstimado : float
+    * tiempoEstimado : float
+    * costoFinal : float
+    * tiempoReal : float
+    * estado : string <<ENUM>> (borrador, programada, en_transito, entregada)
+    * fechaCreacion : datetime
+}
+
+entity Ruta {
+    * idRuta : int <<PK>>
+    * idSolicitud : int <<FK>>
+    * cantidadTramos : int
+    * cantidadDepositos : int
+    * distanciaTotal : float
+    * estado : string <<ENUM>> (estimada, asignada, en_progreso, completada)
+}
+
+entity Tramo {
+    * idTramo : int <<PK>>
+    * idRuta : int <<FK>>
+    * idOrigen : int <<FK>>
+    * idDestino : int <<FK>>
+    * tipo : string <<ENUM>> (origen-deposito, deposito-deposito, deposito-destino, origen-destino)
+    * estado : string <<ENUM>> (estimado, asignado, iniciado, finalizado)
+    * distancia : float
+    * costoAproximado : float
+    * costoReal : float
+    ' Verificar
+    * fechaHoraInicioEstimada : datetime
+    * fechaHoraFinEstimada : datetime
+    * fechaHoraInicio : datetime
+    * fechaHoraFin : datetime
+    * idCamion : int <<FK>>
+}
+
+entity Camion {
+    * dominio : string <<PK>>
+    * nombreTransportista : string
+    * telefono : string
+    * capacidadPeso : float
+    * capacidadVolumen : float
+    * disponibilidad : boolean
+    * costoBaseKm : float
+    * consumoCombustible : float
+}
+
+entity Cliente {
+    * idCliente : int <<PK>>
+    * nombre : string
+    * apellido : string
+    * telefono : string
+    * email : string
+    * direccion : string
+    * username : string
+    * password : string
+}
+
+entity Tarifa {
+    * idTarifa : int <<PK>>
+    * concepto : string
+    * valorBase : float
+    * valorPorKm : float
+    * valorPorPeso : float
+    * valorPorVolumen : float
+    * valorPorTramo : float
+    * valorLitroCombustible : float
+    * fechaVigencia : date
+    * activo : boolean
+}
+
+entity Usuario {
+    * idUsuario : int <<PK>>
+    * username : string
+    * password : string
+    * rol : string <<ENUM>> (cliente, operador, transportista)
+    * activo : boolean
+}
+
+entity Seguimiento {
+    * idSeguimiento : int <<PK>>
+    * idSolicitud : int <<FK>>
+    * estado : string
+    * descripcion : string
+    * fechaHora : datetime
+    * ubicacion_latitud : float
+    * ubicacion_longitud : float
+}
+
+' Relaciones
+Cliente ||--o{ Contenedor 
+Cliente ||--o{ Solicitud 
+Cliente ||-|| Usuario 
+Contenedor ||--o{ Solicitud 
+Solicitud ||--o| Ruta
+Ruta ||--o{ Tramo 
+Tramo }o--|| Deposito
+Tramo }o--|| Deposito
+Tramo }o--o| Camion
+Tarifa }|--o{ Solicitud 
+Solicitud ||--o{ Seguimiento
+Camion }o--|| Usuario 
+
+@enduml
+
