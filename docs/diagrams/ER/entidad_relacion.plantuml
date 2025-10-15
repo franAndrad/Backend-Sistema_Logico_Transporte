@@ -1,11 +1,16 @@
-@startuml "Empresa Transporte"
+@startuml "entidad_relacion"
+
+' Configuración visual
+skinparam roundcorner 15
+skinparam shadowing true
+skinparam linetype ortho
 
 entity Deposito {
     * idDeposito : int <<PK>>
     * nombre : string
     * direccion : string
-    * latitud : float
-    * longitud : float
+    * latitud : decimal(10,8)
+    * longitud : decimal(11,8)
     * costoEstadiaDiario : float
 }
 
@@ -14,6 +19,7 @@ entity Contenedor {
     * peso : float
     * volumen : float
     * estado : string <<ENUM>> (pendiente, retirado, en_viaje, en_deposito, entregado)
+    * activo : boolean  ' Si está disponible para nuevas solicitudes
     * idCliente : int <<FK>>
 }
 
@@ -21,18 +27,20 @@ entity Solicitud {
     * idSolicitud : int <<PK>>
     * idContenedor : int <<FK>>
     * idCliente : int <<FK>>
+    * idTarifa : int <<FK>> (nullable)
     * origen_direccion : string
-    * origen_latitud : float
-    * origen_longitud : float
+    * origen_latitud : decimal(10,8)
+    * origen_longitud : decimal(11,8)
     * destino_direccion : string
-    * destino_latitud : float
-    * destino_longitud : float
+    * destino_latitud : decimal(10,8)
+    * destino_longitud : decimal(11,8)
     * costoEstimado : float
     * tiempoEstimado : float
     * costoFinal : float
     * tiempoReal : float
-    * estado : string <<ENUM>> (borrador, programada, en_transito, entregada)
     * fechaCreacion : datetime
+    * estado : string <<ENUM>> (borrador, programada, en_transito, entregada)
+    * estadoContenedor : string <<ENUM>>  ' Estado del contenedor EN ESTA solicitud
 }
 
 entity Ruta {
@@ -47,25 +55,23 @@ entity Ruta {
 entity Tramo {
     * idTramo : int <<PK>>
     * idRuta : int <<FK>>
-    * idOrigen : int <<FK>>
-    * idDestino : int <<FK>>
+    * idDepositoOrigen : int <<FK>> (nullable)
+    * idDepositoDestino : int <<FK>> (nullable)
+    * idUsuarioTransportista : int <<FK>>  ' Transportista asignado
+    * dominioCamion : string <<FK>>  ' Camión asignado
     * tipo : string <<ENUM>> (origen-deposito, deposito-deposito, deposito-destino, origen-destino)
     * estado : string <<ENUM>> (estimado, asignado, iniciado, finalizado)
     * distancia : float
     * costoAproximado : float
     * costoReal : float
-    ' Verificar
     * fechaHoraInicioEstimada : datetime
     * fechaHoraFinEstimada : datetime
-    * fechaHoraInicio : datetime
-    * fechaHoraFin : datetime
-    * idCamion : int <<FK>>
+    * fechaHoraInicio : datetime (nullable)
+    * fechaHoraFin : datetime (nullable)
 }
 
 entity Camion {
     * dominio : string <<PK>>
-    * nombreTransportista : string
-    * telefono : string
     * capacidadPeso : float
     * capacidadVolumen : float
     * disponibilidad : boolean
@@ -75,13 +81,11 @@ entity Camion {
 
 entity Cliente {
     * idCliente : int <<PK>>
-    * nombre : string
-    * apellido : string
-    * telefono : string
-    * email : string
-    * direccion : string
-    * username : string
-    * password : string
+    * idUsuario : int <<FK>>
+    * direccionFacturacion : string
+    * direccionEnvio : string
+    * razonSocial : string  ' Si es empresa
+    * cuit : string  ' Si es empresa
 }
 
 entity Tarifa {
@@ -99,6 +103,10 @@ entity Tarifa {
 
 entity Usuario {
     * idUsuario : int <<PK>>
+    * nombre : string
+    * apellido : string
+    * telefono : string
+    * email : string
     * username : string
     * password : string
     * rol : string <<ENUM>> (cliente, operador, transportista)
@@ -111,23 +119,27 @@ entity Seguimiento {
     * estado : string
     * descripcion : string
     * fechaHora : datetime
-    * ubicacion_latitud : float
-    * ubicacion_longitud : float
+    * ubicacion_latitud : decimal(10,8)
+    * ubicacion_longitud : decimal(11,8)
 }
 
 ' Relaciones
 Cliente ||--o{ Contenedor 
 Cliente ||--o{ Solicitud 
-Cliente ||-|| Usuario 
+Cliente }o--|| Usuario
 Contenedor ||--o{ Solicitud 
 Solicitud ||--o| Ruta
 Ruta ||--o{ Tramo 
-Tramo }o--|| Deposito
-Tramo }o--|| Deposito
-Tramo }o--o| Camion
+
+' Preguntar si pueden haber dos
+Tramo }o--o| Deposito : origen 
+Tramo }o--o| Deposito : destino 
+
+Tramo }o--o| Camion : "usa"
 Tarifa }|--o{ Solicitud 
 Solicitud ||--o{ Seguimiento
-Camion }o--|| Usuario 
+
+Tramo }o--o| Usuario : "realizado por"
 
 @enduml
 

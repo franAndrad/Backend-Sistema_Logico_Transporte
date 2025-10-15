@@ -28,6 +28,9 @@ System_Boundary(c1, "Sistema Logístico de Transporte") {
     
     Container(ms_seguimiento, "Microservicio Seguimiento", "Spring Boot", "Gestión de seguimiento de contenedores", $sprite="java")
     ContainerDb(db_seguimiento, "Base de Datos Seguimiento", "PostgreSQL", "Almacena datos de seguimiento", $sprite="postgresql")
+
+    Container(ms_maps, "Microservicio Maps", "Spring Boot", "Interfaz con Google Maps API", $sprite="java")
+
 }
 
 System_Ext(maps_api, "Google Maps API", "API de direcciones y cálculo de rutas", $sprite="cloud")
@@ -35,6 +38,7 @@ System_Ext(maps_api, "Google Maps API", "API de direcciones y cálculo de rutas"
 Rel(cliente, api_gateway, "Usa", "HTTPS")
 Rel(operador, api_gateway, "Usa", "HTTPS")
 Rel(transportista, api_gateway, "Usa", "HTTPS")
+
 
 Rel(api_gateway, auth_server, "Valida tokens", "HTTPS")
 Rel(api_gateway, ms_cliente, "Dirige solicitudes", "REST/JSON")
@@ -49,6 +53,9 @@ Rel(ms_cliente, ms_seguimiento, "Notifica cambios", "REST/JSON")
 Rel(ms_transporte, ms_seguimiento, "Notifica cambios", "REST/JSON")
 Rel(ms_cliente, ms_transporte, "Solicita servicios", "REST/JSON")
 
-Rel(ms_transporte, maps_api, "Consulta rutas", "HTTPS")
+Rel(maps_api, api_gateway, "Provee servicios", "REST/JSON")
+Rel(api_gateway, ms_maps, "Solicita servicios", "REST/JSON")
+Rel(ms_seguimiento, ms_maps, "Solicita servicios", "REST/JSON")
+Rel(ms_transporte, ms_maps, "Solicita servicios", "REST/JSON")
 
 @enduml
