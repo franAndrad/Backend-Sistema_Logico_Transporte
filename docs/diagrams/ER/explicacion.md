@@ -72,8 +72,6 @@ Perfil específico para usuarios que solicitan servicios de transporte.
 
 ### 2. Contenedor
 
-### 2. Contenedor
-
 Representa unidades de carga del cliente.
 
 **Campos principales:**
