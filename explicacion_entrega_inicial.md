@@ -1,7 +1,7 @@
 # Explicación para la Entrega Inicial
 
 ## 1. Presentación del Enunciado y Motivación
-**Responsable:** Persona 1
+**Responsable:** Hernan
 
 **Qué decir:**
 - Presentar el enunciado del proyecto: “El objetivo es desarrollar un sistema de gestión logística de transporte, permitiendo la administración de solicitudes, clientes, contenedores y el seguimiento del estado de los envíos.”
@@ -12,17 +12,17 @@
 
 
 ## 2. DER Completo y Modelos de Datos
-**Responsables:** Persona 1 y Persona 2
+**Responsables:** Hernan y Conti
 
 **Qué decir:**
 
-**Persona 1:**
+**Hernan:**
 - Introducir el propósito del DER: “El Diagrama de Entidad-Relación es fundamental para definir cómo se estructuran y relacionan los datos en el sistema.”
 - Explicar la importancia de identificar correctamente las entidades principales: “En nuestro caso, las entidades clave son Cliente, Solicitud, Contenedor y Estado, cada una representando un aspecto esencial del negocio logístico.”
 - Mencionar la necesidad de definir claves primarias y foráneas: “Cada entidad tiene una clave primaria única que la identifica, y las relaciones entre entidades se establecen mediante claves foráneas, lo que garantiza la integridad de los datos.”
 - Resaltar cómo el DER permite visualizar el flujo de información y las dependencias entre los distintos microservicios.
 
-**Persona 2:**
+**Conti:**
 - Presentar el DER definitivo: “En el DER se pueden observar todas las entidades, sus atributos principales y las relaciones entre ellas.”
 - Detallar las relaciones más importantes:
 	- “Por ejemplo, una Solicitud está asociada a un Cliente y a un Contenedor, y tiene un Estado que indica el progreso del envío.”
@@ -44,7 +44,7 @@
 ---
 
 ## 4. Recursos, Endpoints, Roles y Datos de Entrada/Respuesta
-**Responsable:** Persona 4
+**Responsable:** Ale
 
 **Qué decir:**
 - Presentar los recursos y endpoints: “Cada microservicio expone endpoints específicos para sus recursos principales. Por ejemplo, el microservicio de clientes permite registrar y consultar clientes, el de solicitudes gestiona la creación y consulta de solicitudes, y el de contenedores administra los contenedores.”
