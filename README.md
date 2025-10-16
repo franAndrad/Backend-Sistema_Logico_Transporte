@@ -11,7 +11,7 @@ Este proyecto implementa una solución backend basada en microservicios para ges
 ├── microservices/              # Microservicios del sistema
 │   ├── api-gateway/            # API Gateway para enrutamiento y seguridad
 │   ├── ms-cliente/             # Microservicio de gestión de clientes y contenedores
-│   └── ms-transporte/          # Microservicio de gestión de transporte (rutas, camiones, depósitos, seguimiento)
+│   └── ms-transporte/          # Microservicio de gestión de transporte (rutas, camiones, depósitos, seguimiento por estados)
 ├── docker/                     # Archivos de configuración Docker
 │   └── docker-compose.yml      # Configuración para despliegue de todos los servicios
 ├── docs/                       # Documentación del proyecto
@@ -74,8 +74,7 @@ Este proyecto implementa una solución backend basada en microservicios para ges
 - Gestión de camiones y conductores
 - Gestión de depósitos
 - Cálculo de costos y tiempos
-- Registro de eventos de seguimiento
-- Tracking de ubicaciones en tiempo real
+- Seguimiento por estados de solicitudes y tramos
 
 ## Ejecución del proyecto
 

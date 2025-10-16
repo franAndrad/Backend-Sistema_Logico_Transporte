@@ -75,7 +75,7 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
                   │ Incluye:
                   │ • Rutas y Tramos
                   │ • Camiones y Depósitos
-                  │ • Seguimiento en tiempo real
+                  │ • Seguimiento por estados
                   ↓
               Maps API
 ```
@@ -90,15 +90,15 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
 **Capacidades:**
 - 📦 Registrar contenedores
 - 📋 Crear solicitudes de transporte
-- 📍 Consultar estado de solicitudes
-- 🔍 Hacer seguimiento en tiempo real de sus contenedores
+- 📍 Consultar estado actual de solicitudes
+- 🔍 Ver estado actual de sus contenedores
 - 💰 Ver costos estimados y finales
 
 **Endpoints principales:**
 - `POST /api/v1/clientes` - Registrarse
 - `POST /api/v1/contenedores` - Registrar contenedor
 - `POST /api/v1/solicitudes` - Crear solicitud de transporte
-- `GET /api/v1/solicitudes/{id}/seguimiento` - Ver seguimiento
+- `GET /api/v1/solicitudes/{id}/estado` - Ver estado actual
 
 ---
 
@@ -111,14 +111,14 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
 - 💵 Configurar tarifas
 - 📈 Ver reportes y estadísticas
 - ⚙️ Administrar usuarios del sistema
-- 🔍 Monitorear seguimiento de todos los transportes
+- 🔍 Monitorear estado de todas las solicitudes
 
 **Endpoints principales:**
 - `POST /api/v1/tramos/{id}/asignar-camion` - Asignar recursos
 - `PUT /api/v1/tarifas/{id}` - Actualizar tarifas
 - `GET /api/v1/reportes/solicitudes` - Ver reportes
 - `POST /api/v1/depositos` - Gestionar depósitos
-- `GET /api/v1/seguimiento` - Ver seguimiento de todas las solicitudes
+- `GET /api/v1/solicitudes` - Ver todas las solicitudes y sus estados
 
 ---
 
@@ -128,15 +128,13 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
 **Capacidades:**
 - 🚚 Ver tramos asignados
 - ✅ Iniciar y finalizar tramos
-- 📍 Actualizar ubicación en tiempo real
-- 📝 Reportar incidencias
+-  Reportar incidencias
 - ⛽ Registrar consumos
 
 **Endpoints principales:**
 - `GET /api/v1/tramos/mis-asignaciones` - Ver tramos asignados
 - `POST /api/v1/tramos/{id}/iniciar` - Iniciar tramo
 - `POST /api/v1/tramos/{id}/finalizar` - Finalizar tramo
-- `POST /api/v1/seguimiento` - Actualizar ubicación
 
 ---
 
@@ -170,7 +168,7 @@ spring:
         - id: ms-transporte
           uri: lb://ms-transporte
           predicates:
-            - Path=/api/rutas/**,/api/tramos/**,/api/camiones/**,/api/depositos/**,/api/seguimiento/**
+            - Path=/api/rutas/**,/api/tramos/**,/api/camiones/**,/api/depositos/**
           filters:
             - TokenRelay
 ```
@@ -240,8 +238,10 @@ GET    /api/v1/contenedores/cliente/{id}       - Contenedores de un cliente
 ```
 GET    /api/v1/solicitudes                     - Listar solicitudes
 GET    /api/v1/solicitudes/{id}                - Obtener solicitud
+GET    /api/v1/solicitudes/{id}/estado         - Obtener estado actual de solicitud
 POST   /api/v1/solicitudes                     - Crear solicitud
 PUT    /api/v1/solicitudes/{id}                - Actualizar solicitud
+PUT    /api/v1/solicitudes/{id}/estado         - Actualizar estado (uso interno)
 GET    /api/v1/solicitudes/cliente/{id}        - Solicitudes de un cliente
 POST   /api/v1/solicitudes/{id}/confirmar      - Confirmar solicitud
 POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
@@ -265,7 +265,7 @@ POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
 
 ### 2. 🚛 Microservicio Transporte (ms-transporte)
 
-**Responsabilidad:** Gestión de rutas, tramos, camiones, depósitos, seguimiento en tiempo real e integración con Google Maps API
+**Responsabilidad:** Gestión de rutas, tramos, camiones, depósitos, seguimiento por estados e integración con Google Maps API
 
 #### Endpoints principales:
 
@@ -306,16 +306,6 @@ GET    /api/v1/depositos/{id}                  - Obtener depósito
 POST   /api/v1/depositos                       - Crear depósito
 PUT    /api/v1/depositos/{id}                  - Actualizar depósito
 GET    /api/v1/depositos/cercanos              - Depósitos cercanos a coordenadas
-```
-
-##### Seguimiento
-```
-GET    /api/v1/seguimiento/solicitud/{id}      - Historial de seguimiento
-POST   /api/v1/seguimiento                     - Registrar evento de seguimiento
-GET    /api/v1/seguimiento/contenedor/{id}     - Seguimiento de contenedor
-GET    /api/v1/seguimiento/actual/{id}         - Ubicación actual
-GET    /api/v1/seguimiento/ruta/{id}           - Puntos de seguimiento en mapa
-GET    /api/v1/seguimiento/tramo/{idTramo}     - Seguimiento de un tramo específico
 ```
 
 #### Integración con Google Maps API:
@@ -386,39 +376,13 @@ public class RouteService {
 }
 ```
 
-##### 4. Gestión de Seguimiento
-Maneja el tracking en tiempo real de los transportes.
-
-```java
-@Service
-public class SeguimientoService {
-    
-    public SeguimientoDTO registrarEvento(SeguimientoRequestDTO request) {
-        // Registra evento de seguimiento asociado a un tramo
-        // Almacena ubicación GPS y estado
-    }
-    
-    public List<SeguimientoDTO> obtenerSeguimientoPorSolicitud(Long idSolicitud) {
-        // Retorna historial completo de seguimiento
-    }
-    
-    public SeguimientoDTO obtenerUbicacionActual(Long idSolicitud) {
-        // Retorna última ubicación registrada
-    }
-    
-    public List<PuntoRutaDTO> obtenerRutaVisual(Long idSolicitud) {
-        // Retorna todos los puntos para visualizar en mapa
-    }
-}
-```
-
-##### 5. Resiliencia y Optimización
+##### 4. Resiliencia y Optimización
 
 **Caché de consultas:**
 ```yaml
 spring:
   cache:
-    cache-names: distancias, geocodificacion, seguimiento
+    cache-names: distancias, geocodificacion
     caffeine:
       spec: maximumSize=1000,expireAfterWrite=24h
 ```
@@ -475,56 +439,33 @@ resilience4j:
 3. Asignar camión y transportista al tramo
 4. Marcar camión como no disponible
 5. Actualizar estado del tramo a "asignado"
-6. Registrar evento de seguimiento inicial
 ```
 
-#### Funcionalidades de Seguimiento:
+#### Gestión de Estados:
 
-##### Registro de eventos:
-```java
-{
-  "idTramo": 456,
-  "idSolicitud": 123,
-  "estado": "EN_VIAJE",
-  "descripcion": "Contenedor en tránsito hacia depósito central",
-  "latitud": -34.603722,
-  "longitud": -58.381592,
-  "fechaHora": "2025-10-15T14:30:00"
-}
-```
+Los estados se gestionan directamente en las entidades sin necesidad de tablas de historial:
 
-##### Estados rastreables:
-- `PENDIENTE`: Contenedor en espera de retiro
-- `RETIRADO`: Contenedor retirado del origen
-- `EN_VIAJE`: En tránsito
-- `EN_DEPOSITO`: Almacenado en depósito intermedio
-- `ENTREGADO`: Entregado en destino final
+**Estados de Solicitud:**
+- `BORRADOR` → Solicitud creada, no confirmada
+- `PROGRAMADA` → Ruta calculada y confirmada por cliente
+- `ASIGNADA` → Recursos asignados (camión y transportista)
+- `EN_TRANSITO` → Contenedor en viaje
+- `EN_DEPOSITO` → Contenedor en depósito intermedio
+- `ENTREGADA` → Contenedor entregado en destino
+- `CANCELADA` → Solicitud cancelada
 
-##### Integración con rutas visuales:
-```java
-// Obtener ruta visual con todos los puntos de seguimiento
-GET /api/v1/seguimiento/ruta/{idSolicitud}
+**Estados de Tramo:**
+- `PLANIFICADO` → Tramo calculado por el sistema
+- `ASIGNADO` → Camión y transportista asignados
+- `INICIADO` → Transportista inició el tramo
+- `FINALIZADO` → Tramo completado
+- `CANCELADO` → Tramo cancelado
 
-Response:
-{
-  "solicitudId": 123,
-  "puntos": [
-    {
-      "latitud": -34.603722,
-      "longitud": -58.381592,
-      "fechaHora": "2025-10-15T10:00:00",
-      "descripcion": "Origen - Buenos Aires"
-    },
-    {
-      "latitud": -34.620000,
-      "longitud": -58.390000,
-      "fechaHora": "2025-10-15T11:30:00",
-      "descripcion": "En tránsito"
-    },
-    ...
-  ]
-}
-```
+**Estados de Contenedor:**
+- `EN_ORIGEN` → Contenedor en ubicación de origen
+- `EN_TRANSITO` → Contenedor en viaje
+- `EN_DEPOSITO` → Contenedor en depósito intermedio
+- `ENTREGADO` → Contenedor entregado
 
 #### Comunicación con otros servicios:
 - **→ Google Maps API**: Geocodificación, distancias y rutas (integración directa)
@@ -537,7 +478,6 @@ Response:
 - `Tramo`
 - `Camion`
 - `Deposito`
-- `Seguimiento`
 
 #### Configuración:
 ```yaml
@@ -552,7 +492,7 @@ google:
 spring:
   cache:
     type: caffeine
-    cache-names: distancias, geocodificacion, rutas, seguimiento
+    cache-names: distancias, geocodificacion, rutas
     
 resilience4j:
   circuitbreaker:
@@ -641,7 +581,6 @@ camion 1:N tramo
 deposito 1:N tramo (origen)
 deposito 1:N tramo (destino)
 usuario 1:N tramo (transportista)
-tramo 1:N seguimiento
 ```
 
 **Índices importantes:**
@@ -650,21 +589,14 @@ CREATE INDEX idx_tramo_ruta ON tramo(id_ruta);
 CREATE INDEX idx_tramo_estado ON tramo(estado);
 CREATE INDEX idx_tramo_camion ON tramo(dominio_camion);
 CREATE INDEX idx_tramo_transportista ON tramo(id_usuario_transportista);
+CREATE INDEX idx_tramo_fecha_actualizacion ON tramo(fecha_actualizacion DESC);
 CREATE INDEX idx_camion_disponibilidad ON camion(disponibilidad) WHERE disponibilidad = true;
-CREATE INDEX idx_seguimiento_tramo ON seguimiento(id_tramo);
-CREATE INDEX idx_seguimiento_solicitud ON seguimiento(id_solicitud);
-CREATE INDEX idx_seguimiento_fecha ON seguimiento(fecha_hora DESC);
-CREATE INDEX idx_seguimiento_estado ON seguimiento(estado);
-CREATE INDEX idx_seguimiento_ubicacion ON seguimiento USING GIST (
-    ll_to_earth(ubicacion_latitud, ubicacion_longitud)
-);
 ```
 
 **Consideraciones de rendimiento:**
-- Tabla `seguimiento` de alto volumen (muchos registros de tracking)
-- Particionamiento por fecha recomendado para históricos
-- Índices espaciales para búsquedas geográficas
-- Caché de consultas frecuentes de seguimiento
+- Estados actuales en columnas directas (rápido acceso)
+- Índices en campos de estado para consultas frecuentes
+- Caché de consultas de estado frecuentes
 
 **Puerto:** `5433`
 
@@ -749,10 +681,10 @@ CREATE INDEX idx_seguimiento_ubicacion ON seguimiento USING GIST (
 | GET /api/v1/clientes | ❌ | ✅ | ❌ | ❌ |
 | POST /api/v1/solicitudes | ✅ | ✅ | ❌ | ❌ |
 | GET /api/v1/solicitudes | ✅ (sus solicitudes) | ✅ (todas) | ❌ | ❌ |
+| GET /api/v1/solicitudes/{id}/estado | ✅ (si es suya) | ✅ | ✅ (si asignado) | ❌ |
 | POST /api/v1/tramos/{id}/asignar-camion | ❌ | ✅ | ❌ | ❌ |
 | POST /api/v1/tramos/{id}/iniciar | ❌ | ❌ | ✅ | ❌ |
-| GET /api/v1/seguimiento/solicitud/{id} | ✅ (si es suya) | ✅ | ✅ (si asignado) | ❌ |
-| POST /api/v1/seguimiento | ❌ | ✅ | ✅ | ❌ |
+| POST /api/v1/tramos/{id}/finalizar | ❌ | ❌ | ✅ | ❌ |
 
 ## 🔄 Comunicación entre Servicios
 
@@ -1179,16 +1111,8 @@ List<DistanciaDTO> distancias = distanceService.calcularDistanciaMultiple(
     │ ms-transporte│
     └──────┬───────┘
            │
-           │ 7. Estado = INICIADO
-           │ 8. Registrar evento de seguimiento
-           ↓
-    ┌──────────────┐
-    │ DB Transporte│
-    └──────────────┘
-           │
-           │ 9. Durante el transporte:
-           │    POST /api/v1/seguimiento (cada 15-30 min)
-           │    Actualiza ubicación GPS en DB
+           │ 7. Tramo.estado = INICIADO
+           │ 8. Actualizar Solicitud.estado = EN_TRANSITO
            ↓
     ┌──────────────┐
     │ DB Transporte│
@@ -1204,17 +1128,17 @@ List<DistanciaDTO> distancias = distanceService.calcularDistanciaMultiple(
     │ ms-transporte│
     └──────┬───────┘
            │
-           │ 11. Estado = FINALIZADO
+           │ 11. Tramo.estado = FINALIZADO
            │ 12. Calcular costo real
            │ 13. Liberar camión (disponible = true)
-           │ 14. Registrar evento de seguimiento final
+           │ 14. Actualizar estado de Solicitud según lógica
            ↓
     ┌──────────────┐
     │ DB Transporte│
     └──────────────┘
            │
            │ 15. Si es último tramo:
-           │     PUT /api/v1/solicitudes/{id}
+           │     PUT /api/v1/solicitudes/{id}/estado (ENTREGADA)
            ↓
     ┌─────────────┐
     │ ms-cliente  │

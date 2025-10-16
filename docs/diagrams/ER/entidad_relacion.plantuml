@@ -18,7 +18,8 @@ entity Contenedor {
     * idContenedor : int <<PK>>
     * peso : float
     * volumen : float
-    * estado : string <<ENUM>> (pendiente, retirado, en_viaje, en_deposito, entregado)
+    * estado : string <<ENUM>> (en_origen, en_transito, en_deposito, entregado)
+    * ubicacionActual : string  ' Descripción textual del lugar actual
     * activo : boolean  ' Si está disponible para nuevas solicitudes
     * idCliente : int <<FK>>
 }
@@ -39,8 +40,8 @@ entity Solicitud {
     * costoFinal : float
     * tiempoReal : float
     * fechaCreacion : datetime
-    * estado : string <<ENUM>> (borrador, programada, en_transito, entregada)
-    * estadoContenedor : string <<ENUM>>  ' Estado del contenedor EN ESTA solicitud
+    * fechaActualizacion : datetime
+    * estado : string <<ENUM>> (borrador, programada, asignada, en_transito, en_deposito, entregada, cancelada)
 }
 
 entity Ruta {
@@ -60,7 +61,7 @@ entity Tramo {
     * idUsuarioTransportista : int <<FK>>  ' Transportista asignado
     * dominioCamion : string <<FK>>  ' Camión asignado
     * tipo : string <<ENUM>> (origen-deposito, deposito-deposito, deposito-destino, origen-destino)
-    * estado : string <<ENUM>> (estimado, asignado, iniciado, finalizado)
+    * estado : string <<ENUM>> (planificado, asignado, iniciado, finalizado, cancelado)
     * distancia : float
     * costoAproximado : float
     * costoReal : float
@@ -68,6 +69,7 @@ entity Tramo {
     * fechaHoraFinEstimada : datetime
     * fechaHoraInicio : datetime (nullable)
     * fechaHoraFin : datetime (nullable)
+    * fechaActualizacion : datetime
 }
 
 entity Camion {
@@ -113,16 +115,6 @@ entity Usuario {
     * activo : boolean
 }
 
-entity Seguimiento {
-    * idSeguimiento : int <<PK>>
-    * idSolicitud : int <<FK>>
-    * estado : string
-    * descripcion : string
-    * fechaHora : datetime
-    * ubicacion_latitud : decimal(10,8)
-    * ubicacion_longitud : decimal(11,8)
-}
-
 ' Relaciones
 Cliente ||--o{ Contenedor 
 Cliente ||--o{ Solicitud 
@@ -137,7 +129,6 @@ Tramo }o--o| Deposito : destino
 
 Tramo }o--o| Camion : "usa"
 Tarifa }|--o{ Solicitud 
-Solicitud ||--o{ Seguimiento
 
 Tramo }o--o| Usuario : "realizado por"
 
