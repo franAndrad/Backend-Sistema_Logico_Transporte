@@ -5,7 +5,7 @@ skinparam roundcorner 15
 skinparam shadowing true
 skinparam linetype ortho
 
-entity Deposito {
+entity Deposito <<Transporte>> {
     * idDeposito : int <<PK>>
     * nombre : string
     * direccion : string
@@ -14,7 +14,7 @@ entity Deposito {
     * costoEstadiaDiario : float
 }
 
-entity Contenedor {
+entity Contenedor <<Cliente>> {
     * idContenedor : int <<PK>>
     * peso : float
     * volumen : float
@@ -24,11 +24,11 @@ entity Contenedor {
     * idCliente : int <<FK>>
 }
 
-entity Solicitud {
+entity Solicitud <<Cliente>> {
     * idSolicitud : int <<PK>>
     * idContenedor : int <<FK>>
     * idCliente : int <<FK>>
-    * idTarifa : int <<FK>> (nullable)
+    * idTarifa : int (nullable) (referecia logica a ms_transportista)
     * origen_direccion : string
     * origen_latitud : decimal(10,8)
     * origen_longitud : decimal(11,8)
@@ -44,21 +44,21 @@ entity Solicitud {
     * estado : string <<ENUM>> (borrador, programada, asignada, en_transito, en_deposito, entregada, cancelada)
 }
 
-entity Ruta {
+entity Ruta <<Transporte>> {
     * idRuta : int <<PK>>
-    * idSolicitud : int <<FK>>
+    * idSolicitud : int (referecia logica a ms_cliente)
     * cantidadTramos : int
     * cantidadDepositos : int
     * distanciaTotal : float
     * estado : string <<ENUM>> (estimada, asignada, en_progreso, completada)
 }
 
-entity Tramo {
+entity Tramo <<Transporte>> {
     * idTramo : int <<PK>>
     * idRuta : int <<FK>>
     * idDepositoOrigen : int <<FK>> (nullable)
     * idDepositoDestino : int <<FK>> (nullable)
-    * idUsuarioTransportista : int <<FK>>  ' Transportista asignado
+    * keyCloakIdTransportista : int (referecia logica a UsuarioKeycloak)
     * dominioCamion : string <<FK>>  ' Camión asignado
     * tipo : string <<ENUM>> (origen-deposito, deposito-deposito, deposito-destino, origen-destino)
     * estado : string <<ENUM>> (planificado, asignado, iniciado, finalizado, cancelado)
@@ -72,7 +72,7 @@ entity Tramo {
     * fechaActualizacion : datetime
 }
 
-entity Camion {
+entity Camion <<Transporte>>{
     * dominio : string <<PK>>
     * capacidadPeso : float
     * capacidadVolumen : float
@@ -81,16 +81,16 @@ entity Camion {
     * consumoCombustible : float
 }
 
-entity Cliente {
+entity Cliente <<Cliente>> {
     * idCliente : int <<PK>>
-    * idUsuario : int <<FK>>
+    * keyCloakId : int (referecia logica a UsuarioKeycloak)
     * direccionFacturacion : string
     * direccionEnvio : string
     * razonSocial : string  ' Si es empresa
     * cuit : string  ' Si es empresa
 }
 
-entity Tarifa {
+entity Tarifa <<Transporte>> {
     * idTarifa : int <<PK>>
     * concepto : string
     * valorBase : float
@@ -103,7 +103,7 @@ entity Tarifa {
     * activo : boolean
 }
 
-entity Usuario {
+entity UsuarioKeycloak <<Keycloak>> {
     * idUsuario : int <<PK>>
     * nombre : string
     * apellido : string
@@ -118,7 +118,7 @@ entity Usuario {
 ' Relaciones
 Cliente ||--o{ Contenedor 
 Cliente ||--o{ Solicitud 
-Cliente }o--|| Usuario
+Cliente }o--|| UsuarioKeycloak
 Contenedor ||--o{ Solicitud 
 Solicitud ||--o| Ruta
 Ruta ||--o{ Tramo 
@@ -130,7 +130,7 @@ Tramo }o--o| Deposito : destino
 Tramo }o--o| Camion : "usa"
 Tarifa }|--o{ Solicitud 
 
-Tramo }o--o| Usuario : "realizado por"
+Tramo }o--o| UsuarioKeycloak : "realizado por"
 
 @enduml
 

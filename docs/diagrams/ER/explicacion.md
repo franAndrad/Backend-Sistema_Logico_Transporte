@@ -1,104 +1,167 @@
 # Explicación detallada del Diagrama Entidad-Relación (ER)
 
-Explicación paso a paso de cómo funciona este diagrama de base de datos para el sistema logístico de transporte de contenedores.
+Explicación paso a paso de cómo funciona este diagrama de base de datos para el sistema logístico de transporte de contenedores, implementado con arquitectura de microservicios y Keycloak como fuente única de verdad para usuarios.
 
 ---
 
-## 📊 Entidades Principales
+## 🏗️ Arquitectura: Database per Service
 
-### 1. Usuario
+Este sistema implementa el patrón **Database per Service** con dos microservicios principales:
 
-Sistema de autenticación y autorización centralizado para todos los tipos de usuarios.
+### 📦 **ms-cliente** (DB: clientedb)
+Gestiona clientes, contenedores y solicitudes de transporte.
 
-**Campos principales:**
-- `idUsuario`: Identificador único
-- `nombre`, `apellido`: Datos personales completos
+### 🚛 **ms-transporte** (DB: transportedb)
+Gestiona tarifas, rutas, tramos, camiones y depósitos.
+
+### 🔐 **Keycloak** (Sistema externo)
+Fuente única de verdad para usuarios, autenticación y autorización.
+
+---
+
+## 🔑 UsuarioKeycloak (Sistema Externo)
+
+**NO es una tabla en nuestras bases de datos**, sino una entidad gestionada por Keycloak.
+
+**Campos principales (gestionados por Keycloak):**
+- `idUsuario`: Identificador único (UUID en Keycloak)
+- `nombre`, `apellido`: Datos personales
 - `telefono`, `email`: Información de contacto
 - `username`, `password`: Credenciales de acceso
 - `rol`: Define el tipo de usuario (cliente, operador, transportista)
 - `activo`: Indica si el usuario está habilitado
 
-**Relaciones:**
-- Puede tener un perfil de Cliente asociado (rol: cliente)
-- Puede realizar Tramos de transporte (rol: transportista)
+**¿Cómo se relaciona con nuestro sistema?**
+- Los microservicios guardan solo el `keyCloakId` (string/UUID)
+- Los datos personales se consultan via Keycloak Admin API cuando se necesitan
+- La autenticación es manejada por Keycloak (JWT tokens)
 
-**Diseño clave:** 
-- ✅ Todos los datos personales están centralizados en Usuario
-- ✅ No hay duplicación de credenciales
-- ✅ Los roles definen el comportamiento sin necesidad de tablas adicionales para operador/transportista
+**Ventajas:**
+- ✅ Sin duplicación de datos de usuario
+- ✅ Autenticación centralizada
+- ✅ Single Sign-On (SSO)
+- ✅ Gestión de roles y permisos centralizada
 
 ---
 
-### 2. Cliente
+## 📊 Entidades - Microservicio Cliente (clientedb)
+
+### 1. Cliente
 
 Perfil específico para usuarios que solicitan servicios de transporte.
 
 **Campos principales:**
-- `idCliente`: Identificador único del cliente
-- `idUsuario`: Referencia al Usuario (para autenticación y datos personales)
+- `idCliente`: Identificador único del cliente (PK)
+- `keyCloakId`: Referencia al usuario en Keycloak (referencia lógica)
 - `direccionFacturacion`: Dirección para facturación
 - `direccionEnvio`: Dirección de envío por defecto
 - `razonSocial`: Nombre de la empresa (si aplica)
 - `cuit`: Identificación fiscal (si es empresa)
 
 **Relaciones:**
-- Está vinculado a un Usuario del sistema
-- Puede tener múltiples contenedores
-- Puede realizar múltiples solicitudes de transporte
+- **Referencia lógica** a UsuarioKeycloak (no FK física)
+- Puede tener múltiples Contenedores (FK física)
+- Puede realizar múltiples Solicitudes (FK física)
 
-**Nota importante:** Cliente **NO** tiene username/password propios, usa los de Usuario
+**Nota importante:** 
+- `keyCloakId` NO es una FK física, es una referencia lógica
+- Los datos personales (nombre, email, etc.) se obtienen de Keycloak
+- La validación de existencia del usuario se hace via API HTTP a Keycloak
 
 ---
 
-### 3. Contenedor
+### 2. Contenedor
 
-Representa unidades de carga reutilizables del cliente.
+### 2. Contenedor
+
+Representa unidades de carga del cliente.
 
 **Campos principales:**
-- `idContenedor`: Identificador único
-- `idCliente`: Referencia al cliente propietario
-- `tipo`: Tipo de contenedor (estándar, refrigerado, etc.)
-- `capacidad`: Capacidad en metros cúbicos o toneladas
+- `idContenedor`: Identificador único (PK)
+- `idCliente`: Referencia al cliente propietario (FK física)
+- `peso`: Peso en kilogramos
+- `volumen`: Volumen en metros cúbicos
+- `estado`: Estado actual (en_origen, en_transito, en_deposito, entregado)
+- `ubicacionActual`: Descripción textual del lugar actual
 - `activo`: Indica si el contenedor está disponible para uso
 
 **Relaciones:**
-- Pertenece a un Cliente específico
-- Puede usarse en múltiples Solicitudes (reutilizable)
+- Pertenece a un Cliente (FK física en la misma DB)
+- Se usa en Solicitudes (FK física en la misma DB)
 
-**Modelo de reutilización:**
+**Modelo de negocio:**
 - ✅ Un contenedor puede usarse en múltiples solicitudes a lo largo del tiempo
-- ✅ El campo `activo` permite desactivar contenedores dañados sin eliminarlos
+- ✅ El campo `activo` permite desactivar contenedores sin eliminarlos
+- ✅ `ubicacionActual` se actualiza en tiempo real durante el transporte
 - ✅ Esto permite mantener el historial completo de uso
 
 ---
 
-### 4. Solicitud
+### 3. Solicitud
 
 Representa una petición de transporte por parte de un cliente.
 
 **Campos principales:**
-- `idSolicitud`: Identificador único
-- `idCliente`: Cliente que realiza la solicitud
-- `idContenedor`: Contenedor a transportar
-- `idRuta`: Ruta asignada (puede ser null si aún no está asignada)
-- `idTarifa`: Tarifa aplicada (**puede ser null hasta que se confirme**)
-- `estadoSolicitud`: Estado del proceso (pendiente, en_proceso, completada, cancelada)
-- `estadoContenedor`: Estado físico (cargado, en_transito, entregado)
-- `fechaSolicitud`: Fecha de creación
-- `fechaEntregaEstimada`: Fecha estimada de entrega
-- `costoTotal`: Costo calculado (se congela cuando se asigna idTarifa)
+- `idSolicitud`: Identificador único (PK)
+- `idCliente`: Cliente que realiza la solicitud (FK física)
+- `idContenedor`: Contenedor a transportar (FK física)
+- `idTarifa`: Tarifa aplicada (nullable, **referencia lógica** a ms-transporte)
+- `origen_direccion`, `origen_latitud`, `origen_longitud`: Punto de origen
+- `destino_direccion`, `destino_latitud`, `destino_longitud`: Punto de destino
+- `costoEstimado`: Costo estimado inicial
+- `tiempoEstimado`: Tiempo estimado inicial
+- `costoFinal`: Costo real final
+- `tiempoReal`: Tiempo real transcurrido
+- `fechaCreacion`, `fechaActualizacion`: Timestamps de auditoría
+- `estado`: Estado del proceso (borrador, programada, asignada, en_transito, en_deposito, entregada, cancelada)
 
 **Relaciones:**
-- Pertenece a un Cliente
-- Referencia un Contenedor específico
-- Se le asigna una Ruta
-- Usa una versión específica de Tarifa (versionado)
+- Pertenece a un Cliente (FK física)
+- Referencia un Contenedor (FK física)
+- Tiene una Ruta asociada en ms-transporte (**referencia lógica**, sin FK física)
+- Usa una Tarifa de ms-transporte (**referencia lógica**)
+
+**⚠️ Importante - Referencias entre microservicios:**
+- `idTarifa` es una **referencia lógica** (NO hay FK física porque Tarifa está en otra DB)
+- La validación se hace en código: ms-cliente llama a ms-transporte via HTTP
+- Si Tarifa existe en ms-transporte, se guarda el ID
+- Si no existe o se elimina, la validación falla en tiempo de ejecución
 
 **Lógica de negocio clave:**
-- Estado inicial: `idTarifa` es **NULL**, `estadoSolicitud` = 'pendiente'
-- Al asignar ruta: Se calcula `costoTotal` usando la Tarifa vigente actual
-- Se guarda `idTarifa` para mantener el precio histórico
-- ✅ Esto asegura que cambios futuros en tarifas NO afecten solicitudes ya confirmadas
+- Estado inicial: `estado` = 'borrador', `idTarifa` puede ser null
+- Al programar: ms-cliente consulta a ms-transporte para calcular `costoEstimado`
+- Al confirmar: se asigna Ruta (en ms-transporte) y se guarda la referencia
+- Al completar: se registra `costoFinal` y `tiempoReal`
+- ✅ Las coordenadas permiten cálculos precisos de distancia y ruta
+
+---
+
+## 📊 Entidades - Microservicio Transporte (transportedb)
+
+### 4. Tarifa
+
+Define los costos de transporte vigentes.
+
+**Campos principales:**
+- `idTarifa`: Identificador único (PK)
+- `concepto`: Descripción de la tarifa
+- `valorBase`: Costo base del servicio
+- `valorPorKm`: Costo por kilómetro recorrido
+- `valorPorPeso`: Costo adicional por peso
+- `valorPorVolumen`: Costo adicional por volumen
+- `valorPorTramo`: Costo por cada tramo de la ruta
+- `valorLitroCombustible`: Precio del combustible para cálculos
+- `fechaVigencia`: Fecha desde la cual aplica
+- `activo`: Indica si la tarifa está vigente
+
+**Relaciones:**
+- Es referenciada por Solicitudes en ms-cliente (**referencia lógica**)
+
+**Modelo de versionado:**
+- ✅ Múltiples tarifas pueden existir con diferentes `fechaVigencia`
+- ✅ Solo una tarifa debe estar `activo=true` a la vez
+- ✅ Solicitudes antiguas mantienen referencia a tarifas históricas
+- ✅ Esto permite auditoría completa de cambios de precios
 
 ---
 
@@ -107,15 +170,22 @@ Representa una petición de transporte por parte de un cliente.
 Define el camino completo que seguirá un transporte.
 
 **Campos principales:**
-- `idRuta`: Identificador único
-- `origen`: Dirección o punto de inicio
-- `destino`: Dirección o punto final
-- `distanciaTotal`: Distancia calculada en kilómetros
+- `idRuta`: Identificador único (PK)
+- `idSolicitud`: Referencia a la Solicitud en ms-cliente (**referencia lógica**)
+- `cantidadTramos`: Número de segmentos de la ruta
+- `cantidadDepositos`: Número de paradas en depósitos
+- `distanciaTotal`: Distancia total en kilómetros
+- `estado`: Estado de la ruta (estimada, asignada, en_progreso, completada)
 
 **Relaciones:**
-- Se divide en múltiples Tramos
-- Puede tener múltiples Paradas intermedias (Depositos)
-- Es usada por Solicitudes
+- **Referencia lógica** a Solicitud (en otra DB)
+- Se divide en múltiples Tramos (FK física)
+
+**⚠️ Importante - Referencia entre microservicios:**
+- `idSolicitud` es una **referencia lógica** (NO hay FK física)
+- La validación se hace en código: ms-transporte llama a ms-cliente via HTTP
+- Antes de crear una Ruta, se verifica que la Solicitud existe
+- Si la Solicitud no existe, la operación falla
 
 **Diseño modular:**
 - ✅ Una ruta se compone de varios tramos (segmentos)
@@ -129,310 +199,449 @@ Define el camino completo que seguirá un transporte.
 Segmento individual de una ruta (de punto A a punto B).
 
 **Campos principales:**
-- `idTramo`: Identificador único
-- `idRuta`: Ruta a la que pertenece
-- `idDepositoOrigen`: Depósito de inicio (**nullable** - puede ser dirección de solicitud)
-- `idDepositoDestino`: Depósito de fin (**nullable** - puede ser dirección de solicitud)
-- `dominioCamion`: Camión asignado (**string FK**, no int) - asignación dinámica
-- `idUsuarioTransportista`: Usuario transportista que realiza el tramo
-- `orden`: Posición del tramo en la ruta (1, 2, 3...)
+- `idTramo`: Identificador único (PK)
+- `idRuta`: Ruta a la que pertenece (FK física)
+- `idDepositoOrigen`: Depósito de inicio (FK física, **nullable**)
+- `idDepositoDestino`: Depósito de fin (FK física, **nullable**)
+- `keyCloakIdTransportista`: Usuario transportista (referencia lógica a Keycloak)
+- `dominioCamion`: Camión asignado (FK física, string)
+- `tipo`: Tipo de tramo (origen-deposito, deposito-deposito, deposito-destino, origen-destino)
+- `estado`: Progreso (planificado, asignado, iniciado, finalizado, cancelado)
 - `distancia`: Kilómetros del segmento
-- `tiempoEstimado`: Duración estimada del viaje
-- `estado`: Progreso (pendiente → asignado → en_transito → completado)
+- `costoAproximado`, `costoReal`: Costos estimado y final
+- `fechaHoraInicioEstimada`, `fechaHoraFinEstimada`: Tiempos planificados
+- `fechaHoraInicio`, `fechaHoraFin`: Tiempos reales (nullable)
+- `fechaActualizacion`: Timestamp de última modificación
 
 **Relaciones:**
-- Pertenece a una Ruta
-- **Opcionalmente** tiene origen/destino en Depositos (nullable)
-- Es realizado por un Camion (FK: dominioCamion string)
-- Es operado por un Usuario transportista (FK: idUsuarioTransportista)
+- Pertenece a una Ruta (FK física)
+- **Opcionalmente** tiene origen/destino en Depositos (FK física, nullable)
+- Es realizado por un Camion (FK física, string)
+- Es operado por un Usuario transportista (referencia lógica a Keycloak)
+
+**⚠️ Referencias mixtas:**
+- `keyCloakIdTransportista`: **Referencia lógica** a Keycloak (validación via API HTTP)
+- `idRuta`, `dominioCamion`, `idDepositoOrigen`, `idDepositoDestino`: **FK físicas** (validadas por PostgreSQL)
 
 **Modelo de asignación dinámica:**
-- ✅ `dominioCamion` es **string** (no int) para coincidir con `Camion.dominio`
-- ✅ Los camiones se asignan dinámicamente según disponibilidad
-- ✅ Un camión puede hacer múltiples tramos (pero no simultáneamente)
-- ✅ Depositos son opcionales: permite rutas directas origen→destino sin paradas
+- ✅ `dominioCamion` es **string** (FK a `Camion.dominio`)
+- ✅ Depósitos son opcionales (nullable) para permitir rutas directas
+- ✅ `tipo` define automáticamente qué campos son obligatorios
+- ✅ Seguimiento temporal completo: estimado vs real
+
+**Tipos de tramo:**
+1. **origen-deposito**: Desde dirección de origen hasta un depósito intermedio
+2. **deposito-deposito**: Entre dos depósitos
+3. **deposito-destino**: Desde último depósito hasta dirección de destino
+4. **origen-destino**: Ruta directa sin paradas en depósitos
 
 ---
 
 ### 7. Camion
 
-Vehículos que realizan el transporte.
+Vehículos de transporte disponibles.
 
 **Campos principales:**
-- `dominio`: Placa/patente (**clave primaria string**)
-- `capacidadPeso`: Peso máximo en kg
-- `capacidadVolumen`: Volumen máximo en m³
-- `disponibilidad`: Si está libre o en uso
-- `costoBaseKm`: Precio por kilómetro recorrido
+- `dominio`: Patente/matrícula del camión (PK, string)
+- `capacidadPeso`: Capacidad máxima en kilogramos
+- `capacidadVolumen`: Capacidad máxima en metros cúbicos
+- `disponibilidad`: Si está disponible para asignación
+- `costoBaseKm`: Costo operativo por kilómetro
+- `consumoCombustible`: Litros por 100 km
 
 **Relaciones:**
-- Puede ser asignado a múltiples Tramos (en momentos diferentes)
-- Es operado por Usuarios con rol transportista
+- Es usado por Tramos (FK física)
+- Opcionalmente asociado a un transportista en Keycloak (referencia lógica, no mostrada en diagrama)
 
-**Nota crítica:**
-- ✅ `dominio` es **string** (ej: "ABC123"), no int
-- ✅ Este es el campo referenciado por `Tramo.dominioCamion`
-- ✅ La disponibilidad se actualiza dinámicamente según asignaciones activas
-
+**Modelo de asignación:**
+- ✅ `dominio` como PK permite identificación única y natural
+- ✅ `disponibilidad` permite gestionar qué camiones están en uso
+- ✅ Información de costos permite cálculos automáticos de presupuestos
 
 ---
 
 ### 8. Deposito
 
-Ubicaciones intermedias de almacenamiento opcionales.
+Puntos intermedios de almacenamiento en las rutas.
 
 **Campos principales:**
-- `idDeposito`: Identificador único
+- `idDeposito`: Identificador único (PK)
 - `nombre`: Nombre del depósito
-- `direccion`: Ubicación completa
-- `latitud`: Coordenada GPS (decimal(10,8) para precisión)
-- `longitud`: Coordenada GPS (decimal(11,8) para precisión)
-- `costoEstadiaDiario`: Tarifa por día de almacenamiento
+- `direccion`: Dirección completa
+- `latitud`, `longitud`: Coordenadas GPS precisas
+- `costoEstadiaDiario`: Costo de almacenamiento por día
 
 **Relaciones:**
-- **Opcionalmente** puede ser origen/destino de Tramos
+- Puede ser origen de Tramos (FK física, nullable)
+- Puede ser destino de Tramos (FK física, nullable)
 
-**Uso opcional:**
-- ✅ No todos los tramos requieren depósitos
-- ✅ Rutas directas origen→destino no usan depósitos
-- ✅ Rutas complejas pueden tener múltiples paradas en depósitos
+**Diseño de logística:**
+- ✅ Coordenadas GPS permiten cálculo automático de rutas óptimas
+- ✅ `costoEstadiaDiario` permite calcular costos de almacenamiento temporal
+- ✅ Un contenedor puede pasar por múltiples depósitos en su ruta
+- ✅ Permite optimización: dividir rutas largas en segmentos con descansos
 
 ---
 
-### 9. Tarifa
+## 🔗 Tipos de Relaciones
 
-Sistema de versionado de precios para mantener consistencia histórica.
+### 🟢 FK Físicas (dentro de la misma DB)
 
-**Campos principales:**
-- `idTarifa`: Identificador único (autoincremental)
-- `concepto`: Descripción de la tarifa (ej: "Tarifa estándar Q1 2024")
-- **Componentes de costo:**
-  - `valorBase`: Cargo fijo por solicitud
-  - `valorPorKm`: Costo por kilómetro recorrido
-  - `valorPorPeso`: Costo por tonelada transportada
-  - `valorPorVolumen`: Costo por metro cúbico
-  - `valorPorTramo`: Costo fijo por cada segmento
-  - `valorLitroCombustible`: Precio del combustible (para cálculos)
-- `fechaVigencia`: Fecha desde la cual aplica
-- `activo`: Si es la tarifa actual vigente
+**Validadas por PostgreSQL con FOREIGN KEY constraints:**
 
-**Relaciones:**
-- Se aplica a múltiples Solicitudes (preserva precio histórico)
+**En ms-cliente (clientedb):**
+- `Contenedor.idCliente` → `Cliente.idCliente`
+- `Solicitud.idCliente` → `Cliente.idCliente`
+- `Solicitud.idContenedor` → `Contenedor.idContenedor`
 
-**Sistema de versionado:**
-- ✅ Cuando se crea/confirma una Solicitud, se guarda `idTarifa` de la versión vigente
-- ✅ El `costoTotal` se calcula y congela en ese momento
-- ✅ Si se cambian las tarifas futuras, las solicitudes existentes mantienen su precio original
-- ✅ Esto evita problemas de inconsistencia: "¿Por qué mi factura cambió?"
+**En ms-transporte (transportedb):**
+- `Tramo.idRuta` → `Ruta.idRuta`
+- `Tramo.idDepositoOrigen` → `Deposito.idDeposito` (nullable)
+- `Tramo.idDepositoDestino` → `Deposito.idDeposito` (nullable)
+- `Tramo.dominioCamion` → `Camion.dominio`
 
-**Ejemplo de uso:**
+### ⚠️ Referencias Lógicas (entre diferentes sistemas)
+
+**NO hay FK física, validación en código de aplicación:**
+
+**Entre microservicios:**
+- `Ruta.idSolicitud` → `Solicitud.idSolicitud` (ms-transporte → ms-cliente)
+- `Solicitud.idTarifa` → `Tarifa.idTarifa` (ms-cliente → ms-transporte)
+
+**A Keycloak:**
+- `Cliente.keyCloakId` → Usuario en Keycloak
+- `Tramo.keyCloakIdTransportista` → Usuario en Keycloak
+
+**¿Cómo se validan?**
+1. Antes de guardar, el microservicio hace una llamada HTTP al otro servicio
+2. Verifica que el ID existe
+3. Si existe, guarda el ID como número/string
+4. Si no existe, retorna error de validación
+
+**Ejemplo:**
+```java
+// En ms-transporte, antes de crear Ruta
+@Service
+public class RutaService {
+    @Autowired
+    private SolicitudClient solicitudClient; // Feign Client
+    
+    public Ruta crearRuta(RutaDTO dto) {
+        // Validar que la solicitud existe en ms-cliente
+        if (!solicitudClient.existeSolicitud(dto.getIdSolicitud())) {
+            throw new ValidationException("Solicitud no encontrada");
+        }
+        // Crear ruta guardando solo el ID
+        Ruta ruta = new Ruta();
+        ruta.setIdSolicitud(dto.getIdSolicitud());
+        return rutaRepository.save(ruta);
+    }
+}
 ```
-Solicitud #123 (Enero 2024):
-  - Se crea con Tarifa #1 (valorPorKm = $10)
-  - costoTotal = $500 (se guarda idTarifa = 1)
-
-Marzo 2024: Se crea Tarifa #2 (valorPorKm = $12)
-
-Solicitud #123 sigue costando $500 (usa Tarifa #1)
-Solicitud #200 (nueva) costará más (usa Tarifa #2)
-```
 
 ---
 
-### 10. Seguimiento
+## 🔄 Flujos de Negocio Completos
 
-Historial de eventos y ubicaciones para trazabilidad completa.
+### 📋 Flujo Completo: Cliente solicita transporte de contenedor
 
-**Campos principales:**
-- `idSeguimiento`: Identificador único
-- `idSolicitud`: Solicitud a la que pertenece el evento
-- `estado`: Estado del contenedor en este punto (cargado, en_transito, en_deposito, entregado)
-- `descripcion`: Detalles del evento (ej: "Contenedor cargado en camión ABC123")
-- `fechaHora`: Timestamp exacto del evento
-- `latitud`: Ubicación GPS del evento (decimal(10,8))
-- `longitud`: Ubicación GPS del evento (decimal(11,8))
+#### **Fase 1: Registro y Autenticación (Keycloak)**
 
-**Relaciones:**
-- Pertenece a una Solicitud específica
+1. **Usuario se registra en Keycloak:**
+   - Nombre, apellido, email, username, password
+   - Se le asigna rol: "cliente"
+   - Keycloak genera un UUID único (keyCloakId)
 
-**Funcionalidad:**
-- ✅ Permite rastreo en tiempo real
-- ✅ Auditoría completa de eventos
-- ✅ Coordenadas con precisión decimal para GPS exacto
+2. **Se crea perfil en ms-cliente:**
+   - Se guarda `Cliente` con:
+     - `keyCloakId` = UUID de Keycloak
+     - `direccionFacturacion`, `direccionEnvio`
+     - `razonSocial`, `cuit` (si es empresa)
 
----
+3. **Cliente registra su Contenedor:**
+   - Se crea `Contenedor` en ms-cliente:
+     - `idCliente` (FK física a Cliente)
+     - `peso`, `volumen`, `estado` = 'en_origen'
+     - `activo` = true
 
-## 🔄 Flujo de Funcionamiento
+#### **Fase 2: Solicitud de Transporte (ms-cliente)**
 
-### Escenario ejemplo: Un cliente solicita transportar un contenedor
+4. **Cliente crea Solicitud:**
+   ```
+   POST /api/solicitudes
+   {
+     "idCliente": 123,
+     "idContenedor": 456,
+     "origen": { "direccion": "...", "lat": -34.6, "lon": -58.4 },
+     "destino": { "direccion": "...", "lat": -31.4, "lon": -64.2 },
+     "estado": "borrador"
+   }
+   ```
+   - Se guarda en tabla `Solicitud` (clientedb)
+   - `idTarifa` = NULL (aún no calculado)
+   - `costoEstimado` = NULL
 
-#### 1. Registro inicial
+5. **ms-cliente solicita cotización a ms-transporte:**
+   ```
+   GET /api/tarifas/calcular?distancia=500&peso=1000&volumen=20
+   ```
+   - ms-transporte calcula costo con Tarifa vigente (activo=true)
+   - Retorna: `{ "costoEstimado": 5000, "idTarifa": 10 }`
 
-- Un **Usuario** se registra con rol "cliente" (nombre, apellido, email, username, password)
-- Se crea un perfil de **Cliente** asociado (direcciones, razonSocial, CUIT)
-- El cliente registra un **Contenedor** con sus características (tipo, capacidad)
+6. **ms-cliente actualiza Solicitud:**
+   - `costoEstimado` = 5000
+   - `idTarifa` = 10 (referencia lógica)
+   - `estado` = "programada"
 
-#### 2. Creación de solicitud
+#### **Fase 3: Planificación de Ruta (ms-transporte)**
 
-- El cliente crea una **Solicitud** indicando:
-  - Qué contenedor transportar (idContenedor)
-  - Datos de origen y destino
-  - Estado inicial: `estadoSolicitud` = 'pendiente', `idTarifa` = NULL
+7. **ms-transporte recibe solicitud de crear Ruta:**
+   ```
+   POST /api/rutas
+   {
+     "idSolicitud": 789 // ID de Solicitud en ms-cliente
+   }
+   ```
 
-#### 3. Planificación de ruta
+8. **ms-transporte valida Solicitud:**
+   - Llama a ms-cliente via Feign Client:
+     ```java
+     boolean existe = solicitudClient.existeSolicitud(789);
+     ```
+   - Si NO existe → Error 400: "Solicitud no encontrada"
+   - Si existe → continúa
 
-- Un operador (Usuario con rol "operador") revisa la solicitud
-- El sistema calcula una **Ruta** óptima
-- Se divide en **Tramos** según necesidad:
-  - Ruta simple: 1 tramo directo (origen → destino)
-  - Ruta compleja: múltiples tramos (origen → depósito A → depósito B → destino)
-- Para cada tramo se calcula distancia y tiempo estimado
+9. **ms-transporte crea Ruta:**
+   - Se guarda en tabla `Ruta` (transportedb):
+     - `idSolicitud` = 789 (referencia lógica, solo el número)
+     - `cantidadTramos` = 0 (se actualizará)
+     - `estado` = "estimada"
 
-#### 4. Asignación de recursos
+10. **ms-transporte divide en Tramos:**
+    - **Opción A: Ruta directa** (sin depósitos):
+      ```
+      Tramo 1:
+        - tipo: "origen-destino"
+        - idDepositoOrigen: NULL
+        - idDepositoDestino: NULL
+        - distancia: 500 km
+      ```
+    
+    - **Opción B: Ruta con paradas** (con depósitos):
+      ```
+      Tramo 1:
+        - tipo: "origen-deposito"
+        - idDepositoOrigen: NULL
+        - idDepositoDestino: 5 (FK física)
+        - distancia: 300 km
+      
+      Tramo 2:
+        - tipo: "deposito-destino"
+        - idDepositoOrigen: 5 (FK física)
+        - idDepositoDestino: NULL
+        - distancia: 200 km
+      ```
 
-- Se obtiene la **Tarifa** vigente actual (activo = true)
-- Se calcula el `costoTotal` usando los componentes de la tarifa:
-  ```
-  costoTotal = valorBase 
-             + (distanciaTotal × valorPorKm)
-             + (pesoCarga × valorPorPeso)
-             + (volumenCarga × valorPorVolumen)
-             + (cantidadTramos × valorPorTramo)
-  ```
-- Se guarda `idTarifa` en la Solicitud (congela el precio)
-- Se actualiza `estadoSolicitud` = 'confirmada'
+#### **Fase 4: Asignación de Recursos (ms-transporte)**
 
-#### 5. Asignación de camiones (dinámica)
+11. **Para cada Tramo, buscar Camion disponible:**
+    ```sql
+    SELECT * FROM Camion 
+    WHERE disponibilidad = true 
+      AND capacidadPeso >= 1000 
+      AND capacidadVolumen >= 20
+    LIMIT 1;
+    ```
 
-- Para cada **Tramo**, el sistema busca **Camiones** disponibles
-- Criterios: capacidad suficiente, disponibilidad = true
-- Se asigna:
-  - `dominioCamion` (ej: "ABC123")
-  - `idUsuarioTransportista` (Usuario con rol transportista)
-  - Camión `disponibilidad` = false (mientras dura el tramo)
-  - Estado del tramo = 'asignado'
+12. **Buscar Transportista disponible en Keycloak:**
+    - ms-transporte consulta Keycloak Admin API:
+      ```java
+      List<UserRepresentation> transportistas = keycloakClient
+          .getUsers(realm)
+          .stream()
+          .filter(u -> u.getRealmRoles().contains("transportista"))
+          .toList();
+      ```
 
-#### 6. Ejecución del transporte
+13. **Asignar Tramo:**
+    ```java
+    Tramo tramo = new Tramo();
+    tramo.setIdRuta(ruta.getId());
+    tramo.setDominioCamion("ABC123"); // FK física a Camion
+    tramo.setKeyCloakIdTransportista("uuid-keycloak"); // Ref lógica
+    tramo.setEstado("asignado");
+    tramoRepository.save(tramo);
+    ```
 
-- El **Usuario transportista** inicia el tramo
-- Se registra **Seguimiento**:
-  - "Contenedor retirado del origen" (con coordenadas GPS)
-  - "En tránsito hacia Depósito A" (con coordenadas periódicas)
-  - "Llegada a Depósito A" (con timestamp)
-- Estado del tramo = 'en_transito'
-- `estadoContenedor` en Solicitud = 'en_transito'
+14. **Actualizar disponibilidad:**
+    ```sql
+    UPDATE Camion SET disponibilidad = false WHERE dominio = 'ABC123';
+    ```
 
-#### 7. Paradas en depósitos (opcional)
+15. **Notificar a ms-cliente:**
+    - ms-transporte llama a ms-cliente:
+      ```java
+      solicitudClient.actualizarEstado(789, "asignada");
+      ```
+    - ms-cliente actualiza `Solicitud.estado` = "asignada"
 
-- Si el tramo llega a un **Deposito**:
-  - Se registra fecha/hora de llegada
-  - Se calculan días de estadía × `costoEstadiaDiario`
-  - Se registra en Seguimiento: "Almacenado en Depósito A"
-- El siguiente tramo se activa con otro camión (asignación dinámica)
+#### **Fase 5: Ejecución del Transporte (ms-transporte + Keycloak)**
 
-#### 8. Finalización
+16. **Transportista inicia el viaje:**
+    - Se autentica con Keycloak (JWT token)
+    - Actualiza Tramo:
+      ```sql
+      UPDATE Tramo 
+      SET estado = 'iniciado',
+          fechaHoraInicio = NOW()
+      WHERE idTramo = 1;
+      ```
 
-- Cuando todos los tramos se completan:
-  - Último tramo registra: "Contenedor entregado en destino"
-  - `estadoSolicitud` = 'completada'
-  - `estadoContenedor` = 'entregado'
-  - Camiones liberados: `disponibilidad` = true
-- El **Contenedor** queda `activo` = true para ser reutilizado en futuras solicitudes
+17. **Tracking en tiempo real:**
+    - ms-transporte puede enviar actualizaciones a ms-cliente:
+      ```java
+      solicitudClient.actualizarUbicacion(789, lat, lon);
+      ```
+    - ms-cliente actualiza `Contenedor.ubicacionActual`
 
-#### 9. Facturación
+18. **Llegada a destino:**
+    ```sql
+    UPDATE Tramo 
+    SET estado = 'finalizado',
+        fechaHoraFin = NOW(),
+        costoReal = 4800
+    WHERE idTramo = 1;
+    ```
 
-- El `costoTotal` permanece congelado (usando `idTarifa` guardado)
-- No importa si las tarifas cambiaron después
-- Transparencia total: el cliente paga lo que se le cotizó
+19. **Liberar Camion:**
+    ```sql
+    UPDATE Camion SET disponibilidad = true WHERE dominio = 'ABC123';
+    ```
 
+20. **Finalizar Ruta:**
+    ```sql
+    UPDATE Ruta SET estado = 'completada' WHERE idRuta = 1;
+    ```
+
+21. **ms-transporte notifica a ms-cliente:**
+    ```java
+    solicitudClient.completarSolicitud(789, costoFinal);
+    ```
+
+22. **ms-cliente finaliza Solicitud:**
+    ```sql
+    UPDATE Solicitud 
+    SET estado = 'entregada',
+        costoFinal = 4800,
+        tiempoReal = 8.5
+    WHERE idSolicitud = 789;
+    
+    UPDATE Contenedor 
+    SET estado = 'entregado',
+        ubicacionActual = 'Destino Final'
+    WHERE idContenedor = 456;
+    ```
+
+#### **Fase 6: Facturación y Auditoría**
+
+23. **Cliente consulta factura:**
+    - ms-cliente retorna datos de Solicitud
+    - `costoFinal` está congelado (usó `idTarifa` = 10)
+    - Aunque cambien las tarifas, el precio no cambia
+
+24. **Auditoría completa:**
+    - ms-cliente: historial de Solicitudes y Contenedores
+    - ms-transporte: historial de Rutas, Tramos, y uso de Camiones
+    - Keycloak: logs de autenticación y acciones de usuarios
 
 ---
 
 ## 📐 Cardinalidades de las Relaciones
 
-### Explicación de las notaciones
+### **Dentro de ms-cliente (clientedb):**
 
-- `||--o{`: Uno a muchos (obligatorio a opcional múltiple)
-- `}o--||`: Muchos opcionales a uno obligatorio
-- `||-||`: Uno a uno obligatorio
-- `||--o|`: Uno a uno opcional
+- `Cliente ||--o{ Contenedor`: Un cliente tiene múltiples contenedores (1:N)
+- `Cliente ||--o{ Solicitud`: Un cliente crea múltiples solicitudes (1:N)
+- `Contenedor ||--|| Solicitud`: Un contenedor se usa en una solicitud a la vez (1:1)
 
-### Relaciones clave corregidas
+### **Dentro de ms-transporte (transportedb):**
 
-#### 1. Usuario → Cliente (`||--o|`)
+- `Ruta ||--o{ Tramo`: Una ruta tiene múltiples tramos (1:N)
+- `Tramo }o--|| Camion`: Un camión realiza múltiples tramos en el tiempo (N:1)
+- `Tramo }o--o| Deposito` (origen): Un depósito puede ser origen de múltiples tramos (N:0..1)
+- `Tramo }o--o| Deposito` (destino): Un depósito puede ser destino de múltiples tramos (N:0..1)
 
-- Un Usuario puede tener un perfil de Cliente asociado (si rol = 'cliente')
-- Un Cliente pertenece a un Usuario específico
+### **Referencias Lógicas (entre sistemas):**
 
-#### 2. Cliente → Contenedor (`||--o{`)
-
-- Un Cliente puede tener múltiples Contenedores
-- Un Contenedor pertenece a un solo Cliente
-
-#### 3. Cliente → Solicitud (`||--o{`)
-
-- Un Cliente puede crear múltiples Solicitudes
-- Una Solicitud pertenece a un solo Cliente
-
-#### 4. Solicitud → Ruta (`||--||`)
-
-- Una Solicitud tiene una Ruta asignada
-- Una Ruta pertenece a una Solicitud específica
-
-#### 5. Ruta → Tramo (`||--o{`)
-
-- Una Ruta se compone de múltiples Tramos (mínimo 1)
-- Un Tramo pertenece a una sola Ruta
-
-#### 6. Tramo → Deposito (relaciones opcionales)
-
-- Un Tramo **puede tener** un Deposito de origen (nullable)
-- Un Tramo **puede tener** un Deposito de destino (nullable)
-- Un Deposito puede ser origen/destino de múltiples Tramos
-- Permite rutas directas sin paradas
-
-#### 7. Tramo → Camion (`}o--||`)
-
-- Un Camion puede realizar múltiples Tramos (en diferentes momentos)
-- Un Tramo debe tener un Camion asignado (FK: dominioCamion string)
-
-#### 8. Tramo → Usuario Transportista (`}o--||`)
-
-- Un Usuario transportista puede realizar múltiples Tramos
-- Un Tramo debe tener un transportista asignado (FK: idUsuarioTransportista)
-
-#### 9. Solicitud → Tarifa (`}o--||`)
-
-- Una Tarifa se aplica a múltiples Solicitudes
-- Una Solicitud usa una versión específica de Tarifa (versionado)
-- `idTarifa` puede ser NULL al crear la solicitud (hasta confirmación)
-
-#### 10. Solicitud → Seguimiento (`||--o{`)
-
-- Una Solicitud puede tener múltiples registros de Seguimiento
-- Un registro de Seguimiento pertenece a una Solicitud
+- `Cliente }o--|| UsuarioKeycloak`: Un usuario en Keycloak puede tener un perfil de cliente (N:1)
+- `Tramo }o--|| UsuarioKeycloak`: Un transportista en Keycloak realiza múltiples tramos (N:1)
+- `Solicitud ||--o| Ruta`: Una solicitud tiene una ruta en ms-transporte (1:0..1)
+- `Solicitud }o--|| Tarifa`: Una tarifa se usa en múltiples solicitudes (N:1)
 
 ---
 
-## 📝 Resumen del Modelo Corregido
+## 📝 Resumen del Modelo
 
-Este modelo de datos permite gestionar todo el ciclo de vida del transporte de contenedores, desde la solicitud inicial hasta la entrega final, con:
+### ✅ Fortalezas de esta arquitectura:
 
-### ✅ Características principales:
+1. **Separación de responsabilidades:**
+   - ms-cliente: gestiona clientes, contenedores y solicitudes
+   - ms-transporte: gestiona operaciones logísticas
+   - Keycloak: gestiona usuarios y autenticación
 
-1. **Autenticación centralizada:**
-   - Usuario único con datos personales completos
-   - Sin duplicación de credenciales
-   - Roles claramente definidos (cliente, operador, transportista)
+2. **Escalabilidad independiente:**
+   - Cada microservicio puede escalar según su carga
+   - Base de datos separada evita cuellos de botella
 
-2. **Asignación dinámica de recursos:**
-   - Camiones asignados por tramo según disponibilidad
-   - FK correcta: `dominioCamion` (string) → `Camion.dominio` (string)
-   - Transportistas asignados por tramo
+3. **Consistencia eventual:**
+   - Referencias lógicas validadas via HTTP
+   - Permite operación incluso si un servicio está temporalmente no disponible
 
-3. **Flexibilidad de rutas:**
-   - Depósitos opcionales (FK nullable)
-   - Permite rutas directas o con múltiples paradas
+4. **Auditoría completa:**
+   - Tarifa versionada: precios históricos preservados
+   - Timestamps en todas las entidades críticas
+   - Rastreo de estados en Solicitud, Contenedor, Tramo
+
+5. **Flexibilidad operativa:**
+   - Depósitos opcionales (nullable)
+   - Asignación dinámica de camiones
+   - Rutas directas o complejas
+
+### ⚠️ Consideraciones importantes:
+
+1. **Consistencia entre microservicios:**
+   - Usar circuit breakers para manejar fallos
+   - Implementar retry logic en Feign Clients
+   - Considerar eventos asíncronos para sincronización
+
+2. **Integridad referencial:**
+   - FK físicas validadas por PostgreSQL (dentro de cada DB)
+   - Referencias lógicas validadas en código (entre DBs)
+   - Implementar soft delete para evitar romper referencias
+
+3. **Performance:**
+   - Las validaciones cruzadas entre microservicios añaden latencia
+   - Cachear datos frecuentemente consultados (ej: tarifas vigentes)
+   - Usar índices en campos de referencias lógicas
+
+4. **Seguridad:**
+   - JWT tokens de Keycloak para autenticación entre servicios
+   - No exponer IDs internos en APIs públicas
+   - Validar permisos en cada operación (roles de Keycloak)
+
+---
+
+## 🎯 Próximos pasos recomendados:
+
+1. **Implementar Feign Clients** para comunicación entre microservicios
+2. **Configurar Resilience4j** para circuit breakers y retry
+3. **Implementar eventos** (Kafka/RabbitMQ) para consistencia eventual
+4. **Agregar índices** en campos de referencias lógicas
+5. **Documentar APIs** con OpenAPI/Swagger
+6. **Implementar tests de integración** entre microservicios
+7. **Configurar monitoring** (Prometheus + Grafana) para observabilidad
+
+
    - Tramos ordenados secuencialmente
 
 4. **Versionado de tarifas:**

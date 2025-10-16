@@ -92,8 +92,8 @@ Este proyecto implementa una solución backend basada en microservicios para ges
 
 ## Autores
 - [Andrade Francisco - 403499]
-- []
-- []
-- []
+- [Bottero Constantino - 400892]
+- [Ramirez Hernan - ]
+- [Villaba Alex - 400249]
 
 Trabajo desarrollado para la asignatura Backend de Aplicaciones - 2025
