@@ -1,5 +1,11 @@
 Usar wiremock para google api.
 
+git holomekc/wiremock                 url: __admin/ewbapp/mappings
+Se puede hacer un save mappings.
+
+
+
+
 Tiene que tener rate limiting: Para no tener ataques de deneagacion de servicio.
 Cache.
 
