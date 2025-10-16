@@ -13,7 +13,6 @@
         <module>microservices/api-gateway</module>
         <module>microservices/ms-cliente</module>
         <module>microservices/ms-transporte</module>
-        <module>microservices/ms-seguimiento</module>
     </modules>
 
     <properties>

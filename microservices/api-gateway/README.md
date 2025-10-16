@@ -17,8 +17,7 @@ sistema-logistico/
 ├── microservices/              # Microservicios del sistema
 │   ├── api-gateway/            # API Gateway para enrutamiento y seguridad
 │   ├── ms-cliente/             # Microservicio de gestión de clientes
-│   ├── ms-transporte/          # Microservicio de gestión de transporte
-│   └── ms-seguimiento/         # Microservicio de seguimiento y notificaciones
+│   └── ms-transporte/          # Microservicio de gestión de transporte (rutas, camiones, depósitos, seguimiento)
 ├── docker/                     # Archivos de configuración Docker
 ├── docs/                       # Documentación del proyecto
 └── README.md                   # Documentación principal
@@ -66,11 +65,6 @@ public class RouteConfig {
             .route("transporte-service", r -> r
                 .path("/api/transporte/**")
                 .uri("lb://ms-transporte"))
-                
-            // Ruta para el microservicio de seguimiento
-            .route("seguimiento-service", r -> r
-                .path("/api/seguimiento/**")
-                .uri("lb://ms-seguimiento"))
                 
             .build();
     }
@@ -143,11 +137,6 @@ spring:
           uri: lb://ms-transporte
           predicates:
             - Path=/api/transporte/**
-            
-        - id: seguimiento-service
-          uri: lb://ms-seguimiento
-          predicates:
-            - Path=/api/seguimiento/**
 ```
 
 ## Tecnologías utilizadas

@@ -47,6 +47,8 @@ Este documento describe la arquitectura y configuración de los microservicios q
 - Gestión de depósitos
 - Gestión de camiones
 - Cálculo de costos y tiempos
+- Registro de eventos de seguimiento
+- Consulta de estado de contenedores
 
 ### Endpoints principales:
 
@@ -91,35 +93,16 @@ Este documento describe la arquitectura y configuración de los microservicios q
 - `PUT /api/v1/tarifas/{id}` - Actualizar una tarifa
 - `DELETE /api/v1/tarifas/{id}` - Eliminar una tarifa
 
-### Roles y accesos:
-- `OPERADOR`: Acceso a todas las operaciones de gestión
-- `TRANSPORTISTA`: Acceso a consultas y actualización de tramos asignados
-- `ADMIN`: Acceso completo
-
-## Microservicio: Seguimiento (ms-seguimiento)
-
-### Responsabilidades:
-- Registro de eventos de seguimiento
-- Consulta de estado de contenedores
-- Generación de informes de seguimiento
-
-### Endpoints principales:
-
 #### Seguimiento
 - `GET /api/v1/seguimientos` - Listar todos los seguimientos
 - `GET /api/v1/seguimientos/solicitud/{solicitudId}` - Obtener seguimientos por solicitud
 - `POST /api/v1/seguimientos` - Registrar un nuevo evento de seguimiento
 - `GET /api/v1/seguimientos/contenedor/{contenedorId}` - Obtener seguimientos por contenedor
 
-#### Reportes
-- `GET /api/v1/reportes/contenedor/{contenedorId}` - Generar reporte de seguimiento de un contenedor
-- `GET /api/v1/reportes/cliente/{clienteId}` - Generar reporte de contenedores de un cliente
-- `GET /api/v1/reportes/deposito/{depositoId}` - Generar reporte de contenedores en un depósito
-
 ### Roles y accesos:
-- `CLIENTE`: Acceso a seguimiento de sus contenedores
-- `OPERADOR`: Acceso a todos los seguimientos
-- `TRANSPORTISTA`: Acceso a seguimientos de tramos asignados
+- `OPERADOR`: Acceso a todas las operaciones de gestión
+- `TRANSPORTISTA`: Acceso a consultas, actualización de tramos asignados y registro de seguimiento
+- `CLIENTE`: Acceso a consultas de seguimiento de sus contenedores
 - `ADMIN`: Acceso completo
 
 ## API Gateway
@@ -133,8 +116,7 @@ Este documento describe la arquitectura y configuración de los microservicios q
 - `/api/v1/camiones/**` -> ms-transporte
 - `/api/v1/depositos/**` -> ms-transporte
 - `/api/v1/tarifas/**` -> ms-transporte
-- `/api/v1/seguimientos/**` -> ms-seguimiento
-- `/api/v1/reportes/**` -> ms-seguimiento
+- `/api/v1/seguimientos/**` -> ms-transporte
 
 ### Funcionalidades adicionales:
 - Validación de tokens JWT

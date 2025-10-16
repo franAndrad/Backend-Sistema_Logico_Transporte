@@ -12,7 +12,6 @@ services:
       - keycloak
       - ms-cliente
       - ms-transporte
-      - ms-seguimiento
 
   # Microservicios
   ms-cliente:
@@ -33,15 +32,6 @@ services:
       - postgres-transporte
       - keycloak
 
-  ms-seguimiento:
-    build: ../microservices/ms-seguimiento
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker
-      - SPRING_DATASOURCE_URL=jdbc:postgresql://postgres-seguimiento:5432/seguimientodb
-    depends_on:
-      - postgres-seguimiento
-      - keycloak
-
   # Bases de datos
   postgres-cliente:
     image: postgres:14
@@ -60,15 +50,6 @@ services:
       - POSTGRES_DB=transportedb
     volumes:
       - postgres-transporte-data:/var/lib/postgresql/data
-
-  postgres-seguimiento:
-    image: postgres:14
-    environment:
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_USER=postgres
-      - POSTGRES_DB=seguimientodb
-    volumes:
-      - postgres-seguimiento-data:/var/lib/postgresql/data
 
   # Keycloak para autenticación
   keycloak:
@@ -98,5 +79,4 @@ services:
 volumes:
   postgres-cliente-data:
   postgres-transporte-data:
-  postgres-seguimiento-data:
   postgres-keycloak-data:

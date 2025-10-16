@@ -57,20 +57,27 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
 │  • Balanceo de carga                                          │
 │  • Rate limiting                                              │
 │  • Validación de tokens JWT                                   │
-└─────┬──────────────┬──────────────┬──────────────┬────────────┘
-      │              │              │              │
-      │              │              │              │
-      ↓              ↓              ↓              ↓
-┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐
-│    MS    │  │    MS    │  │    MS    │  │    MS    │
-│ Cliente  │  │Transport │  │Seguimien │  │   Maps   │
-└────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘
-     │             │             │             │
-     ↓             ↓             ↓             ↓
-┌─────────┐   ┌─────────┐   ┌─────────┐      ↓
-│   DB    │   │   DB    │   │   DB    │   Google
-│Cliente  │   │Transport│   │Seguim.  │   Maps API
-└─────────┘   └─────────┘   └─────────┘
+└─────┬──────────────┬──────────────────────────────────────────┘
+      │              │
+      │              │
+      ↓              ↓
+┌──────────┐  ┌──────────────────┐
+│    MS    │  │       MS         │
+│ Cliente  │  │   Transporte     │
+└────┬─────┘  └────┬─────────────┘
+     │             │ ↓
+     ↓             │ Google Maps API
+┌─────────┐   ┌───┴─────┐
+│   DB    │   │   DB    │
+│Cliente  │   │Transport│
+└─────────┘   └─────────┘
+                  │
+                  │ Incluye:
+                  │ • Rutas y Tramos
+                  │ • Camiones y Depósitos
+                  │ • Seguimiento en tiempo real
+                  ↓
+              Maps API
 ```
 
 ---
@@ -104,12 +111,14 @@ El Sistema Logístico de Transporte de Contenedores está diseñado como una **a
 - 💵 Configurar tarifas
 - 📈 Ver reportes y estadísticas
 - ⚙️ Administrar usuarios del sistema
+- 🔍 Monitorear seguimiento de todos los transportes
 
 **Endpoints principales:**
 - `POST /api/v1/tramos/{id}/asignar-camion` - Asignar recursos
 - `PUT /api/v1/tarifas/{id}` - Actualizar tarifas
 - `GET /api/v1/reportes/solicitudes` - Ver reportes
 - `POST /api/v1/depositos` - Gestionar depósitos
+- `GET /api/v1/seguimiento` - Ver seguimiento de todas las solicitudes
 
 ---
 
@@ -161,14 +170,7 @@ spring:
         - id: ms-transporte
           uri: lb://ms-transporte
           predicates:
-            - Path=/api/rutas/**,/api/tramos/**,/api/camiones/**,/api/depositos/**
-          filters:
-            - TokenRelay
-            
-        - id: ms-seguimiento
-          uri: lb://ms-seguimiento
-          predicates:
-            - Path=/api/seguimiento/**
+            - Path=/api/rutas/**,/api/tramos/**,/api/camiones/**,/api/depositos/**,/api/seguimiento/**
           filters:
             - TokenRelay
 ```
@@ -247,7 +249,6 @@ POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
 
 #### Comunicación con otros servicios:
 - **→ ms-transporte**: Solicita creación de rutas y asignación de recursos
-- **→ ms-seguimiento**: Notifica cambios de estado en solicitudes
 - **← API Gateway**: Recibe peticiones de usuarios
 
 #### Base de datos:
@@ -264,7 +265,7 @@ POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
 
 ### 2. 🚛 Microservicio Transporte (ms-transporte)
 
-**Responsabilidad:** Gestión de rutas, tramos, camiones y depósitos
+**Responsabilidad:** Gestión de rutas, tramos, camiones, depósitos, seguimiento en tiempo real e integración con Google Maps API
 
 #### Endpoints principales:
 
@@ -307,14 +308,156 @@ PUT    /api/v1/depositos/{id}                  - Actualizar depósito
 GET    /api/v1/depositos/cercanos              - Depósitos cercanos a coordenadas
 ```
 
+##### Seguimiento
+```
+GET    /api/v1/seguimiento/solicitud/{id}      - Historial de seguimiento
+POST   /api/v1/seguimiento                     - Registrar evento de seguimiento
+GET    /api/v1/seguimiento/contenedor/{id}     - Seguimiento de contenedor
+GET    /api/v1/seguimiento/actual/{id}         - Ubicación actual
+GET    /api/v1/seguimiento/ruta/{id}           - Puntos de seguimiento en mapa
+GET    /api/v1/seguimiento/tramo/{idTramo}     - Seguimiento de un tramo específico
+```
+
+#### Integración con Google Maps API:
+
+Este microservicio incluye la **integración directa con Google Maps API** para:
+
+##### 1. Geocodificación
+Convierte direcciones en coordenadas y viceversa.
+
+```java
+// Servicio interno de Geocodificación
+@Service
+public class GeocodingService {
+    
+    @Value("${google.maps.api-key}")
+    private String apiKey;
+    
+    public CoordenadasDTO geocodificar(String direccion) {
+        // Llama a Google Geocoding API
+        // Retorna latitud y longitud
+    }
+    
+    public DireccionDTO reverseGeocode(Double lat, Double lng) {
+        // Llama a Google Reverse Geocoding API
+        // Retorna dirección formateada
+    }
+}
+```
+
+##### 2. Cálculo de Distancias
+Calcula distancias y tiempos entre puntos usando Distance Matrix API.
+
+```java
+@Service
+public class DistanceService {
+    
+    @Cacheable(value = "distancias", key = "#origen + '-' + #destino")
+    public DistanciaDTO calcularDistancia(
+            CoordenadasDTO origen, 
+            CoordenadasDTO destino) {
+        // Llama a Google Distance Matrix API
+        // Retorna distancia en km y duración en minutos
+    }
+    
+    public List<DistanciaDTO> calcularDistanciaMultiple(
+            List<CoordenadasDTO> origenes,
+            List<CoordenadasDTO> destinos) {
+        // Calcula matriz de distancias
+        // Útil para optimizar selección de depósitos
+    }
+}
+```
+
+##### 3. Cálculo de Rutas
+Genera rutas optimizadas usando Directions API.
+
+```java
+@Service
+public class RouteService {
+    
+    public RutaOptimizadaDTO calcularRutaOptimizada(
+            CoordenadasDTO origen,
+            CoordenadasDTO destino,
+            List<CoordenadasDTO> puntosIntermedios) {
+        // Llama a Google Directions API
+        // Retorna ruta optimizada con waypoints
+    }
+}
+```
+
+##### 4. Gestión de Seguimiento
+Maneja el tracking en tiempo real de los transportes.
+
+```java
+@Service
+public class SeguimientoService {
+    
+    public SeguimientoDTO registrarEvento(SeguimientoRequestDTO request) {
+        // Registra evento de seguimiento asociado a un tramo
+        // Almacena ubicación GPS y estado
+    }
+    
+    public List<SeguimientoDTO> obtenerSeguimientoPorSolicitud(Long idSolicitud) {
+        // Retorna historial completo de seguimiento
+    }
+    
+    public SeguimientoDTO obtenerUbicacionActual(Long idSolicitud) {
+        // Retorna última ubicación registrada
+    }
+    
+    public List<PuntoRutaDTO> obtenerRutaVisual(Long idSolicitud) {
+        // Retorna todos los puntos para visualizar en mapa
+    }
+}
+```
+
+##### 5. Resiliencia y Optimización
+
+**Caché de consultas:**
+```yaml
+spring:
+  cache:
+    cache-names: distancias, geocodificacion, seguimiento
+    caffeine:
+      spec: maximumSize=1000,expireAfterWrite=24h
+```
+
+**Circuit Breaker:**
+```java
+@CircuitBreaker(name = "googleMaps", fallbackMethod = "calcularDistanciaFallback")
+public DistanciaDTO calcularDistancia(CoordenadasDTO origen, CoordenadasDTO destino) {
+    // Llama a Google Maps API
+}
+
+private DistanciaDTO calcularDistanciaFallback(
+        CoordenadasDTO origen, 
+        CoordenadasDTO destino, 
+        Exception e) {
+    // Cálculo usando fórmula de Haversine (distancia en línea recta)
+    return calcularDistanciaHaversine(origen, destino);
+}
+```
+
+**Rate Limiting:**
+```yaml
+resilience4j:
+  ratelimiter:
+    instances:
+      googleMaps:
+        limitForPeriod: 50
+        limitRefreshPeriod: 1s
+        timeoutDuration: 5s
+```
+
 #### Lógica de negocio:
 
 ##### Cálculo de rutas:
 ```java
 1. Recibe solicitud con origen y destino
-2. Consulta ms-maps para geocodificar direcciones
+2. Geocodifica direcciones usando Google Maps API interna
 3. Consulta depósitos intermedios óptimos
-4. Calcula distancias entre puntos con ms-maps
+4. Calcula distancias entre puntos usando Google Distance Matrix API
 5. Divide ruta en tramos según depósitos
 6. Asigna tipo a cada tramo:
    - origen-deposito
@@ -332,46 +475,15 @@ GET    /api/v1/depositos/cercanos              - Depósitos cercanos a coordenad
 3. Asignar camión y transportista al tramo
 4. Marcar camión como no disponible
 5. Actualizar estado del tramo a "asignado"
-6. Notificar a ms-seguimiento del cambio
+6. Registrar evento de seguimiento inicial
 ```
 
-#### Comunicación con otros servicios:
-- **→ ms-maps**: Obtiene distancias, rutas y geocodificación
-- **→ ms-seguimiento**: Notifica cambios en tramos
-- **← ms-cliente**: Recibe solicitudes de creación de rutas
-- **← API Gateway**: Recibe peticiones de operadores y transportistas
-
-#### Base de datos:
-**Entidades gestionadas:**
-- `Ruta`
-- `Tramo`
-- `Camion`
-- `Deposito`
-
-**Puerto:** `8082`
-
----
-
-### 3. 📍 Microservicio Seguimiento (ms-seguimiento)
-
-**Responsabilidad:** Tracking en tiempo real de contenedores
-
-#### Endpoints principales:
-
-##### Seguimiento
-```
-GET    /api/v1/seguimiento/solicitud/{id}      - Historial de seguimiento
-POST   /api/v1/seguimiento                     - Registrar evento de seguimiento
-GET    /api/v1/seguimiento/contenedor/{id}     - Seguimiento de contenedor
-GET    /api/v1/seguimiento/actual/{id}         - Ubicación actual
-GET    /api/v1/seguimiento/ruta/{id}           - Puntos de seguimiento en mapa
-```
-
-#### Funcionalidades:
+#### Funcionalidades de Seguimiento:
 
 ##### Registro de eventos:
 ```java
 {
+  "idTramo": 456,
   "idSolicitud": 123,
   "estado": "EN_VIAJE",
   "descripcion": "Contenedor en tránsito hacia depósito central",
@@ -388,7 +500,7 @@ GET    /api/v1/seguimiento/ruta/{id}           - Puntos de seguimiento en mapa
 - `EN_DEPOSITO`: Almacenado en depósito intermedio
 - `ENTREGADO`: Entregado en destino final
 
-##### Integración con mapas:
+##### Integración con rutas visuales:
 ```java
 // Obtener ruta visual con todos los puntos de seguimiento
 GET /api/v1/seguimiento/ruta/{idSolicitud}
@@ -410,161 +522,26 @@ Response:
       "descripcion": "En tránsito"
     },
     ...
-  ],
-  "rutaOptima": {...}  // Obtenida de ms-maps
-}
-```
-
-#### Comunicación con otros servicios:
-- **→ ms-maps**: Obtiene rutas visuales y direcciones
-- **← ms-cliente**: Recibe notificaciones de cambios en solicitudes
-- **← ms-transporte**: Recibe notificaciones de cambios en tramos
-- **← API Gateway**: Recibe consultas de seguimiento
-
-#### Base de datos:
-**Entidades gestionadas:**
-- `Seguimiento`
-
-**Puerto:** `8083`
-
----
-
-### 4. 🗺️ Microservicio Maps (ms-maps)
-
-**Responsabilidad:** Interfaz centralizada con Google Maps API
-
-#### Endpoints principales:
-
-##### Geocodificación
-```
-GET    /api/v1/maps/geocode                    - Dirección → Coordenadas
-GET    /api/v1/maps/reverse-geocode            - Coordenadas → Dirección
-```
-
-**Ejemplo:**
-```
-GET /api/v1/maps/geocode?direccion=Av. Corrientes 1234, Buenos Aires
-
-Response:
-{
-  "direccion": "Av. Corrientes 1234, Buenos Aires, Argentina",
-  "latitud": -34.603722,
-  "longitud": -58.381592,
-  "tipo": "street_address"
-}
-```
-
-##### Distancias
-```
-GET    /api/v1/maps/distancia                  - Distancia entre dos puntos
-POST   /api/v1/maps/distancia/multiple         - Matriz de distancias
-```
-
-**Ejemplo:**
-```
-GET /api/v1/maps/distancia?origen=-34.603722,-58.381592&destino=-31.416668,-64.183334
-
-Response:
-{
-  "distanciaKm": 698.5,
-  "duracionMinutos": 510,
-  "origen": {
-    "latitud": -34.603722,
-    "longitud": -58.381592,
-    "direccion": "Buenos Aires"
-  },
-  "destino": {
-    "latitud": -31.416668,
-    "longitud": -64.183334,
-    "direccion": "Córdoba"
-  }
-}
-```
-
-##### Rutas
-```
-GET    /api/v1/maps/ruta                       - Ruta óptima entre dos puntos
-GET    /api/v1/maps/ruta/optimizada            - Ruta optimizada (múltiples puntos)
-```
-
-**Ejemplo:**
-```
-GET /api/v1/maps/ruta/optimizada?puntos=Buenos Aires|Rosario|Córdoba|Mendoza
-
-Response:
-{
-  "ordenOptimo": ["Buenos Aires", "Rosario", "Córdoba", "Mendoza"],
-  "distanciaTotal": 1320.5,
-  "duracionTotal": 840,
-  "tramos": [
-    {
-      "desde": "Buenos Aires",
-      "hasta": "Rosario",
-      "distanciaKm": 298.0,
-      "duracionMinutos": 180
-    },
-    ...
   ]
 }
 ```
 
-#### Funcionalidades:
-
-##### 1. Abstracción de Google Maps API
-- Centraliza todas las llamadas a Google Maps
-- Maneja la API Key de forma segura
-- Convierte respuestas de Google Maps a formato interno
-
-##### 2. Caché de consultas frecuentes
-```java
-@Cacheable(value = "distancias", key = "#origen + '-' + #destino")
-public DistanciaDTO calcularDistancia(String origen, String destino) {
-    // Solo consulta Google Maps si no está en caché
-}
-```
-
-Beneficios:
-- ✅ Reduce costos de API de Google Maps
-- ✅ Mejora tiempos de respuesta
-- ✅ Reduce latencia en consultas repetidas
-
-##### 3. Rate Limiting
-```java
-@RateLimiter(name = "googleMapsApi", fallbackMethod = "fallbackDistancia")
-public DistanciaDTO calcularDistancia(String origen, String destino) {
-    // Limita llamadas a Google Maps
-}
-```
-
-##### 4. Fallback y Circuit Breaker
-```java
-@CircuitBreaker(name = "googleMapsApi", fallbackMethod = "calcularDistanciaAproximada")
-public DistanciaDTO calcularDistancia(String origen, String destino) {
-    // Si Google Maps falla, usa cálculo aproximado
-}
-
-private DistanciaDTO calcularDistanciaAproximada(String origen, String destino, Exception e) {
-    // Cálculo usando fórmula de Haversine (distancia en línea recta)
-    return calcularDistanciaHaversine(origen, destino);
-}
-```
-
-#### Ventajas de este microservicio:
-
-✅ **Centralización**: Un solo punto de integración con Google Maps
-✅ **Reutilización**: Todos los microservicios usan el mismo servicio
-✅ **Caché**: Optimiza costos y rendimiento
-✅ **Abstracción**: Facilita cambiar de proveedor de mapas (Google → Mapbox, HERE, etc.)
-✅ **Monitoreo**: Un solo lugar para logs y métricas de llamadas a mapas
-✅ **Seguridad**: API Key protegida en un solo servicio
-
 #### Comunicación con otros servicios:
-- **← ms-transporte**: Solicita cálculo de rutas y distancias
-- **← ms-seguimiento**: Solicita geocodificación y rutas visuales
-- **→ Google Maps API**: Consume servicios de mapas
+- **→ Google Maps API**: Geocodificación, distancias y rutas (integración directa)
+- **← ms-cliente**: Recibe solicitudes de creación de rutas
+- **← API Gateway**: Recibe peticiones de operadores, transportistas y clientes
+
+#### Base de datos:
+**Entidades gestionadas:**
+- `Ruta`
+- `Tramo`
+- `Camion`
+- `Deposito`
+- `Seguimiento`
 
 #### Configuración:
 ```yaml
+# application.yml
 google:
   maps:
     api-key: ${GOOGLE_MAPS_API_KEY}
@@ -572,22 +549,27 @@ google:
     timeout: 5s
     max-retries: 3
     
+spring:
+  cache:
+    type: caffeine
+    cache-names: distancias, geocodificacion, rutas, seguimiento
+    
 resilience4j:
   circuitbreaker:
     instances:
-      googleMapsApi:
+      googleMaps:
         slidingWindowSize: 10
         failureRateThreshold: 50
         waitDurationInOpenState: 10s
   
   ratelimiter:
     instances:
-      googleMapsApi:
+      googleMaps:
         limitForPeriod: 50
         limitRefreshPeriod: 1s
 ```
 
-**Puerto:** `8084`
+**Puerto:** `8082`
 
 ---
 
@@ -621,9 +603,7 @@ Cada microservicio tiene su propia base de datos PostgreSQL, siguiendo el patró
 - `cliente`: Información específica del cliente
 - `contenedor`: Contenedores registrados
 - `solicitud`: Solicitudes de transporte
-- `tarifa`: Configuración de precios
-
-**Relaciones principales:**
+- `tarifa`: Configuración de precios**Relaciones principales:**
 ```
 usuario 1:1 cliente
 cliente 1:N contenedor
@@ -652,6 +632,7 @@ CREATE INDEX idx_tarifa_activo ON tarifa(activo) WHERE activo = true;
 - `tramo`: Segmentos de ruta
 - `camion`: Vehículos de transporte
 - `deposito`: Ubicaciones de almacenamiento intermedio
+- `seguimiento`: Eventos y ubicaciones de tracking en tiempo real
 
 **Relaciones principales:**
 ```
@@ -660,6 +641,7 @@ camion 1:N tramo
 deposito 1:N tramo (origen)
 deposito 1:N tramo (destino)
 usuario 1:N tramo (transportista)
+tramo 1:N seguimiento
 ```
 
 **Índices importantes:**
@@ -669,24 +651,7 @@ CREATE INDEX idx_tramo_estado ON tramo(estado);
 CREATE INDEX idx_tramo_camion ON tramo(dominio_camion);
 CREATE INDEX idx_tramo_transportista ON tramo(id_usuario_transportista);
 CREATE INDEX idx_camion_disponibilidad ON camion(disponibilidad) WHERE disponibilidad = true;
-```
-
-**Puerto:** `5433`
-
----
-
-### 📍 DB Seguimiento (PostgreSQL)
-
-**Entidades:**
-- `seguimiento`: Eventos y ubicaciones de contenedores
-
-**Relaciones:**
-```
-solicitud (en ms-cliente) 1:N seguimiento
-```
-
-**Índices importantes:**
-```sql
+CREATE INDEX idx_seguimiento_tramo ON seguimiento(id_tramo);
 CREATE INDEX idx_seguimiento_solicitud ON seguimiento(id_solicitud);
 CREATE INDEX idx_seguimiento_fecha ON seguimiento(fecha_hora DESC);
 CREATE INDEX idx_seguimiento_estado ON seguimiento(estado);
@@ -696,11 +661,12 @@ CREATE INDEX idx_seguimiento_ubicacion ON seguimiento USING GIST (
 ```
 
 **Consideraciones de rendimiento:**
-- Tabla de alto volumen (muchos registros de tracking)
+- Tabla `seguimiento` de alto volumen (muchos registros de tracking)
 - Particionamiento por fecha recomendado para históricos
 - Índices espaciales para búsquedas geográficas
+- Caché de consultas frecuentes de seguimiento
 
-**Puerto:** `5434`
+**Puerto:** `5433`
 
 ---
 
@@ -775,65 +741,6 @@ CREATE INDEX idx_seguimiento_ubicacion ON seguimiento USING GIST (
 }
 ```
 
-### Configuración de Seguridad en Microservicios
-
-```java
-// filepath: microservices/ms-cliente/src/main/java/com/logistica/cliente/config/SecurityConfig.java
-@Configuration
-@EnableWebSecurity
-public class SecurityConfig {
-
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .authorizeHttpRequests(authz -> authz
-                // Endpoints públicos
-                .requestMatchers("/actuator/health", "/api-docs/**", "/swagger-ui/**").permitAll()
-                
-                // Endpoints de clientes
-                .requestMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll() // Registro
-                .requestMatchers("/api/v1/clientes/**").hasAnyRole("CLIENTE", "OPERADOR")
-                .requestMatchers("/api/v1/contenedores/**").hasAnyRole("CLIENTE", "OPERADOR")
-                
-                // Endpoints de solicitudes
-                .requestMatchers(HttpMethod.GET, "/api/v1/solicitudes/**").hasAnyRole("CLIENTE", "OPERADOR")
-                .requestMatchers(HttpMethod.POST, "/api/v1/solicitudes/**").hasRole("CLIENTE")
-                .requestMatchers(HttpMethod.PUT, "/api/v1/solicitudes/**").hasRole("OPERADOR")
-                
-                // Todo lo demás requiere autenticación
-                .anyRequest().authenticated()
-            )
-            .oauth2ResourceServer(oauth2 -> oauth2
-                .jwt(jwt -> jwt
-                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
-                )
-            )
-            .csrf(csrf -> csrf.disable())
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            );
-        
-        return http.build();
-    }
-    
-    @Bean
-    public JwtAuthenticationConverter jwtAuthenticationConverter() {
-        JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = 
-            new JwtGrantedAuthoritiesConverter();
-        grantedAuthoritiesConverter.setAuthoritiesClaimName("realm_access.roles");
-        grantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
-        
-        JwtAuthenticationConverter jwtAuthenticationConverter = 
-            new JwtAuthenticationConverter();
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(
-            grantedAuthoritiesConverter
-        );
-        
-        return jwtAuthenticationConverter;
-    }
-}
-```
-
 ### Matriz de Permisos
 
 | Endpoint | Cliente | Operador | Transportista | Público |
@@ -846,8 +753,6 @@ public class SecurityConfig {
 | POST /api/v1/tramos/{id}/iniciar | ❌ | ❌ | ✅ | ❌ |
 | GET /api/v1/seguimiento/solicitud/{id} | ✅ (si es suya) | ✅ | ✅ (si asignado) | ❌ |
 | POST /api/v1/seguimiento | ❌ | ✅ | ✅ | ❌ |
-
----
 
 ## 🔄 Comunicación entre Servicios
 
@@ -871,7 +776,6 @@ Los microservicios se comunican mediante llamadas HTTP REST síncronas usando **
 #### Ejemplo: ms-cliente llama a ms-transporte
 
 ```java
-// filepath: microservices/ms-cliente/src/main/java/com/logistica/cliente/client/TransporteClient.java
 @Component
 @RequiredArgsConstructor
 public class TransporteClient {
@@ -888,10 +792,8 @@ public class TransporteClient {
         
         RutaRequestDTO request = RutaRequestDTO.builder()
             .idSolicitud(solicitud.getIdSolicitud())
-            .origenLatitud(solicitud.getOrigen_latitud())
-            .origenLongitud(solicitud.getOrigen_longitud())
-            .destinoLatitud(solicitud.getDestino_latitud())
-            .destinoLongitud(solicitud.getDestino_longitud())
+            .origenDireccion(solicitud.getOrigenDireccion())
+            .destinoDireccion(solicitud.getDestinoDireccion())
             .pesoContenedor(solicitud.getPesoContenedor())
             .volumenContenedor(solicitud.getVolumenContenedor())
             .build();
@@ -926,7 +828,6 @@ public class TransporteClient {
 Previene cascadas de fallos cortando llamadas a servicios que fallan repetidamente.
 
 ```yaml
-# filepath: microservices/ms-cliente/src/main/resources/application.yml
 resilience4j:
   circuitbreaker:
     instances:
@@ -936,11 +837,6 @@ resilience4j:
         waitDurationInOpenState: 10s
         permittedNumberOfCallsInHalfOpenState: 3
         automaticTransitionFromOpenToHalfOpenEnabled: true
-      
-      seguimiento:
-        slidingWindowSize: 5
-        failureRateThreshold: 60
-        waitDurationInOpenState: 5s
 ```
 
 **Estados del Circuit Breaker:**
@@ -965,52 +861,31 @@ resilience4j:
           - java.net.SocketTimeoutException
 ```
 
-#### Timeout Pattern
-
-Evita esperas indefinidas.
-
-```yaml
-resilience4j:
-  timelimiter:
-    instances:
-      transporte:
-        timeoutDuration: 5s
-```
-
-### Service Discovery (Futuro)
-
-Para ambientes productivos, se recomienda implementar **Eureka** o **Consul** para:
-- Registro automático de instancias
-- Descubrimiento dinámico de servicios
-- Balanceo de carga client-side
-- Health checks automáticos
-
-```java
-// Con Eureka
-@FeignClient(name = "ms-transporte") // Nombre lógico, no URL
-public interface TransporteClient {
-    @PostMapping("/api/v1/rutas")
-    RutaDTO crearRuta(RutaRequestDTO request);
-}
-```
-
 ---
 
 ## 🌍 Integraciones Externas
 
-### Google Maps API
+### Google Maps API (Integrada en ms-transporte)
 
-**Servicios utilizados:**
+La integración con Google Maps API está implementada **directamente en el microservicio de Transporte**, no como un microservicio separado.
 
-#### 1. Geocoding API
+**Razones de esta decisión:**
+- ✅ Reduce latencia al eliminar un salto de red
+- ✅ Simplifica la arquitectura
+- ✅ Solo ms-transporte requiere funcionalidades de mapas
+- ✅ Facilita el manejo de caché y rate limiting en un solo lugar
+
+#### Servicios de Google Maps utilizados:
+
+##### 1. Geocoding API
 Convierte direcciones en coordenadas y viceversa.
 
-**Uso en el sistema:**
-- Cuando el cliente ingresa una dirección de origen/destino
+**Uso:**
+- Cuando el cliente ingresa direcciones de origen/destino
 - Para validar y estandarizar direcciones
 - Para obtener coordenadas exactas de depósitos
 
-**Ejemplo de llamada:**
+**Ejemplo:**
 ```http
 GET https://maps.googleapis.com/maps/api/geocode/json?
     address=Av.+Corrientes+1234,+Buenos+Aires
@@ -1030,15 +905,15 @@ Response:
 }
 ```
 
-#### 2. Distance Matrix API
-Calcula distancias y tiempos entre múltiples orígenes y destinos.
+##### 2. Distance Matrix API
+Calcula distancias y tiempos entre múltiples puntos.
 
-**Uso en el sistema:**
+**Uso:**
 - Calcular distancias entre depósitos
 - Estimar tiempos de viaje
 - Optimizar selección de depósitos intermedios
 
-**Ejemplo de llamada:**
+**Ejemplo:**
 ```http
 GET https://maps.googleapis.com/maps/api/distancematrix/json?
     origins=-34.603722,-58.381592|-31.416668,-64.183334
@@ -1061,20 +936,20 @@ Response:
 }
 ```
 
-#### 3. Directions API
-Obtiene rutas detalladas con instrucciones paso a paso.
+##### 3. Directions API
+Genera rutas optimizadas con waypoints.
 
-**Uso en el sistema:**
+**Uso:**
 - Generar rutas optimizadas entre puntos
-- Mostrar ruta visual en el mapa
-- Obtener waypoints para seguimiento
+- Calcular rutas con paradas intermedias
+- Obtener instrucciones de navegación
 
-**Ejemplo de llamada:**
+**Ejemplo:**
 ```http
 GET https://maps.googleapis.com/maps/api/directions/json?
     origin=Buenos+Aires
     &destination=Mendoza
-    &waypoints=Rosario|Córdoba
+    &waypoints=optimize:true|Rosario|Córdoba
     &key=YOUR_API_KEY
 
 Response:
@@ -1085,30 +960,77 @@ Response:
         "distance": { "value": 298000, "text": "298 km" },
         "duration": { "value": 10800, "text": "3 hours" },
         "start_address": "Buenos Aires, Argentina",
-        "end_address": "Rosario, Santa Fe, Argentina",
-        "steps": [...]
+        "end_address": "Rosario, Santa Fe, Argentina"
       }
     ],
-    "overview_polyline": { "points": "encoded_polyline_string" }
+    "waypoint_order": [0, 1]
   }]
 }
 ```
 
-### Gestión de Costos de Google Maps API
+#### Estrategias de Optimización:
 
-**Estrategias de optimización:**
+##### 1. Caché Agresivo
+```java
+@Cacheable(value = "distancias", key = "#origen + '-' + #destino")
+public DistanciaDTO calcularDistancia(String origen, String destino) {
+    // Solo consulta Google Maps si no está en caché
+    // Caché válido por 24 horas
+}
+```
 
-1. **Caché agresivo**: Cachear consultas por 24-48 horas
-2. **Agrupación de requests**: Usar Distance Matrix en lugar de múltiples consultas individuales
-3. **Límites de uso**: Configurar rate limiting interno
-4. **Fallback local**: Usar cálculos aproximados (Haversine) cuando sea posible
+##### 2. Circuit Breaker y Fallback
+```java
+@CircuitBreaker(name = "googleMaps", fallbackMethod = "calcularDistanciaFallback")
+public DistanciaDTO calcularDistancia(CoordenadasDTO origen, CoordenadasDTO destino) {
+    // Llama a Google Maps API
+}
+
+private DistanciaDTO calcularDistanciaFallback(
+        CoordenadasDTO origen, 
+        CoordenadasDTO destino, 
+        Exception e) {
+    // Cálculo aproximado usando fórmula de Haversine
+    return calcularDistanciaHaversine(origen, destino);
+}
+```
+
+##### 3. Rate Limiting
+```yaml
+resilience4j:
+  ratelimiter:
+    instances:
+      googleMaps:
+        limitForPeriod: 50    # 50 requests
+        limitRefreshPeriod: 1s # por segundo
+        timeoutDuration: 5s
+```
+
+##### 4. Agrupación de Requests
+```java
+// En lugar de múltiples llamadas individuales, usar Distance Matrix
+List<DistanciaDTO> distancias = distanceService.calcularDistanciaMultiple(
+    origenes,  // Lista de puntos de origen
+    destinos   // Lista de puntos de destino
+);
+// Una sola llamada para calcular múltiples distancias
+```
+
+#### Gestión de Costos:
 
 **Precios aproximados (2025):**
 - Geocoding: $5 por 1,000 requests
 - Distance Matrix: $5-10 por 1,000 elements
 - Directions: $5 por 1,000 requests
 
-**Cuota gratuita mensual:** $200 de crédito
+**Cuota gratuita:** $200/mes de crédito
+
+**Estrategias de ahorro:**
+1. Caché de 24 horas para geocodificaciones
+2. Caché de 12 horas para distancias
+3. Agrupación de requests (Distance Matrix)
+4. Fallback a cálculos locales cuando sea posible
+5. Rate limiting interno para evitar sobrecostos
 
 ---
 
@@ -1188,42 +1110,29 @@ Response:
     │ ms-cliente  │
     └─────┬───────┘
           │
-          │ 10. Geocodificar direcciones
+          │ 10. POST /api/v1/rutas (solicitar cálculo)
           ↓
-    ┌─────────────┐      ┌──────────┐
-    │  ms-maps    │─────→│  Google  │
-    └─────────────┘      │   Maps   │
-          │              └──────────┘
-          │ 11. Retorna coordenadas
-          │
-          │ 12. Crear solicitud (estado: BORRADOR)
-          ↓
-    ┌────────────┐
-    │ DB Cliente │
-    └────────────┘
-          │
-          │ 13. POST /api/v1/rutas (solicitar cálculo)
-          ↓
-    ┌──────────────┐
-    │ ms-transporte│
-    └──────┬───────┘
-           │
-           │ 14. Buscar depósitos cercanos
-           │ 15. Calcular distancias con ms-maps
-           │ 16. Crear tramos óptimos
-           │ 17. Calcular costos con Tarifa
+    ┌──────────────┐      ┌──────────┐
+    │ ms-transporte│─────→│  Google  │
+    └──────┬───────┘      │   Maps   │
+           │              └──────────┘
+           │ 11. Geocodifica direcciones (interno)
+           │ 12. Busca depósitos cercanos
+           │ 13. Calcula distancias con Google Maps
+           │ 14. Crea tramos óptimos
+           │ 15. Calcula costos con Tarifa
            ↓
     ┌──────────────┐
     │ DB Transporte│
     └──────────────┘
            │
-           │ 18. Retorna ruta con costo estimado
+           │ 16. Retorna ruta con costo estimado
            │
     ┌─────────────┐
     │ ms-cliente  │
     └─────┬───────┘
           │
-          │ 19. Actualiza solicitud con costo
+          │ 17. Actualiza solicitud con costo
           │     (estado: PROGRAMADA)
           ↓
     ┌────────────┐
@@ -1233,14 +1142,14 @@ Response:
 
 ---
 
-### Flujo 2: Asignación de Recursos y Transporte
+### Flujo 2: Asignación y Transporte
 
 ```
 ┌──────────┐
 │ Operador │
 └────┬─────┘
      │
-     │ 1. GET /api/v1/tramos?estado=estimado
+     │ 1. POST /api/v1/tramos/{id}/asignar-camion
      ↓
 ┌────────────────┐
 │  API Gateway   │
@@ -1251,176 +1160,68 @@ Response:
     │ ms-transporte│
     └──────┬───────┘
            │
-           │ 2. Busca tramos sin asignar
+           │ 2. Asignar camión y transportista
+           │ 3. Marcar camión como NO disponible
+           │ 4. Estado tramo = ASIGNADO
+           │ 5. Registrar evento de seguimiento
            ↓
     ┌──────────────┐
     │ DB Transporte│
     └──────────────┘
-           │
-           │ 3. Retorna lista de tramos
-           │
-┌──────────┐
-│ Operador │ (ve tramos disponibles)
-└────┬─────┘
-     │
-     │ 4. POST /api/v1/tramos/{id}/asignar-camion
-     │    {
-     │      "dominioCamion": "ABC123",
-     │      "idTransportista": 5
-     │    }
-     ↓
-┌────────────────┐
-│  API Gateway   │
-└────────┬───────┘
-         │
-         ↓
-    ┌──────────────┐
-    │ ms-transporte│
-    └──────┬───────┘
-           │
-           │ 5. Verificar disponibilidad camión
-           │ 6. Verificar disponibilidad transportista
-           │ 7. Asignar recursos al tramo
-           │ 8. Marcar camión como NO disponible
-           │ 9. Cambiar estado tramo a ASIGNADO
-           ↓
-    ┌──────────────┐
-    │ DB Transporte│
-    └──────────────┘
-           │
-           │ 10. POST /api/v1/seguimiento
-           │     (notificar asignación)
-           ↓
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 11. Registrar evento
-            ↓
-    ┌───────────────┐
-    │ DB Seguimiento│
-    └───────────────┘
-
-    ... Transportista inicia tramo ...
 
 ┌──────────────┐
 │ Transportista│
 └──────┬───────┘
        │
-       │ 12. POST /api/v1/tramos/{id}/iniciar
+       │ 6. POST /api/v1/tramos/{id}/iniciar
        ↓
-┌────────────────┐
-│  API Gateway   │
-└────────┬───────┘
-         │
-         ↓
     ┌──────────────┐
     │ ms-transporte│
     └──────┬───────┘
            │
-           │ 13. Validar que tramo esté asignado a él
-           │ 14. Cambiar estado a INICIADO
-           │ 15. Registrar fecha/hora inicio real
+           │ 7. Estado = INICIADO
+           │ 8. Registrar evento de seguimiento
            ↓
     ┌──────────────┐
     │ DB Transporte│
     └──────────────┘
            │
-           │ 16. POST /seguimiento
-           │     (contenedor en tránsito)
+           │ 9. Durante el transporte:
+           │    POST /api/v1/seguimiento (cada 15-30 min)
+           │    Actualiza ubicación GPS en DB
            ↓
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 17. Registrar evento + ubicación
-            ↓
-    ┌───────────────┐
-    │ DB Seguimiento│
-    └───────────────┘
-
-    ... Durante el transporte ...
-
-┌──────────────┐
-│ Transportista│ (cada 15-30 min)
-└──────┬───────┘
-       │
-       │ 18. POST /api/v1/seguimiento
-       │     {
-       │       "idSolicitud": 123,
-       │       "latitud": -34.620,
-       │       "longitud": -58.390,
-       │       "estado": "EN_VIAJE"
-       │     }
-       ↓
-┌────────────────┐
-│  API Gateway   │
-└────────┬───────┘
-         │
-         ↓
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 19. Guardar punto de tracking
-            ↓
-    ┌───────────────┐
-    │ DB Seguimiento│
-    └───────────────┘
-
-    ... Transportista finaliza tramo ...
+    ┌──────────────┐
+    │ DB Transporte│
+    └──────────────┘
 
 ┌──────────────┐
 │ Transportista│
 └──────┬───────┘
        │
-       │ 20. POST /api/v1/tramos/{id}/finalizar
-       │     {
-       │       "kmRecorridos": 305.5,
-       │       "litrosCombustible": 28.3
-       │     }
+       │ 10. POST /api/v1/tramos/{id}/finalizar
        ↓
-┌────────────────┐
-│  API Gateway   │
-└────────┬───────┘
-         │
-         ↓
     ┌──────────────┐
     │ ms-transporte│
     └──────┬───────┘
            │
-           │ 21. Cambiar estado a FINALIZADO
-           │ 22. Registrar fecha/hora fin real
-           │ 23. Calcular costo real del tramo
-           │ 24. Marcar camión como DISPONIBLE
+           │ 11. Estado = FINALIZADO
+           │ 12. Calcular costo real
+           │ 13. Liberar camión (disponible = true)
+           │ 14. Registrar evento de seguimiento final
            ↓
     ┌──────────────┐
     │ DB Transporte│
     └──────────────┘
            │
-           │ 25. POST /seguimiento
-           │     (tramo completado)
-           ↓
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 26. Registrar evento
-            ↓
-    ┌───────────────┐
-    │ DB Seguimiento│
-    └───────────────┘
-           │
-           │ 27. Si es el último tramo:
+           │ 15. Si es último tramo:
            │     PUT /api/v1/solicitudes/{id}
-           │     (marcar como ENTREGADA)
            ↓
     ┌─────────────┐
     │ ms-cliente  │
     └─────┬───────┘
           │
-          │ 28. Actualizar estado solicitud
-          │ 29. Calcular costo final total
+          │ 16. Estado = ENTREGADA
+          │ 17. Calcular costo final
           ↓
     ┌────────────┐
     │ DB Cliente │
@@ -1429,100 +1230,17 @@ Response:
 
 ---
 
-### Flujo 3: Consulta de Seguimiento por Cliente
-
-```
-┌─────────┐
-│ Cliente │
-└────┬────┘
-     │
-     │ 1. GET /api/v1/solicitudes/{id}/seguimiento
-     ↓
-┌────────────────┐
-│  API Gateway   │
-└────────┬───────┘
-         │
-         │ 2. Valida JWT + permisos
-         │    (verifica que la solicitud sea del cliente)
-         ↓
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 3. Buscar eventos de la solicitud
-            ↓
-    ┌───────────────┐
-    │ DB Seguimiento│
-    └───────────────┘
-            │
-            │ 4. Retorna historial completo
-            │
-            │ 5. GET /api/v1/maps/ruta/{id}
-            │    (obtener ruta visual)
-            ↓
-    ┌─────────────┐      ┌──────────┐
-    │  ms-maps    │─────→│  Google  │
-    └─────────────┘      │   Maps   │
-            │            └──────────┘
-            │ 6. Retorna polyline de ruta
-            │
-    ┌───────────────┐
-    │ ms-seguimiento│
-    └───────┬───────┘
-            │
-            │ 7. Combina eventos + ruta visual
-            │
-┌─────────┐
-│ Cliente │ (ve mapa con puntos de tracking)
-└─────────┘
-
-Response:
-{
-  "solicitudId": 123,
-  "estadoActual": "EN_VIAJE",
-  "ultimaActualizacion": "2025-10-15T14:30:00",
-  "progreso": 45.5,
-  "ubicacionActual": {
-    "latitud": -32.889459,
-    "longitud": -68.845839,
-    "descripcion": "A 50 km de Córdoba"
-  },
-  "historial": [
-    {
-      "fechaHora": "2025-10-15T08:00:00",
-      "estado": "RETIRADO",
-      "ubicacion": {...},
-      "descripcion": "Contenedor retirado del origen"
-    },
-    {
-      "fechaHora": "2025-10-15T12:30:00",
-      "estado": "EN_VIAJE",
-      "ubicacion": {...},
-      "descripcion": "En tránsito hacia Córdoba"
-    }
-  ],
-  "rutaVisual": {
-    "polyline": "encoded_string",
-    "distanciaTotal": 698.5,
-    "tiempoEstimadoRestante": 180
-  }
-}
-```
-
----
-
 ## 🏛️ Patrones de Arquitectura
 
 ### 1. API Gateway Pattern
 
-**Propósito:** Punto único de entrada para todas las peticiones
+**Propósito:** Punto único de entrada
 
 **Beneficios:**
-- Simplifica el cliente (una sola URL)
-- Centraliza autenticación y autorización
-- Facilita monitoreo y logging
-- Permite rate limiting global
-- Simplifica CORS
+- Simplifica el cliente
+- Centraliza autenticación
+- Facilita monitoreo
+- Rate limiting global
 
 **Implementación:** Spring Cloud Gateway
 
@@ -1530,23 +1248,16 @@ Response:
 
 ### 2. Database per Service
 
-**Propósito:** Cada microservicio tiene su propia base de datos
+**Propósito:** Cada microservicio con su BD
 
 **Beneficios:**
 - Independencia de esquemas
 - Escalabilidad independiente
 - Aislamiento de fallos
-- Libertad tecnológica
 
 **Desafíos:**
-- Consultas distribuidas
-- Transacciones distribuidas
-- Duplicación de datos
-
-**Soluciones:**
-- API Composition para consultas
-- Patrón Saga para transacciones
-- Event Sourcing para sincronización
+- Consultas distribuidas (API Composition)
+- Transacciones distribuidas (Saga Pattern)
 
 ---
 
@@ -1555,48 +1266,35 @@ Response:
 **Propósito:** Prevenir cascadas de fallos
 
 **Estados:**
-- **Closed**: Funcionamiento normal
-- **Open**: Servicio caído, se ejecuta fallback
-- **Half-Open**: Prueba de recuperación
+- **Closed**: Normal
+- **Open**: Servicio caído, ejecuta fallback
+- **Half-Open**: Prueba recuperación
 
 **Implementación:** Resilience4j
 
 ---
 
-### 4. Service Registry & Discovery (Futuro)
+### 4. Retry Pattern
 
-**Propósito:** Registro dinámico de instancias
+**Propósito:** Reintentar operaciones transitorias
 
-**Opciones:**
-- Netflix Eureka
-- Consul
-- Kubernetes Service Discovery
-
----
-
-### 5. CQRS (Command Query Responsibility Segregation)
-
-**Aplicable a:** Seguimiento (muchas lecturas, pocas escrituras)
-
-**Propósito:** Separar modelos de lectura y escritura
-
-**Beneficio:** Optimización independiente de consultas y comandos
+**Configuración:**
+- Reintentos exponenciales
+- Límite de intentos
+- Solo para errores temporales
 
 ---
 
-### 6. Event-Driven Architecture (Futuro)
+### 5. Caché Pattern
 
-**Propósito:** Comunicación asíncrona entre servicios
+**Propósito:** Reducir latencia y costos
 
-**Implementación sugerida:**
-- Apache Kafka o RabbitMQ
-- Eventos: `SolicitudCreada`, `TramoIniciado`, `ContenedorEntregado`
+**Aplicación en el sistema:**
+- Geocodificación (24h)
+- Distancias (12h)
+- Configuraciones (1h)
 
-**Beneficios:**
-- Desacoplamiento temporal
-- Escalabilidad
-- Auditoría completa
-- Procesamiento asíncrono
+**Implementación:** Caffeine Cache
 
 ---
 
@@ -1606,46 +1304,93 @@ Response:
 
 | Tecnología | Versión | Propósito |
 |------------|---------|-----------|
-| Java | 17+ | Lenguaje de programación |
-| Spring Boot | 3.x | Framework de microservicios |
+| Java | 21 | Lenguaje de programación |
+| Spring Boot | 3.2+ | Framework de microservicios |
 | Spring Cloud Gateway | 4.x | API Gateway |
 | Spring Data JPA | 3.x | Persistencia de datos |
 | Spring Security | 6.x | Seguridad y autenticación |
 | Keycloak | 22.x | Servidor de autenticación |
 | PostgreSQL | 14+ | Base de datos relacional |
 | Flyway | 9.x | Migraciones de BD |
-| Resilience4j | 2.x | Resiliencia (Circuit Breaker, Retry) |
+| Resilience4j | 2.x | Circuit Breaker, Retry, Rate Limiting |
+| Caffeine | 3.x | Caché en memoria |
 | Lombok | 1.18+ | Reducción de boilerplate |
 | MapStruct | 1.5+ | Mapeo de objetos |
-| SpringDoc OpenAPI | 2.x | Documentación de API (Swagger) |
+| SpringDoc OpenAPI | 2.x | Documentación API (Swagger) |
 
 ### Herramientas de Desarrollo
 
 | Herramienta | Propósito |
 |-------------|-----------|
-| Maven | Gestión de dependencias y build |
+| Maven | Gestión de dependencias |
 | Git | Control de versiones |
 | Docker | Containerización |
+| Docker Compose | Orquestación local |
 | Postman | Testing de APIs |
 | IntelliJ IDEA / VS Code | IDEs |
-| DBeaver / pgAdmin | Gestión de bases de datos |
+| DBeaver / pgAdmin | Gestión de BD |
 
 ### Integraciones Externas
 
-| Servicio | Propósito |
-|----------|-----------|
-| Google Maps API | Geocodificación, rutas, distancias |
-
-### Infraestructura (Futuro)
-
-| Tecnología | Propósito |
-|------------|-----------|
-| Docker Compose | Orquestación local |
-| Kubernetes | Orquestación en producción |
-| Netflix Eureka | Service Discovery |
-| Prometheus | Métricas |
-| Grafana | Dashboards |
-| ELK Stack | Logging centralizado |
-| Jenkins / GitHub Actions | CI/CD |
+| Servicio | Propósito | Integrado en |
+|----------|-----------|--------------|
+| Google Maps Geocoding API | Direcciones ↔ Coordenadas | ms-transporte |
+| Google Maps Distance Matrix API | Calcular distancias | ms-transporte |
+| Google Maps Directions API | Rutas optimizadas | ms-transporte |
 
 ---
+
+## 📈 Métricas y Monitoreo (Futuro)
+
+### Herramientas recomendadas:
+
+| Herramienta | Propósito |
+|-------------|-----------|
+| Prometheus | Recolección de métricas |
+| Grafana | Dashboards visuales |
+| ELK Stack | Logging centralizado |
+| Zipkin / Jaeger | Tracing distribuido |
+
+### Métricas clave a monitorear:
+
+- **API Gateway**: Requests/s, latencia, errores
+- **ms-cliente**: Solicitudes creadas, clientes activos
+- **ms-transporte**: Rutas calculadas, uso de Google Maps API, caché hit ratio, eventos de seguimiento
+- **Bases de datos**: Conexiones, queries lentas, uso de disco
+
+---
+
+## 🚀 Próximos Pasos
+
+### Mejoras planificadas:
+
+1. **Service Discovery**: Implementar Eureka o Consul
+2. **Event-Driven**: Kafka/RabbitMQ para comunicación asíncrona
+3. **CQRS**: Separar lecturas y escrituras en módulo de seguimiento
+4. **Saga Pattern**: Transacciones distribuidas
+5. **API Versioning**: Versionado de APIs (v1, v2)
+6. **Rate Limiting**: Límites por usuario/plan
+7. **Health Checks**: Endpoints de salud avanzados
+8. **Blue-Green Deployment**: Despliegues sin downtime
+
+---
+
+## 📚 Referencias
+
+- [Spring Cloud Gateway Documentation](https://spring.io/projects/spring-cloud-gateway)
+- [Keycloak Documentation](https://www.keycloak.org/documentation)
+- [Resilience4j Documentation](https://resilience4j.readme.io/)
+- [Google Maps Platform Documentation](https://developers.google.com/maps/documentation)
+- [Microservices Patterns (Chris Richardson)](https://microservices.io/patterns/index.html)
+- [Spring Boot Best Practices](https://spring.io/guides)
+
+---
+
+## 👥 Autores
+
+- [Andrade Francisco - 403499]
+- []
+- []
+- []
+
+**Trabajo Práctico Integrador - Backend de Aplicaciones 2025**

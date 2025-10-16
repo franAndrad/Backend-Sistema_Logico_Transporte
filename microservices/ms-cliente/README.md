@@ -16,8 +16,7 @@ sistema-logistico/
 ├── microservices/              # Microservicios del sistema
 │   ├── api-gateway/            # API Gateway para enrutamiento y seguridad
 │   ├── ms-cliente/             # Microservicio de gestión de clientes
-│   ├── ms-transporte/          # Microservicio de gestión de transporte
-│   └── ms-seguimiento/         # Microservicio de seguimiento y notificaciones
+│   └── ms-transporte/          # Microservicio de gestión de transporte (rutas, camiones, depósitos, seguimiento)
 ├── docker/                     # Archivos de configuración Docker
 ├── docs/                       # Documentación del proyecto
 └── README.md                   # Documentación principal

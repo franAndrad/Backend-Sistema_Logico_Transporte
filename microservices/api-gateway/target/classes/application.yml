@@ -21,11 +21,6 @@ spring:
           predicates:
             - Path=/api/transporte/**
             
-        - id: seguimiento-service
-          uri: lb://ms-seguimiento
-          predicates:
-            - Path=/api/seguimiento/**
-            
   security:
     oauth2:
       resourceserver:
