@@ -177,22 +177,61 @@ spring:
 
 ---
 
-### 🔐 Keycloak (Authentication Server)
+### 🔐 Keycloak (Sistema Externo - Servidor de Identidad)
 
-**Responsabilidad:** Gestión centralizada de autenticación y autorización
+**Responsabilidad:** Gestión centralizada de identidad, autenticación y autorización
+
+**⚠️ IMPORTANTE:** Keycloak es un **sistema externo independiente** que **almacena TODOS los datos de usuarios**. NO forma parte de nuestras bases de datos de microservicios.
+
+**Datos que almacena Keycloak:**
+- `id` (UUID): Identificador único del usuario
+- `username`: Nombre de usuario para login
+- `password`: Contraseña (hasheada con bcrypt/argon2)
+- `email`: Email del usuario
+- `firstName` (nombre): Nombre de pila
+- `lastName` (apellido): Apellido
+- `enabled`: Si el usuario está activo
+- `emailVerified`: Si verificó su email
+- `roles`: Roles asignados (cliente, operador, transportista, admin)
+- Atributos personalizados (teléfono, etc.)
 
 **Características:**
 - **Single Sign-On (SSO)**: Una sola autenticación para todos los servicios
 - **OAuth 2.0 / OpenID Connect**: Estándares de autenticación
 - **JWT Tokens**: Tokens seguros y auto-contenidos
 - **Roles y permisos**: Control de acceso basado en roles (RBAC)
-- **Gestión de usuarios**: CRUD de usuarios y credenciales
+- **Keycloak Admin API**: API REST para gestionar usuarios programáticamente
 - **Federación de identidades**: Integración con proveedores externos (Google, Facebook, etc.)
 
 **Roles definidos:**
 - `cliente`: Acceso a funcionalidades de cliente
 - `operador`: Acceso a gestión administrativa
 - `transportista`: Acceso a operaciones de transporte
+- `admin`: Acceso completo al sistema
+
+**¿Cómo se integra con nuestros microservicios?**
+
+1. **Nuestros microservicios NO duplican datos de usuario**
+   - Solo guardan `keyCloakId` (UUID) como referencia
+   - Consultan Keycloak Admin API cuando necesitan datos personales
+
+2. **Validación de tokens JWT**
+   - API Gateway valida tokens con la clave pública de Keycloak
+   - Los microservicios confían en los tokens ya validados
+
+3. **Consulta de datos de usuario**
+   ```java
+   // Ejemplo en ms-cliente
+   UserRepresentation user = keycloakClient
+       .realm("logistica")
+       .users()
+       .get(keyCloakId)
+       .toRepresentation();
+   
+   String nombre = user.getFirstName();
+   String email = user.getEmail();
+   List<String> roles = user.getRealmRoles();
+   ```
 
 **Flujo de autenticación:**
 ```
@@ -248,16 +287,21 @@ POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
 ```
 
 #### Comunicación con otros servicios:
-- **→ ms-transporte**: Solicita creación de rutas y asignación de recursos
-- **← API Gateway**: Recibe peticiones de usuarios
+- **→ ms-transporte**: Solicita cálculo de costos, creación de rutas y asignación de recursos (Feign Client)
+- **← ms-transporte**: Recibe notificaciones de cambio de estado (Feign Client)
+- **→ Keycloak**: Consulta datos de usuario via Admin API
+- **← API Gateway**: Recibe peticiones de usuarios autenticados
 
-#### Base de datos:
+#### Base de datos: **clientedb**
+
 **Entidades gestionadas:**
-- `Usuario`
-- `Cliente`
-- `Contenedor`
-- `Solicitud`
-- `Tarifa`
+- `Cliente` (keyCloakId, direccionFacturacion, direccionEnvio, razonSocial, cuit)
+- `Contenedor` (peso, volumen, estado, ubicacionActual, activo)
+- `Solicitud` (origen, destino, costos, tiempos, estado)
+
+**Referencias lógicas (sin FK física):**
+- `Cliente.keyCloakId` → Usuario en Keycloak
+- `Solicitud.idTarifa` → Tarifa en ms-transporte
 
 **Puerto:** `8081`
 
@@ -265,7 +309,7 @@ POST   /api/v1/solicitudes/{id}/cancelar       - Cancelar solicitud
 
 ### 2. 🚛 Microservicio Transporte (ms-transporte)
 
-**Responsabilidad:** Gestión de rutas, tramos, camiones, depósitos, seguimiento por estados e integración con Google Maps API
+**Responsabilidad:** Gestión de tarifas, rutas, tramos, camiones, depósitos e integración con Google Maps API
 
 #### Endpoints principales:
 
@@ -469,15 +513,23 @@ Los estados se gestionan directamente en las entidades sin necesidad de tablas d
 
 #### Comunicación con otros servicios:
 - **→ Google Maps API**: Geocodificación, distancias y rutas (integración directa)
-- **← ms-cliente**: Recibe solicitudes de creación de rutas
-- **← API Gateway**: Recibe peticiones de operadores, transportistas y clientes
+- **→ ms-cliente**: Notifica cambios de estado de solicitudes (Feign Client)
+- **← ms-cliente**: Recibe solicitudes de cálculo de costos y creación de rutas (Feign Client)
+- **→ Keycloak**: Consulta datos de transportistas via Admin API
+- **← API Gateway**: Recibe peticiones de operadores, transportistas y clientes autenticados
 
-#### Base de datos:
+#### Base de datos: **transportedb**
+
 **Entidades gestionadas:**
-- `Ruta`
-- `Tramo`
-- `Camion`
-- `Deposito`
+- `Tarifa` (concepto, valores, vigencia, activo)
+- `Ruta` (idSolicitud, cantidadTramos, distanciaTotal, estado)
+- `Tramo` (keyCloakIdTransportista, camión, depósitos, costos, tiempos, estado)
+- `Camion` (dominio, capacidades, disponibilidad, costos)
+- `Deposito` (ubicación, coordenadas, costos)
+
+**Referencias lógicas (sin FK física):**
+- `Ruta.idSolicitud` → Solicitud en ms-cliente
+- `Tramo.keyCloakIdTransportista` → Usuario en Keycloak
 
 #### Configuración:
 ```yaml
@@ -536,67 +588,191 @@ Cada microservicio tiene su propia base de datos PostgreSQL, siguiendo el patró
 
 ---
 
-### 📊 DB Cliente (PostgreSQL)
+### 📊 DB Cliente (PostgreSQL - clientedb)
+
+**Nombre de la base de datos:** `clientedb`
 
 **Entidades:**
-- `usuario`: Datos de autenticación y personales
-- `cliente`: Información específica del cliente
-- `contenedor`: Contenedores registrados
-- `solicitud`: Solicitudes de transporte
-- `tarifa`: Configuración de precios**Relaciones principales:**
+- `cliente`: Información del cliente (keyCloakId, direcciones, razonSocial, cuit)
+- `contenedor`: Contenedores registrados (peso, volumen, estado, ubicación)
+- `solicitud`: Solicitudes de transporte (origen, destino, costos, tiempos, estado)
+
+**Referencias lógicas (sin FK física):**
+- `cliente.keycloak_id` → Usuario en Keycloak (validación via API HTTP)
+- `solicitud.id_tarifa` → Tarifa en ms-transporte (validación via API HTTP)
+
+**Relaciones principales (FK físicas):**
 ```
-usuario 1:1 cliente
 cliente 1:N contenedor
 cliente 1:N solicitud
-contenedor 1:N solicitud
-tarifa 1:N solicitud
+contenedor 1:1 solicitud
 ```
 
 **Índices importantes:**
 ```sql
-CREATE INDEX idx_cliente_usuario ON cliente(id_usuario);
+CREATE INDEX idx_cliente_keycloak ON cliente(keycloak_id);
 CREATE INDEX idx_contenedor_cliente ON contenedor(id_cliente);
+CREATE INDEX idx_contenedor_estado ON contenedor(estado);
 CREATE INDEX idx_solicitud_cliente ON solicitud(id_cliente);
+CREATE INDEX idx_solicitud_contenedor ON solicitud(id_contenedor);
 CREATE INDEX idx_solicitud_estado ON solicitud(estado);
-CREATE INDEX idx_tarifa_activo ON tarifa(activo) WHERE activo = true;
+CREATE INDEX idx_solicitud_fecha_creacion ON solicitud(fecha_creacion DESC);
+```
+
+**Esquema simplificado:**
+```sql
+CREATE TABLE cliente (
+    id_cliente SERIAL PRIMARY KEY,
+    keycloak_id VARCHAR(255) UNIQUE NOT NULL, -- UUID de Keycloak
+    direccion_facturacion VARCHAR(500),
+    direccion_envio VARCHAR(500),
+    razon_social VARCHAR(255),
+    cuit VARCHAR(20)
+);
+
+CREATE TABLE contenedor (
+    id_contenedor SERIAL PRIMARY KEY,
+    id_cliente INTEGER NOT NULL REFERENCES cliente(id_cliente),
+    peso FLOAT NOT NULL,
+    volumen FLOAT NOT NULL,
+    estado VARCHAR(50) NOT NULL, -- en_origen, en_transito, en_deposito, entregado
+    ubicacion_actual VARCHAR(500),
+    activo BOOLEAN DEFAULT true
+);
+
+CREATE TABLE solicitud (
+    id_solicitud SERIAL PRIMARY KEY,
+    id_contenedor INTEGER NOT NULL REFERENCES contenedor(id_contenedor),
+    id_cliente INTEGER NOT NULL REFERENCES cliente(id_cliente),
+    id_tarifa INTEGER, -- Referencia lógica a ms-transporte (nullable)
+    origen_direccion VARCHAR(500) NOT NULL,
+    origen_latitud DECIMAL(10,8) NOT NULL,
+    origen_longitud DECIMAL(11,8) NOT NULL,
+    destino_direccion VARCHAR(500) NOT NULL,
+    destino_latitud DECIMAL(10,8) NOT NULL,
+    destino_longitud DECIMAL(11,8) NOT NULL,
+    costo_estimado FLOAT,
+    tiempo_estimado FLOAT,
+    costo_final FLOAT,
+    tiempo_real FLOAT,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    estado VARCHAR(50) NOT NULL -- borrador, programada, asignada, en_transito, en_deposito, entregada, cancelada
+);
 ```
 
 **Puerto:** `5432`
 
 ---
 
-### 🚛 DB Transporte (PostgreSQL)
+### 🚛 DB Transporte (PostgreSQL - transportedb)
+
+**Nombre de la base de datos:** `transportedb`
 
 **Entidades:**
-- `ruta`: Rutas completas
-- `tramo`: Segmentos de ruta
-- `camion`: Vehículos de transporte
-- `deposito`: Ubicaciones de almacenamiento intermedio
-- `seguimiento`: Eventos y ubicaciones de tracking en tiempo real
+- `tarifa`: Configuración de precios (valores, vigencia, activo)
+- `ruta`: Rutas completas (idSolicitud, distanciaTotal, estado)
+- `tramo`: Segmentos de ruta (keyCloakIdTransportista, camión, depósitos, costos, tiempos)
+- `camion`: Vehículos de transporte (dominio, capacidades, disponibilidad)
+- `deposito`: Ubicaciones de almacenamiento intermedio (ubicación, coordenadas, costos)
 
-**Relaciones principales:**
+**Referencias lógicas (sin FK física):**
+- `ruta.id_solicitud` → Solicitud en ms-cliente (validación via API HTTP)
+- `tramo.keycloak_id_transportista` → Usuario en Keycloak (validación via API HTTP)
+
+**Relaciones principales (FK físicas):**
 ```
 ruta 1:N tramo
 camion 1:N tramo
-deposito 1:N tramo (origen)
-deposito 1:N tramo (destino)
-usuario 1:N tramo (transportista)
+deposito 1:N tramo (origen, nullable)
+deposito 1:N tramo (destino, nullable)
+tarifa 1:N solicitud (referencia lógica desde ms-cliente)
 ```
 
 **Índices importantes:**
 ```sql
+CREATE INDEX idx_tarifa_activo ON tarifa(activo) WHERE activo = true;
+CREATE INDEX idx_tarifa_vigencia ON tarifa(fecha_vigencia DESC);
+CREATE INDEX idx_ruta_solicitud ON ruta(id_solicitud);
+CREATE INDEX idx_ruta_estado ON ruta(estado);
 CREATE INDEX idx_tramo_ruta ON tramo(id_ruta);
 CREATE INDEX idx_tramo_estado ON tramo(estado);
 CREATE INDEX idx_tramo_camion ON tramo(dominio_camion);
-CREATE INDEX idx_tramo_transportista ON tramo(id_usuario_transportista);
+CREATE INDEX idx_tramo_keycloak_transportista ON tramo(keycloak_id_transportista);
 CREATE INDEX idx_tramo_fecha_actualizacion ON tramo(fecha_actualizacion DESC);
 CREATE INDEX idx_camion_disponibilidad ON camion(disponibilidad) WHERE disponibilidad = true;
+CREATE INDEX idx_deposito_ubicacion ON deposito(latitud, longitud);
+```
+
+**Esquema simplificado:**
+```sql
+CREATE TABLE tarifa (
+    id_tarifa SERIAL PRIMARY KEY,
+    concepto VARCHAR(255) NOT NULL,
+    valor_base FLOAT NOT NULL,
+    valor_por_km FLOAT NOT NULL,
+    valor_por_peso FLOAT NOT NULL,
+    valor_por_volumen FLOAT NOT NULL,
+    valor_por_tramo FLOAT NOT NULL,
+    valor_litro_combustible FLOAT NOT NULL,
+    fecha_vigencia DATE NOT NULL,
+    activo BOOLEAN DEFAULT true
+);
+
+CREATE TABLE ruta (
+    id_ruta SERIAL PRIMARY KEY,
+    id_solicitud INTEGER NOT NULL, -- Referencia lógica a ms-cliente
+    cantidad_tramos INTEGER DEFAULT 0,
+    cantidad_depositos INTEGER DEFAULT 0,
+    distancia_total FLOAT,
+    costo_total FLOAT,
+    estado VARCHAR(50) NOT NULL -- estimada, asignada, en_progreso, completada
+);
+
+CREATE TABLE camion (
+    dominio VARCHAR(20) PRIMARY KEY,
+    capacidad_peso FLOAT NOT NULL,
+    capacidad_volumen FLOAT NOT NULL,
+    disponibilidad BOOLEAN DEFAULT true,
+    costo_base_km FLOAT NOT NULL,
+    consumo_combustible FLOAT NOT NULL
+);
+
+CREATE TABLE deposito (
+    id_deposito SERIAL PRIMARY KEY,
+    nombre VARCHAR(255) NOT NULL,
+    direccion VARCHAR(500) NOT NULL,
+    latitud DECIMAL(10,8) NOT NULL,
+    longitud DECIMAL(11,8) NOT NULL,
+    costo_estadia_diario FLOAT NOT NULL
+);
+
+CREATE TABLE tramo (
+    id_tramo SERIAL PRIMARY KEY,
+    id_ruta INTEGER NOT NULL REFERENCES ruta(id_ruta),
+    id_deposito_origen INTEGER REFERENCES deposito(id_deposito),
+    id_deposito_destino INTEGER REFERENCES deposito(id_deposito),
+    id_tarifa INTEGER NOT NULL REFERENCES tarifa(id_tarifa),
+    keycloak_id_transportista VARCHAR(255), -- UUID de Keycloak (nullable)
+    dominio_camion VARCHAR(20) REFERENCES camion(dominio),
+    tipo VARCHAR(50) NOT NULL, -- origen-deposito, deposito-deposito, deposito-destino, origen-destino
+    estado VARCHAR(50) NOT NULL, -- planificado, asignado, iniciado, finalizado, cancelado
+    distancia FLOAT NOT NULL,
+    costo_aproximado FLOAT,
+    costo_real FLOAT,
+    fecha_hora_inicio_estimada TIMESTAMP,
+    fecha_hora_fin_estimada TIMESTAMP,
+    fecha_hora_inicio TIMESTAMP,
+    fecha_hora_fin TIMESTAMP,
+    fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 ```
 
 **Consideraciones de rendimiento:**
 - Estados actuales en columnas directas (rápido acceso)
 - Índices en campos de estado para consultas frecuentes
-- Caché de consultas de estado frecuentes
+- Índices geoespaciales para búsqueda de depósitos cercanos
+- Caché de tarifas activas
 
 **Puerto:** `5433`
 
@@ -608,32 +784,47 @@ CREATE INDEX idx_camion_disponibilidad ON camion(disponibilidad) WHERE disponibi
 
 ```
 1. REGISTRO
-   Usuario → API Gateway → ms-cliente
-   ms-cliente → Crea Usuario en BD
-   ms-cliente → Crea Usuario en Keycloak
-   ms-cliente → Asigna rol según tipo
+   Usuario → Frontend → Keycloak
+   Keycloak → Valida datos
+   Keycloak → Crea usuario (username, password, email, nombre, apellido)
+   Keycloak → Genera UUID único
+   Keycloak → Asigna rol (cliente/operador/transportista)
+   Keycloak → Retorna UUID
+   
+   Frontend → ms-cliente (si rol = cliente)
+   ms-cliente → Crea Cliente en BD (solo keyCloakId + datos de negocio)
    
 2. LOGIN
    Usuario → Login Form → Keycloak
    Keycloak → Valida credenciales
-   Keycloak → Genera JWT Token
+   Keycloak → Genera JWT Token (incluye roles, email, nombre, UUID)
    Keycloak → Retorna Token + Refresh Token
+   Frontend → Guarda token en localStorage/sessionStorage
    
 3. ACCESO A RECURSOS
    Usuario → Request + JWT → API Gateway
-   API Gateway → Valida JWT con Keycloak
+   API Gateway → Valida JWT con clave pública de Keycloak
    API Gateway → Extrae roles del token
    API Gateway → Verifica permisos
    API Gateway → Enruta a Microservicio
+   Microservicio → Confía en token (ya validado por Gateway)
    Microservicio → Procesa request
    Microservicio → Response → Usuario
    
-4. TOKEN EXPIRADO
+4. CONSULTA DE DATOS DE USUARIO
+   Microservicio → Necesita nombre/email de usuario
+   Microservicio → Extrae keyCloakId de la BD
+   Microservicio → Llama a Keycloak Admin API
+   Keycloak → Retorna datos del usuario
+   Microservicio → Combina con datos de negocio
+   Microservicio → Response completo → Usuario
+   
+5. TOKEN EXPIRADO
    Usuario → Request + JWT expirado → API Gateway
    API Gateway → Detecta token expirado (401)
-   Usuario → Refresh Token → Keycloak
+   Frontend → Refresh Token → Keycloak
    Keycloak → Genera nuevo JWT
-   Usuario → Reintenta request con nuevo JWT
+   Frontend → Reintenta request con nuevo JWT
 ```
 
 ### Estructura del JWT Token

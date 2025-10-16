@@ -22,30 +22,114 @@ Person(transportista, "Transportista", "Conductor de camión", $sprite="users")
 System_Boundary(c1, "Sistema Logístico de Transporte") {
     Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Enrutamiento, seguridad, y punto único de entrada", $sprite="java")
     
-    Container(auth_server, "Keycloak", "Auth Server", "Autenticación y autorización", $sprite="server")
-    
     Container(ms_cliente, "Microservicio Cliente", "Spring Boot", "Gestión de clientes, contenedores y solicitudes", $sprite="java")
-    ContainerDb(db_cliente, "Base de Datos Cliente", "PostgreSQL", "Almacena datos de clientes, contenedores y solicitudes", $sprite="postgresql")
+    ContainerDb(db_cliente, "Base de Datos Cliente", "PostgreSQL", "Almacena: Cliente, Contenedor, Solicitud", $sprite="postgresql")
     
-    Container(ms_transporte, "Microservicio Transporte", "Spring Boot", "Gestión de rutas, tramos, camiones, depósitos y seguimiento por estados", $sprite="java")
-    ContainerDb(db_transporte, "Base de Datos Transporte", "PostgreSQL", "Almacena datos de rutas, tramos, camiones, depósitos e historial de estados", $sprite="postgresql")
+    Container(ms_transporte, "Microservicio Transporte", "Spring Boot", "Gestión de tarifas, rutas, tramos, camiones, depósitos", $sprite="java")
+    ContainerDb(db_transporte, "Base de Datos Transporte", "PostgreSQL", "Almacena: Tarifa, Ruta, Tramo, Camion, Deposito", $sprite="postgresql")
 }
 
+System_Ext(keycloak, "Keycloak", "Servidor de identidad y autenticación. Almacena TODOS los datos de usuarios (username, password, email, nombre, apellido, roles)", $sprite="server")
 System_Ext(maps_api, "Google Maps API", "API de direcciones y cálculo de rutas", $sprite="cloud")
 
-Rel(cliente, api_gateway, "Usa", "HTTPS")
-Rel(operador, api_gateway, "Usa", "HTTPS")
-Rel(transportista, api_gateway, "Usa", "HTTPS")
+Rel(cliente, api_gateway, "Login, registro y operaciones", "HTTPS")
+Rel(operador, api_gateway, "Login y gestión", "HTTPS")
+Rel(transportista, api_gateway, "Login y operaciones", "HTTPS")
 
-Rel(api_gateway, auth_server, "Valida tokens", "HTTPS")
-Rel(api_gateway, ms_cliente, "Dirige solicitudes", "REST/JSON")
-Rel(api_gateway, ms_transporte, "Dirige solicitudes", "REST/JSON")
+' API Gateway como único punto de contacto con Keycloak
+Rel(api_gateway, keycloak, "Validación de usuarios y roles", "HTTPS")
 
+' Gateway enruta a microservicios
+Rel(api_gateway, ms_cliente, "Enruta solicitudes autenticadas", "REST/JSON")
+Rel(api_gateway, ms_transporte, "Enruta solicitudes autenticadas", "REST/JSON")
+
+' Relaciones con bases de datos
 Rel(ms_cliente, db_cliente, "Lee/Escribe", "JDBC")
 Rel(ms_transporte, db_transporte, "Lee/Escribe", "JDBC")
 
-Rel(ms_cliente, ms_transporte, "Solicita servicios", "REST/JSON")
+' Comunicación entre microservicios (interna)
+Rel(ms_cliente, ms_transporte, "Solicita cálculo de costos y rutas", "REST/JSON (Feign Client)")
+Rel(ms_transporte, ms_cliente, "Notifica cambios de estado", "REST/JSON (Feign Client)")
 
-Rel(ms_transporte, maps_api, "Consulta rutas", "HTTPS")
+' Consulta a sistema externo
+Rel(ms_transporte, maps_api, "Consulta rutas y distancias", "HTTPS")
+
+' Notas explicativas
+note right of api_gateway
+  **API Gateway centraliza:**
+  - Autenticación (proxy a Keycloak)
+  - Validación de tokens JWT
+  - Enrutamiento a microservicios
+  - Consulta de datos de usuario (proxy a Keycloak)
+  - Rate limiting y circuit breaker
+  
+  **Los usuarios SOLO interactúan con el Gateway**
+  (nunca directamente con Keycloak)
+end note
+
+note right of keycloak
+  **Keycloak almacena:**
+  - username, password (hasheado)
+  - email, nombre, apellido
+  - roles (cliente, operador, transportista)
+  - estado de cuenta (activo/inactivo)
+  
+  **Accedido únicamente por API Gateway**
+end note
+
+note bottom of ms_cliente
+  **Base de Datos: clientedb**
+  
+  Entidades:
+  - Cliente (keyCloakId, direcciones, razonSocial, cuit)
+  - Contenedor (peso, volumen, estado, ubicación)
+  - Solicitud (origen, destino, costos, tiempos, estado)
+  
+  **Referencias lógicas:**
+  - Cliente.keyCloakId → Usuario en Keycloak (via Gateway)
+  - Solicitud.idTarifa → Tarifa en ms-transporte
+end note
+
+note bottom of ms_transporte
+  **Base de Datos: transportedb**
+  
+  Entidades:
+  - Tarifa (precios, vigencia)
+  - Ruta (idSolicitud, distancia, estado)
+  - Tramo (keyCloakIdTransportista, camión, depósitos)
+  - Camion (dominio, capacidades, disponibilidad)
+  - Deposito (ubicación, costos)
+  
+  **Referencias lógicas:**
+  - Ruta.idSolicitud → Solicitud en ms-cliente
+  - Tramo.keyCloakIdTransportista → Usuario en Keycloak (via Gateway)
+end note
+
+    ' note right of db_cliente
+    ' **Base de Datos: clientedb**
+    
+    ' Entidades:
+    ' - Cliente (keyCloakId, direcciones, razonSocial, cuit)
+    ' - Contenedor (peso, volumen, estado, ubicación)
+    ' - Solicitud (origen, destino, costos, tiempos, estado)
+    
+    ' **Referencias lógicas:**
+    ' - Solicitud.idTarifa → Tarifa en ms-transporte
+    ' end note
+
+    ' note right of db_transporte
+    ' **Base de Datos: transportedb**
+    
+    ' Entidades:
+    ' - Tarifa (precios, vigencia)
+    ' - Ruta (idSolicitud, distancia, estado)
+    ' - Tramo (keyCloakIdTransportista, camión, depósitos)
+    ' - Camion (dominio, capacidades, disponibilidad)
+    ' - Deposito (ubicación, costos)
+    
+    ' **Referencias lógicas:**
+    ' - Ruta.idSolicitud → Solicitud en ms-cliente
+    ' - Tramo.keyCloakIdTransportista → Usuario en Keycloak
+    ' end note
 
 @enduml
