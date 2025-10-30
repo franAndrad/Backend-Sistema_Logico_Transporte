@@ -2,50 +2,22 @@ server:
   port: 8080
 
 spring:
+  security:
+    user:
+      name: admin
+      password: admin123
+
   application:
     name: api-gateway
+
   cloud:
     gateway:
-      discovery:
-        locator:
-          enabled: true
-          lower-case-service-id: true
       routes:
-        - id: cliente-service
-          uri: lb://ms-cliente
+        - id: ms-cliente
+          uri: http://localhost:8081
           predicates:
-            - Path=/api/clientes/**
-          
-        - id: transporte-service
-          uri: lb://ms-transporte
+            - Path=/api/v1/clientes/**,/api/v1/contenedores/**,/api/v1/solicitudes/**
+        - id: ms-transporte
+          uri: http://localhost:8082
           predicates:
-            - Path=/api/transporte/**
-            
-  security:
-    oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8180/auth/realms/logistica
-
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-  instance:
-    prefer-ip-address: true
-
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    health:
-      show-details: always
-    gateway:
-      enabled: true
-
-logging:
-  level:
-    org.springframework.cloud.gateway: DEBUG
-    reactor.netty: INFO
+            - Path=/api/v1/rutas/**,/api/v1/tramos/**,/api/v1/tarifas/**,/api/v1/camiones/**,/api/v1/depositos/**
