@@ -9,15 +9,3 @@ spring:
 
   application:
     name: api-gateway
-
-  cloud:
-    gateway:
-      routes:
-        - id: ms-cliente
-          uri: http://localhost:8081
-          predicates:
-            - Path=/api/v1/clientes/**,/api/v1/contenedores/**,/api/v1/solicitudes/**
-        - id: ms-transporte
-          uri: http://localhost:8082
-          predicates:
-            - Path=/api/v1/rutas/**,/api/v1/tramos/**,/api/v1/tarifas/**,/api/v1/camiones/**,/api/v1/depositos/**
