@@ -1,14 +1,14 @@
 services:
   keycloak:
-    image: quay.io/keycloak/keycloak:21.1.1
-    container_name: keycloak
+    image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+    container_name: ${KEYCLOAK_CONTAINER_NAME}
     environment:
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
     command: 
       - start-dev
       - --import-realm
     ports:
-      - "8180:8080"
+      - "${KEYCLOAK_PORT}:8080"
     volumes:
-      - ./keycloak/import:/opt/keycloak/data/import:ro
+      - ${KEYCLOAK_IMPORT_PATH}:/opt/keycloak/data/import:ro

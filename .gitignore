@@ -1,0 +1,173 @@
+# =============================================================================
+# GITIGNORE - Sistema Logístico
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Variables de Entorno
+# -----------------------------------------------------------------------------
+# Archivos .env contienen credenciales y configuraciones sensibles
+.env
+.env.local
+.env.*.local
+docker/.env
+
+# Mantener los archivos de ejemplo
+!.env.example
+!docker/.env.example
+
+# -----------------------------------------------------------------------------
+# Archivos de Sistema Operativo
+# -----------------------------------------------------------------------------
+# Windows
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+.directory
+
+# -----------------------------------------------------------------------------
+# IDEs y Editores
+# -----------------------------------------------------------------------------
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+
+# Eclipse
+.project
+.classpath
+.settings/
+bin/
+
+# VS Code
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# NetBeans
+nbproject/
+nbbuild/
+nbdist/
+.nb-gradle/
+
+# -----------------------------------------------------------------------------
+# Maven
+# -----------------------------------------------------------------------------
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+dependency-reduced-pom.xml
+buildNumber.properties
+.mvn/timing.properties
+.mvn/wrapper/maven-wrapper.jar
+
+# -----------------------------------------------------------------------------
+# Gradle
+# -----------------------------------------------------------------------------
+.gradle/
+build/
+!gradle-wrapper.jar
+!**/src/main/**/build/
+!**/src/test/**/build/
+
+# -----------------------------------------------------------------------------
+# Java
+# -----------------------------------------------------------------------------
+*.class
+*.jar
+!gradle-wrapper.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+hs_err_pid*
+
+# -----------------------------------------------------------------------------
+# Logs
+# -----------------------------------------------------------------------------
+*.log
+logs/
+*.log.*
+log/
+
+# -----------------------------------------------------------------------------
+# Docker
+# -----------------------------------------------------------------------------
+# No ignorar docker-compose.yml ni Dockerfiles
+# Solo ignorar archivos temporales de Docker
+.dockerignore.swp
+
+# -----------------------------------------------------------------------------
+# Bases de Datos
+# -----------------------------------------------------------------------------
+# H2 Database
+*.h2.db
+*.mv.db
+*.trace.db
+
+# PostgreSQL
+*.pgdata/
+
+# -----------------------------------------------------------------------------
+# Keycloak
+# -----------------------------------------------------------------------------
+# No ignorar configuraciones de Keycloak
+# Solo archivos temporales o de datos
+keycloak-data/
+*.db
+
+# -----------------------------------------------------------------------------
+# Temporales y Backups
+# -----------------------------------------------------------------------------
+*.tmp
+*.temp
+*.swp
+*.swo
+*~
+*.bak
+*.backup
+*.old
+
+# -----------------------------------------------------------------------------
+# Node.js (si se usa para frontend o scripts)
+# -----------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# =============================================================================
+# NOTAS
+# =============================================================================
+# Este .gitignore está configurado para un proyecto Java con Spring Boot,
+# Docker, Keycloak y múltiples microservicios.
+#
+# Archivos INCLUIDOS (no ignorados):
+# - .env.example (plantilla de configuración)
+# - docker-compose.yml (configuración de contenedores)
+# - realm-logistica.json (configuración de Keycloak)
+# - pom.xml (configuración de Maven)
+#
+# Archivos EXCLUIDOS (ignorados):
+# - .env (credenciales reales)
+# - target/ (compilados)
+# - logs/ (registros de aplicación)
+# - *.class (bytecode compilado)
+# =============================================================================
