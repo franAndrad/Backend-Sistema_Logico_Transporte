@@ -1,5 +1,22 @@
 # 🔐 Keycloak: Single Source of Truth para Usuarios
 
+## 📑 Índice
+
+- [¿Qué es Keycloak?](#qué-es-keycloak)
+- [Responsabilidades de Keycloak](#-responsabilidades-de-keycloak)
+- [¿Dónde vive cada dato?](#-dónde-vive-cada-dato)
+- [Arquitectura de Datos](#-arquitectura-de-datos-de-nuestro-sistema)
+- [Flujo de Registro de Cliente](#-flujo-de-registro-de-cliente)
+- [Consultas Comunes](#-consultas-comunes-cómo-resuelve-la-aplicación-ciertos-casos)
+- [¿Por qué NO duplicar datos en MS-Cliente?](#-por-qué-no-duplicar-datos-en-ms-cliente)
+- [Ventajas de este Enfoque](#-ventajas-de-este-enfoque)
+- [Desventajas y Trade-offs](#-desventajas-y-trade-offs)
+- [¿Cuándo Sincronizar Datos?](#-cuándo-sincronizar-datos-con-ms-cliente)
+- [Implementación de la API Admin de Keycloak](#-implementación-de-la-api-admin-de-keycloak-en-spring-boot)
+- [Resumen Ejecutivo](#-resumen-ejecutivo)
+
+---
+
 ## ¿Qué es Keycloak?
 
 **Keycloak es un servidor de identidad y autenticación externo** que gestiona TODOS los datos de usuarios en nuestro sistema de logística. Es un componente independiente que NO forma parte de nuestras bases de datos de microservicios.

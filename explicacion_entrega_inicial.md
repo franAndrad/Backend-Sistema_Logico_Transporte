@@ -1,5 +1,14 @@
 # Explicación para la Entrega Inicial
 
+## 📑 Índice
+
+- [Presentación del Enunciado y Motivación](#1-presentación-del-enunciado-y-motivación)
+- [DER Completo y Modelos de Datos](#2-der-completo-y-modelos-de-datos)
+- [Diseño a Nivel de Contenedor y Microservicios](#3-diseño-a-nivel-de-contenedor-y-microservicios)
+- [Recursos, Endpoints, Roles y Datos de Entrada/Respuesta](#4-recursos-endpoints-roles-y-datos-de-entradarespuesta)
+
+---
+
 ## 1. Presentación del Enunciado y Motivación
 **Responsable:** Hernan
 

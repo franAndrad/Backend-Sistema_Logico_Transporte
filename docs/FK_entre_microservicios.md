@@ -1,5 +1,23 @@
 # Manejo de Foreign Keys en Arquitectura de Microservicios
 
+## 📑 Índice
+
+- [Problema: Database per Service](#-problema-database-per-service)
+- [Solución: Referencias Lógicas + Validación en Código](#-solución-referencias-lógicas--validación-en-código)
+  - [FK Físicas (Dentro de la Misma BD)](#1️⃣-fk-físicas-dentro-de-la-misma-bd)
+  - [Referencias Lógicas (Entre Microservicios)](#2️⃣-referencias-lógicas-entre-microservicios)
+- [Implementación en el Sistema Logístico](#-implementación-en-el-sistema-logístico)
+  - [DB Cliente (ms-cliente)](#db-cliente-ms-cliente)
+  - [DB Transporte (ms-transporte)](#db-transporte-ms-transporte)
+- [Validaciones en Código](#-validaciones-en-código)
+- [Patrones de Comunicación](#-patrones-de-comunicación-entre-microservicios)
+- [Manejo de Inconsistencias](#-manejo-de-inconsistencias)
+- [Estrategias Avanzadas](#-estrategias-avanzadas-opcional)
+- [Decisiones de Diseño](#-decisiones-de-diseño-para-este-proyecto)
+- [Resumen Ejecutivo](#-resumen-ejecutivo)
+
+---
+
 ## 🎯 Problema: Database per Service
 
 En una arquitectura de microservicios con **Database per Service**, cada microservicio tiene su propia base de datos independiente. Esto genera un desafío:

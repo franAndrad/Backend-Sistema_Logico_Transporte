@@ -1,0 +1,1195 @@
+{
+	"info": {
+		"_postman_id": "logistica-collection-2025",
+		"name": "Sistema Logístico - Keycloak Auth",
+		"description": "Colección completa para probar el sistema de logística con autenticación Keycloak y roles (CLIENTE, OPERADOR, TRANSPORTISTA, ADMIN)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "🔐 Auth - Obtener Tokens",
+			"item": [
+				{
+					"name": "Login CLIENTE",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Token obtenido correctamente\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token_cliente\", jsonData.access_token);",
+									"    console.log(\"Token CLIENTE guardado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "cliente1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "cliente123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login OPERADOR",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Token obtenido correctamente\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token_operador\", jsonData.access_token);",
+									"    console.log(\"Token OPERADOR guardado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "operador1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "operador123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login TRANSPORTISTA",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Token obtenido correctamente\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token_transportista\", jsonData.access_token);",
+									"    console.log(\"Token TRANSPORTISTA guardado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "transportista1",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "transportista123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Login ADMIN",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Token obtenido correctamente\", function () {",
+									"    pm.response.to.have.status(200);",
+									"    var jsonData = pm.response.json();",
+									"    pm.environment.set(\"token_admin\", jsonData.access_token);",
+									"    console.log(\"Token ADMIN guardado\");",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/x-www-form-urlencoded"
+							}
+						],
+						"body": {
+							"mode": "urlencoded",
+							"urlencoded": [
+								{
+									"key": "grant_type",
+									"value": "password",
+									"type": "text"
+								},
+								{
+									"key": "client_id",
+									"value": "{{client_id}}",
+									"type": "text"
+								},
+								{
+									"key": "client_secret",
+									"value": "{{client_secret}}",
+									"type": "text"
+								},
+								{
+									"key": "username",
+									"value": "admin",
+									"type": "text"
+								},
+								{
+									"key": "password",
+									"value": "admin123",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{keycloak_url}}/realms/{{realm}}/protocol/openid-connect/token",
+							"host": [
+								"{{keycloak_url}}"
+							],
+							"path": [
+								"realms",
+								"{{realm}}",
+								"protocol",
+								"openid-connect",
+								"token"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "👤 MS-Cliente - Clientes",
+			"item": [
+				{
+					"name": "Registro Cliente (PÚBLICO)",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Juan\",\n  \"apellido\": \"Pérez\",\n  \"email\": \"juan.perez@example.com\",\n  \"password\": \"12345\",\n  \"telefono\": \"+54 9 341 1234567\",\n  \"direccionFacturacion\": \"Av. Corrientes 1234, Buenos Aires\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes"
+							]
+						},
+						"description": "Endpoint público para registro de nuevos clientes - NO requiere autenticación"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Clientes (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes"
+							]
+						},
+						"description": "Lista todos los clientes - Requiere rol OPERADOR o ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Obtener Cliente (CLIENTE/OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes/1",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes",
+								"1"
+							]
+						},
+						"description": "Obtiene datos de un cliente específico - CLIENTE puede ver solo el suyo"
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes/health",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📦 MS-Cliente - Contenedores",
+			"item": [
+				{
+					"name": "Listar Contenedores (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/contenedores",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"contenedores"
+							]
+						},
+						"description": "Lista todos los contenedores - Requiere rol OPERADOR o ADMIN"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Contenedor (CLIENTE/OPERADOR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"identificacion\": \"CNT-BA-2025-01\",\n  \"peso\": 1800,\n  \"volumen\": 12.5,\n  \"clienteId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/contenedores",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"contenedores"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "📋 MS-Cliente - Solicitudes",
+			"item": [
+				{
+					"name": "Crear Solicitud (CLIENTE)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idCliente\": 1,\n  \"idContenedor\": 1,\n  \"origenDireccion\": \"Av. Corrientes 1234, CABA\",\n  \"destinoDireccion\": \"Av. Rivadavia 5678, CABA\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/solicitudes",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"solicitudes"
+							]
+						},
+						"description": "Solo CLIENTE puede crear solicitudes"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Solicitudes (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/solicitudes",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"solicitudes"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🗺️ MS-Transporte - Rutas",
+			"item": [
+				{
+					"name": "Crear Ruta (OPERADOR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"idSolicitud\": 1,\n  \"origenLat\": -31.4201,\n  \"origenLon\": -64.1888,\n  \"destinoLat\": -34.6037,\n  \"destinoLon\": -58.3816\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/rutas",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"rutas"
+							]
+						},
+						"description": "Solo OPERADOR puede crear rutas"
+					},
+					"response": []
+				},
+				{
+					"name": "Listar Rutas (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/rutas",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"rutas"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/rutas/health",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"rutas",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🚛 MS-Transporte - Tramos",
+			"item": [
+				{
+					"name": "Iniciar Tramo (TRANSPORTISTA)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_transportista}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fechaHoraInicio\": \"2025-10-30T10:00:00\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tramos/1/iniciar",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tramos",
+								"1",
+								"iniciar"
+							]
+						},
+						"description": "Solo TRANSPORTISTA puede iniciar tramos"
+					},
+					"response": []
+				},
+				{
+					"name": "Finalizar Tramo (TRANSPORTISTA)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_transportista}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"fechaHoraFin\": \"2025-10-30T14:30:00\",\n  \"kmRecorridos\": 450,\n  \"litrosCombustible\": 85\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tramos/1/finalizar",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tramos",
+								"1",
+								"finalizar"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Tramo (OPERADOR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"rutaId\": 1,\n  \"depositoOrigenId\": 1,\n  \"depositoDestinoId\": 2,\n  \"tipo\": \"DIRECTO\"\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tramos",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tramos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🚚 MS-Transporte - Camiones",
+			"item": [
+				{
+					"name": "Listar Camiones (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/camiones",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"camiones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Camión (OPERADOR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"dominio\": \"ABC123\",\n  \"capacidadPeso\": 3000,\n  \"capacidadVolumen\": 25,\n  \"costoBaseKm\": 150,\n  \"consumoCombustible\": 0.35\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/camiones",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"camiones"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Eliminar Camión (ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/camiones/ABC123",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"camiones",
+								"ABC123"
+							]
+						},
+						"description": "Solo ADMIN puede eliminar camiones"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🏢 MS-Transporte - Depósitos",
+			"item": [
+				{
+					"name": "Listar Depósitos (OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/depositos",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"depositos"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Depósito (OPERADOR)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"nombre\": \"Depósito Central\",\n  \"direccion\": \"Av. Libertador 1000, Rosario\",\n  \"latitud\": -32.9468,\n  \"longitud\": -60.6393,\n  \"costoEstadiaDiario\": 500\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/depositos",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"depositos"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "💰 MS-Transporte - Tarifas",
+			"item": [
+				{
+					"name": "Consultar Tarifas (CLIENTE/OPERADOR/ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tarifas",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tarifas"
+							]
+						},
+						"description": "Todos los roles autenticados pueden consultar tarifas"
+					},
+					"response": []
+				},
+				{
+					"name": "Crear Tarifa (ADMIN)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_admin}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"descripcion\": \"Tarifa estándar nacional\",\n  \"costoPorKm\": 120,\n  \"costoBase\": 500\n}"
+						},
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tarifas",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tarifas"
+							]
+						},
+						"description": "Solo ADMIN puede crear tarifas"
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🧪 Tests - Validación de Roles",
+			"item": [
+				{
+					"name": "❌ CLIENTE intenta listar todos los contenedores (403)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/contenedores",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"contenedores"
+							]
+						},
+						"description": "Debe devolver 403 Forbidden porque CLIENTE no puede listar todos los contenedores"
+					},
+					"response": []
+				},
+				{
+					"name": "❌ CLIENTE intenta eliminar camión (403)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_cliente}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/camiones/ABC123",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"camiones",
+								"ABC123"
+							]
+						},
+						"description": "Debe devolver 403 - solo ADMIN puede eliminar"
+					},
+					"response": []
+				},
+				{
+					"name": "❌ OPERADOR intenta iniciar tramo (403)",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token_operador}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/tramos/1/iniciar",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"tramos",
+								"1",
+								"iniciar"
+							]
+						},
+						"description": "Debe devolver 403 - solo TRANSPORTISTA puede iniciar tramos"
+					},
+					"response": []
+				},
+				{
+					"name": "❌ Sin Token (401)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes"
+							]
+						},
+						"description": "Debe devolver 401 Unauthorized porque no hay token"
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "keycloak_url",
+			"value": "http://localhost:8180",
+			"type": "string"
+		},
+		{
+			"key": "realm",
+			"value": "logistica",
+			"type": "string"
+		},
+		{
+			"key": "client_id",
+			"value": "api-gateway",
+			"type": "string"
+		},
+		{
+			"key": "client_secret",
+			"value": "gateway-secret",
+			"type": "string"
+		}
+	]
+}

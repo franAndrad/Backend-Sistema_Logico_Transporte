@@ -3,6 +3,23 @@ _Especificación técnica de recursos, endpoints, roles y estructuras de datos d
 
 ---
 
+## 📑 Índice
+
+- [Microservicio: Cliente (ms-cliente)](#microservicio-cliente-ms-cliente)
+  - [Recurso: Cliente](#1️⃣-recurso-cliente)
+  - [Recurso: Contenedor](#2️⃣-recurso-contenedor)
+  - [Recurso: Solicitud](#3️⃣-recurso-solicitud)
+- [Microservicio: Transporte (ms-transporte)](#microservicio-transporte-ms-transporte)
+  - [Recurso: Ruta](#1️⃣-recurso-ruta)
+  - [Recurso: Tramo](#2️⃣-recurso-tramo)
+  - [Recurso: Camión](#3️⃣-recurso-camión)
+  - [Recurso: Depósito](#4️⃣-recurso-depósito)
+  - [Recurso: Tarifa](#5️⃣-recurso-tarifa)
+- [Resumen de Roles](#resumen-de-roles-por-microservicio)
+- [Notas de Implementación](#notas-de-implementación)
+
+---
+
 ##  Microservicio: Cliente (`ms-cliente`)
 
 ###  Responsabilidades

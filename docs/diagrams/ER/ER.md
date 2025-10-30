@@ -1,5 +1,27 @@
 # Explicación detallada del Diagrama Entidad-Relación (ER)
 
+## 📑 Índice
+
+- [Arquitectura: Database per Service](#️-arquitectura-database-per-service)
+- [Entidades del Sistema](#-entidades-del-sistema)
+  - [UsuarioKeycloak (Sistema Externo)](#-usuariokeycloak-sistema-externo)
+  - [MS-Cliente: Entidades](#-ms-cliente-entidades)
+    - [Cliente](#cliente)
+    - [Contenedor](#contenedor)
+    - [Solicitud](#solicitud)
+  - [MS-Transporte: Entidades](#-ms-transporte-entidades)
+    - [Tarifa](#tarifa)
+    - [Ruta](#ruta)
+    - [Tramo](#tramo)
+    - [Camión](#camión)
+    - [Depósito](#depósito)
+- [Relaciones entre Entidades](#-relaciones-entre-entidades)
+- [Foreign Keys: Físicas vs Lógicas](#-foreign-keys-físicas-vs-lógicas)
+- [Flujos de Datos Principales](#-flujos-de-datos-principales)
+- [Consideraciones de Implementación](#-consideraciones-de-implementación)
+
+---
+
 Explicación paso a paso de cómo funciona este diagrama de base de datos para el sistema logístico de transporte de contenedores, implementado con arquitectura de microservicios y Keycloak como fuente única de verdad para usuarios.
 
 ---

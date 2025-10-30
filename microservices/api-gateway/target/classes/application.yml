@@ -2,10 +2,12 @@ server:
   port: 8080
 
 spring:
-  security:
-    user:
-      name: admin
-      password: admin123
-
   application:
     name: api-gateway
+  
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8180/realms/logistica
+          jwk-set-uri: http://localhost:8180/realms/logistica/protocol/openid-connect/certs

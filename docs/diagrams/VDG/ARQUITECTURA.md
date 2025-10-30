@@ -1,23 +1,30 @@
 # Arquitectura del Sistema Logístico de Transporte de Contenedores
 
-Este documento describe en detalle la arquitectura de microservicios del sistema, sus componentes, relaciones y flujos de comunicación.
+## 📑 Índice
+
+- [Visión General](#-visión-general)
+- [Arquitectura de Alto Nivel](#-arquitectura-de-alto-nivel)
+- [Componentes del Sistema](#-componentes-del-sistema)
+  - [API Gateway](#1-api-gateway)
+  - [Microservicios](#2-microservicios)
+  - [Keycloak](#3-keycloak)
+  - [Bases de Datos](#4-bases-de-datos)
+- [Actores del Sistema](#-actores-del-sistema)
+- [Seguridad y Autenticación](#-seguridad-y-autenticación)
+- [Comunicación entre Servicios](#-comunicación-entre-servicios)
+- [Integraciones Externas](#-integraciones-externas)
+- [Flujos de Trabajo](#-flujos-de-trabajo)
+  - [Registro de Cliente](#1-registro-de-cliente)
+  - [Solicitud de Transporte](#2-solicitud-de-transporte)
+  - [Gestión de Ruta](#3-gestión-de-ruta)
+  - [Inicio de Viaje](#4-inicio-de-viaje)
+- [Patrones de Arquitectura](#-patrones-de-arquitectura)
+- [Tecnologías Utilizadas](#-tecnologías-utilizadas)
+- [Decisiones de Diseño](#-decisiones-de-diseño)
 
 ---
 
-## 📋 Tabla de Contenidos
-
-- [Visión General](#visión-general)
-- [Arquitectura de Alto Nivel](#arquitectura-de-alto-nivel)
-- [Componentes del Sistema](#componentes-del-sistema)
-- [Actores del Sistema](#actores-del-sistema)
-- [Microservicios](#microservicios)
-- [Bases de Datos](#bases-de-datos)
-- [Seguridad y Autenticación](#seguridad-y-autenticación)
-- [Comunicación entre Servicios](#comunicación-entre-servicios)
-- [Integraciones Externas](#integraciones-externas)
-- [Flujos de Trabajo](#flujos-de-trabajo)
-- [Patrones de Arquitectura](#patrones-de-arquitectura)
-- [Tecnologías Utilizadas](#tecnologías-utilizadas)
+Este documento describe en detalle la arquitectura de microservicios del sistema, sus componentes, relaciones y flujos de comunicación.
 
 ---
 

@@ -1,0 +1,158 @@
+{
+  "realm": "logistica",
+  "enabled": true,
+  "sslRequired": "none",
+  "registrationAllowed": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": false,
+  "editUsernameAllowed": false,
+  "bruteForceProtected": false,
+  "clients": [
+    {
+      "clientId": "api-gateway",
+      "name": "API Gateway Client",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "secret": "gateway-secret",
+      "clientAuthenticatorType": "client-secret",
+      "redirectUris": [
+        "http://localhost:8080/*",
+        "*"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "*"
+      ],
+      "standardFlowEnabled": true,
+      "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": true,
+      "serviceAccountsEnabled": true,
+      "authorizationServicesEnabled": false,
+      "fullScopeAllowed": true,
+      "defaultClientScopes": [
+        "web-origins",
+        "acr",
+        "profile",
+        "roles",
+        "email"
+      ],
+      "optionalClientScopes": [
+        "address",
+        "phone",
+        "offline_access",
+        "microprofile-jwt"
+      ]
+    }
+  ],
+  "users": [
+    {
+      "username": "cliente1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "cliente1@logistica.com",
+      "firstName": "Cliente",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cliente123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-logistica",
+        "cliente"
+      ]
+    },
+    {
+      "username": "operador1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "operador1@logistica.com",
+      "firstName": "Operador",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "operador123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-logistica",
+        "operador"
+      ]
+    },
+    {
+      "username": "transportista1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "transportista1@logistica.com",
+      "firstName": "Transportista",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "transportista123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-logistica",
+        "transportista"
+      ]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@logistica.com",
+      "firstName": "Admin",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": [
+        "default-roles-logistica",
+        "admin"
+      ]
+    }
+  ],
+  "roles": {
+    "realm": [
+      {
+        "name": "cliente",
+        "description": "Cliente registrado - gestiona sus contenedores y solicitudes"
+      },
+      {
+        "name": "operador",
+        "description": "Personal operativo - gestiona rutas, tramos, camiones, depósitos"
+      },
+      {
+        "name": "transportista",
+        "description": "Conductor - inicia/finaliza tramos"
+      },
+      {
+        "name": "admin",
+        "description": "Administrador - acceso total y eliminaciones físicas"
+      }
+    ]
+  },
+  "defaultRole": {
+    "name": "default-roles-logistica",
+    "description": "Default roles for logistica realm",
+    "composite": true,
+    "composites": {
+      "realm": [
+        "offline_access",
+        "uma_authorization"
+      ]
+    }
+  }
+}
