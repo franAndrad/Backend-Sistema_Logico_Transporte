@@ -1,0 +1,118 @@
+{
+	"info": {
+		"_postman_id": "ms-transporte-collection",
+		"name": "MS-Transporte - Google Maps Mock",
+		"description": "Colección para probar el microservicio de transporte con WireMock Cloud simulando Google Maps API",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Distancias",
+			"item": [
+				{
+					"name": "Calcular Distancia - Buenos Aires a La Plata",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/v1/distancias/calcular?origenLat=-34.603722&origenLng=-58.381592&destinoLat=-34.921230&destinoLng=-57.954590",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"v1",
+								"distancias",
+								"calcular"
+							],
+							"query": [
+								{
+									"key": "origenLat",
+									"value": "-34.603722",
+									"description": "Latitud de Buenos Aires (Obelisco)"
+								},
+								{
+									"key": "origenLng",
+									"value": "-58.381592",
+									"description": "Longitud de Buenos Aires (Obelisco)"
+								},
+								{
+									"key": "destinoLat",
+									"value": "-34.921230",
+									"description": "Latitud de La Plata (Centro)"
+								},
+								{
+									"key": "destinoLng",
+									"value": "-57.954590",
+									"description": "Longitud de La Plata (Centro)"
+								}
+							]
+						},
+						"description": "Calcula la distancia y duración del viaje desde Buenos Aires hasta La Plata.\n\nRespuesta esperada:\n- Distancia: ~57.8 km\n- Duración: ~51 minutos"
+					},
+					"response": []
+				},
+				{
+					"name": "Calcular Distancia - Córdoba a Jujuy",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "http://localhost:8082/api/v1/distancias/calcular?origenLat=-31.416775&origenLng=-64.183333&destinoLat=-24.185786&destinoLng=-65.299477",
+							"protocol": "http",
+							"host": [
+								"localhost"
+							],
+							"port": "8082",
+							"path": [
+								"api",
+								"v1",
+								"distancias",
+								"calcular"
+							],
+							"query": [
+								{
+									"key": "origenLat",
+									"value": "-31.416775",
+									"description": "Latitud de Córdoba"
+								},
+								{
+									"key": "origenLng",
+									"value": "-64.183333",
+									"description": "Longitud de Córdoba"
+								},
+								{
+									"key": "destinoLat",
+									"value": "-24.185786",
+									"description": "Latitud de Jujuy"
+								},
+								{
+									"key": "destinoLng",
+									"value": "-65.299477",
+									"description": "Longitud de Jujuy"
+								}
+							]
+						},
+						"description": "Calcula la distancia y duración del viaje desde Córdoba hasta San Salvador de Jujuy.\n\nNota: Con WireMock configurado con valores fijos, la respuesta será la misma que Buenos Aires-La Plata."
+					},
+					"response": []
+				}
+			],
+			"description": "Endpoints para calcular distancias y duraciones entre dos puntos geográficos usando Google Maps API (simulado con WireMock)"
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "api_version",
+			"value": "v1",
+			"type": "string"
+		}
+	]
+}

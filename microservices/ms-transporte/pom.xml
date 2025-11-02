@@ -10,10 +10,10 @@
 		<!-- lookup parent from repository -->
 	</parent>
 	<groupId>ar.edu.utn.frc.backend.logistica</groupId>
-	<artifactId>ms-cliente</artifactId>
+	<artifactId>ms-transporte</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>ms-cliente</name>
-	<description>Gestión de clientes, contenedores y solicitudes </description>
+	<name>ms-transporte</name>
+	<description>Gestión de rutas, tramos, depósitos y camiones</description>
 	<url/>
 	<licenses>
 		<license/>
@@ -72,6 +72,7 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+
 	</dependencies>
 	<dependencyManagement>
 		<dependencies>

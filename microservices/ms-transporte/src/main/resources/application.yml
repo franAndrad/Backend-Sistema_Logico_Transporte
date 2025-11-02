@@ -5,7 +5,7 @@ spring:
   application:
     name: ms-transporte
   datasource:
-    url: jdbc:h2:mem:mstransporte;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    url: jdbc:h2:mem:mstransporte
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -13,16 +13,9 @@ spring:
     hibernate:
       ddl-auto: update
 
-# management:
-#   endpoints:
-#     web:
-#       exposure:
-#         include: "*"
-#   endpoint:
-#     health:
-#       show-details: always
-
-# h2:
-#   console:
-#     enabled: true
-#     path: /h2-console
+# Google Maps API
+google:
+  maps:
+    api:
+      url: ${GOOGLE_MAPS_URL:https://maps.googleapis.com}
+      key: ${GOOGLE_MAPS_API_KEY:fake-api-key-for-development}

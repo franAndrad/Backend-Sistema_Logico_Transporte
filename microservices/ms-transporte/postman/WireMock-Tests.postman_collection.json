@@ -1,0 +1,207 @@
+{
+	"info": {
+		"_postman_id": "wiremock-test-collection",
+		"name": "WireMock - Google Maps API Tests",
+		"description": "Colección para probar directamente el mock de WireMock Cloud antes de usarlo con el microservicio",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Test WireMock - Sin parámetros",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json",
+					"protocol": "https",
+					"host": [
+						"8537q",
+						"wiremockapi",
+						"cloud"
+					],
+					"path": [
+						"maps",
+						"api",
+						"directions",
+						"json"
+					]
+				},
+				"description": "Prueba básica de WireMock sin query parameters.\n\n**Respuesta esperada:**\n```json\n{\n  \"status\": \"OK\",\n  \"routes\": [{\n    \"legs\": [{\n      \"distance\": {\"value\": 57824},\n      \"duration\": {\"value\": 3062}\n    }]\n  }]\n}\n```"
+			},
+			"response": []
+		},
+		{
+			"name": "Test WireMock - Con parámetros (Buenos Aires → La Plata)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json?origin=-34.603722,-58.381592&destination=-34.921230,-57.954590&key=test-key",
+					"protocol": "https",
+					"host": [
+						"8537q",
+						"wiremockapi",
+						"cloud"
+					],
+					"path": [
+						"maps",
+						"api",
+						"directions",
+						"json"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "-34.603722,-58.381592",
+							"description": "Buenos Aires (Obelisco)"
+						},
+						{
+							"key": "destination",
+							"value": "-34.921230,-57.954590",
+							"description": "La Plata (Centro)"
+						},
+						{
+							"key": "key",
+							"value": "test-key",
+							"description": "API Key de prueba"
+						}
+					]
+				},
+				"description": "Prueba WireMock con los parámetros que envía el microservicio.\n\n**Si funciona:** Debería devolver el mismo JSON que sin parámetros.\n**Si falla:** Necesitas configurar WireMock para aceptar query params."
+			},
+			"response": []
+		},
+		{
+			"name": "Test WireMock - Córdoba → Jujuy",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json?origin=-31.416775,-64.183333&destination=-24.185786,-65.299477&key=fake-key",
+					"protocol": "https",
+					"host": [
+						"8537q",
+						"wiremockapi",
+						"cloud"
+					],
+					"path": [
+						"maps",
+						"api",
+						"directions",
+						"json"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "-31.416775,-64.183333",
+							"description": "Córdoba"
+						},
+						{
+							"key": "destination",
+							"value": "-24.185786,-65.299477",
+							"description": "Jujuy"
+						},
+						{
+							"key": "key",
+							"value": "fake-key"
+						}
+					]
+				},
+				"description": "Otra ruta de prueba con coordenadas diferentes."
+			},
+			"response": []
+		},
+		{
+			"name": "Test WireMock - Con diferentes parámetros",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json?origin=cualquier-cosa&destination=otra-cosa&key=whatever",
+					"protocol": "https",
+					"host": [
+						"8537q",
+						"wiremockapi",
+						"cloud"
+					],
+					"path": [
+						"maps",
+						"api",
+						"directions",
+						"json"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "cualquier-cosa",
+							"description": "Valor random para probar wildcards"
+						},
+						{
+							"key": "destination",
+							"value": "otra-cosa",
+							"description": "Otro valor random"
+						},
+						{
+							"key": "key",
+							"value": "whatever",
+							"description": "Key random"
+						}
+					]
+				},
+				"description": "Prueba con valores arbitrarios para confirmar que WireMock usa wildcards `.*` y acepta cualquier valor en los parámetros."
+			},
+			"response": []
+		},
+		{
+			"name": "Test Real Google Maps API (para comparar)",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://maps.googleapis.com/maps/api/directions/json?origin=-34.603722,-58.381592&destination=-34.921230,-57.954590&key=TU_API_KEY_REAL",
+					"protocol": "https",
+					"host": [
+						"maps",
+						"googleapis",
+						"com"
+					],
+					"path": [
+						"maps",
+						"api",
+						"directions",
+						"json"
+					],
+					"query": [
+						{
+							"key": "origin",
+							"value": "-34.603722,-58.381592"
+						},
+						{
+							"key": "destination",
+							"value": "-34.921230,-57.954590"
+						},
+						{
+							"key": "key",
+							"value": "TU_API_KEY_REAL",
+							"description": "Reemplaza con tu API key real si querés probar la API real"
+						}
+					]
+				},
+				"description": "**SOLO PARA COMPARACIÓN**\n\nEsta es la API real de Google Maps. Requiere una API Key válida.\n\n⚠️ **NOTA:** Desactiva este request o reemplaza la key si no querés consumir tu cuota de Google."
+			},
+			"response": []
+		}
+	],
+	"variable": [
+		{
+			"key": "wiremock_url",
+			"value": "https://8537q.wiremockapi.cloud",
+			"type": "string"
+		},
+		{
+			"key": "google_maps_url",
+			"value": "https://maps.googleapis.com",
+			"type": "string"
+		}
+	]
+}
