@@ -31,3 +31,14 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Archivos de configuración personal (NO subir) ###
+**/application-local.yml
+**/application-local.properties
+**/application-*.local.yml
+**/application-*.local.properties
+
+### Archivos .env (NO subir) ###
+.env
+.env.local
+.env.*.local

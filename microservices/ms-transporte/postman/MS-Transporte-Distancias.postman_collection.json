@@ -1,0 +1,478 @@
+{
+	"info": {
+		"_postman_id": "sistema-logistico-distancias-2025",
+		"name": "MS-Transporte - Distancias y Rutas Alternativas",
+		"description": "Colección completa para probar el sistema de cálculo de distancias con caché y persistencia.\n\n**Flujo de trabajo:**\n1. Obtener rutas alternativas (se cachea 15 min)\n2. Seleccionar una ruta específica (guarda en BD)\n3. Obtener ruta por ID\n4. Consultar historial del cliente\n\n**Perfiles:**\n- `dev`: WireMock (https://tpi.wiremockapi.cloud)\n- `local`: Google Maps real",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "1. Obtener Rutas Alternativas (Cacheable)",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Respuesta tiene rutas\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('totalRutas');",
+							"    pm.expect(json).to.have.property('todasLasRutas');",
+							"    pm.expect(json.todasLasRutas).to.be.an('array');",
+							"    pm.expect(json.todasLasRutas.length).to.be.above(0);",
+							"});",
+							"",
+							"pm.test(\"Rutas tienen estructura correcta\", function () {",
+							"    const json = pm.response.json();",
+							"    const ruta = json.todasLasRutas[0];",
+							"    pm.expect(ruta).to.have.property('numeroRuta');",
+							"    pm.expect(ruta).to.have.property('distanciaKm');",
+							"    pm.expect(ruta).to.have.property('duracionMinutos');",
+							"    pm.expect(ruta).to.have.property('resumen');",
+							"    pm.expect(ruta).to.have.property('esMasRapida');",
+							"});",
+							"",
+							"pm.test(\"Hay una ruta marcada como más rápida\", function () {",
+							"    const json = pm.response.json();",
+							"    const rutaMasRapida = json.todasLasRutas.find(r => r.esMasRapida === true);",
+							"    pm.expect(rutaMasRapida).to.exist;",
+							"});",
+							"",
+							"// Guardar datos para siguientes requests",
+							"const json = pm.response.json();",
+							"pm.environment.set(\"totalRutas\", json.totalRutas);",
+							"pm.environment.set(\"origenLat\", \"-31.4135\");",
+							"pm.environment.set(\"origenLng\", \"-64.1811\");",
+							"pm.environment.set(\"destinoLat\", \"-32.9468\");",
+							"pm.environment.set(\"destinoLng\", \"-60.6393\");",
+							"",
+							"console.log(\"✅ \" + json.totalRutas + \" rutas encontradas\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/rutas-alternativas?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "rutas-alternativas"],
+					"query": [
+						{
+							"key": "origenLat",
+							"value": "-31.4135",
+							"description": "Latitud de origen (Córdoba)"
+						},
+						{
+							"key": "origenLng",
+							"value": "-64.1811",
+							"description": "Longitud de origen (Córdoba)"
+						},
+						{
+							"key": "destinoLat",
+							"value": "-32.9468",
+							"description": "Latitud de destino (Rosario)"
+						},
+						{
+							"key": "destinoLng",
+							"value": "-60.6393",
+							"description": "Longitud de destino (Rosario)"
+						}
+					]
+				},
+				"description": "**PASO 1**: Obtiene todas las rutas alternativas disponibles entre origen y destino.\n\n**Comportamiento:**\n- Primera llamada: Consulta la API de Google Maps\n- Resultado se CACHEA por 15 minutos\n- Siguientes llamadas (mismas coordenadas): responde desde caché (instantáneo)\n\n**Notas:**\n- Marca una ruta como \"más rápida\" (menor duración)\n- Numera las rutas de 1 a N\n- NO guarda nada en BD (solo en memoria/caché)"
+			},
+			"response": [
+				{
+					"name": "Ejemplo: Córdoba → Rosario",
+					"originalRequest": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/api/v1/distancias/rutas-alternativas?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393",
+							"host": ["{{base_url}}"],
+							"path": ["api", "v1", "distancias", "rutas-alternativas"],
+							"query": [
+								{"key": "origenLat", "value": "-31.4135"},
+								{"key": "origenLng", "value": "-64.1811"},
+								{"key": "destinoLat", "value": "-32.9468"},
+								{"key": "destinoLng", "value": "-60.6393"}
+							]
+						}
+					},
+					"status": "OK",
+					"code": 200,
+					"_postman_previewlanguage": "json",
+					"header": [
+						{"key": "Content-Type", "value": "application/json"}
+					],
+					"body": "{\n  \"totalRutas\": 3,\n  \"todasLasRutas\": [\n    {\n      \"numeroRuta\": 1,\n      \"distanciaKm\": 395.2,\n      \"duracionMinutos\": 280,\n      \"resumen\": \"Vía RN9 - Ruta más rápida\",\n      \"esMasRapida\": true\n    },\n    {\n      \"numeroRuta\": 2,\n      \"distanciaKm\": 412.8,\n      \"duracionMinutos\": 295,\n      \"resumen\": \"Vía RN19\",\n      \"esMasRapida\": false\n    },\n    {\n      \"numeroRuta\": 3,\n      \"distanciaKm\": 405.5,\n      \"duracionMinutos\": 290,\n      \"resumen\": \"Vía RP1\",\n      \"esMasRapida\": false\n    }\n  ]\n}"
+				}
+			]
+		},
+		{
+			"name": "2. Seleccionar y Guardar Ruta",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Ruta guardada con ID\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('id');",
+							"    pm.expect(json.id).to.be.a('number');",
+							"});",
+							"",
+							"pm.test(\"Datos de la ruta correctos\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('clienteId');",
+							"    pm.expect(json).to.have.property('viajeId');",
+							"    pm.expect(json).to.have.property('numeroRuta');",
+							"    pm.expect(json).to.have.property('distanciaKm');",
+							"    pm.expect(json).to.have.property('duracionMinutos');",
+							"    pm.expect(json).to.have.property('fechaSeleccion');",
+							"    pm.expect(json).to.have.property('estado');",
+							"});",
+							"",
+							"pm.test(\"Estado inicial es SELECCIONADA\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.estado).to.equal('SELECCIONADA');",
+							"});",
+							"",
+							"// Guardar ID para siguientes requests",
+							"const json = pm.response.json();",
+							"pm.environment.set(\"rutaId\", json.id);",
+							"",
+							"console.log(\"✅ Ruta guardada con ID: \" + json.id);",
+							"console.log(\"📊 Distancia: \" + json.distanciaKm + \" km\");",
+							"console.log(\"⏱️  Duración: \" + json.duracionMinutos + \" min\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/seleccionar-ruta?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393&numeroRuta=1&clienteId=123&viajeId=456",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "seleccionar-ruta"],
+					"query": [
+						{
+							"key": "origenLat",
+							"value": "-31.4135",
+							"description": "Latitud de origen"
+						},
+						{
+							"key": "origenLng",
+							"value": "-64.1811",
+							"description": "Longitud de origen"
+						},
+						{
+							"key": "destinoLat",
+							"value": "-32.9468",
+							"description": "Latitud de destino"
+						},
+						{
+							"key": "destinoLng",
+							"value": "-60.6393",
+							"description": "Longitud de destino"
+						},
+						{
+							"key": "numeroRuta",
+							"value": "1",
+							"description": "Número de ruta a seleccionar (1, 2, 3, etc.)"
+						},
+						{
+							"key": "clienteId",
+							"value": "123",
+							"description": "ID del cliente (opcional)"
+						},
+						{
+							"key": "viajeId",
+							"value": "456",
+							"description": "ID del viaje (opcional)"
+						}
+					]
+				},
+				"description": "**PASO 2**: Selecciona una ruta específica y la guarda en la base de datos.\n\n**Comportamiento:**\n- Lee las rutas del CACHÉ (no llama de nuevo a Google Maps)\n- Valida que el número de ruta exista\n- Guarda en BD con estado SELECCIONADA\n- Registra fecha/hora de selección\n- Asocia a un cliente y viaje (opcional)\n\n**Parámetros:**\n- `numeroRuta`: 1 a N (según cuántas rutas haya)\n- `clienteId`: ID del cliente (opcional)\n- `viajeId`: ID del viaje (opcional)"
+			},
+			"response": []
+		},
+		{
+			"name": "3. Obtener Ruta por ID",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Ruta encontrada\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.have.property('id');",
+							"    pm.expect(json).to.have.property('numeroRuta');",
+							"    pm.expect(json).to.have.property('distanciaKm');",
+							"    pm.expect(json).to.have.property('duracionMinutos');",
+							"    pm.expect(json).to.have.property('estado');",
+							"});",
+							"",
+							"console.log(\"✅ Ruta encontrada en BD\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/ruta/{{rutaId}}",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "ruta", "{{rutaId}}"],
+					"variable": [
+						{
+							"key": "rutaId",
+							"value": "1",
+							"description": "ID de la ruta guardada"
+						}
+					]
+				},
+				"description": "**PASO 3**: Obtiene una ruta específica por su ID desde la base de datos.\n\n**Comportamiento:**\n- Busca en la tabla `rutas_seleccionadas`\n- Retorna 200 OK si existe\n- Retorna 404 Not Found si no existe\n\n**Uso:**\n- Consultar detalles de una ruta guardada\n- Verificar que la ruta se guardó correctamente\n- Obtener información para actualizar estado"
+			},
+			"response": []
+		},
+		{
+			"name": "4. Historial de Rutas por Cliente",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Respuesta es un array\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json).to.be.an('array');",
+							"});",
+							"",
+							"pm.test(\"Rutas tienen estructura correcta\", function () {",
+							"    const json = pm.response.json();",
+							"    if (json.length > 0) {",
+							"        const ruta = json[0];",
+							"        pm.expect(ruta).to.have.property('id');",
+							"        pm.expect(ruta).to.have.property('clienteId');",
+							"        pm.expect(ruta).to.have.property('numeroRuta');",
+							"        pm.expect(ruta).to.have.property('distanciaKm');",
+							"        pm.expect(ruta).to.have.property('fechaSeleccion');",
+							"    }",
+							"});",
+							"",
+							"const json = pm.response.json();",
+							"console.log(\"✅ \" + json.length + \" rutas encontradas para el cliente\");"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/historial?clienteId=123",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "historial"],
+					"query": [
+						{
+							"key": "clienteId",
+							"value": "123",
+							"description": "ID del cliente"
+						}
+					]
+				},
+				"description": "**PASO 4**: Obtiene todas las rutas seleccionadas por un cliente específico.\n\n**Comportamiento:**\n- Busca en BD todas las rutas del cliente\n- Retorna array vacío si no tiene rutas\n- Incluye todas las rutas sin importar el estado\n\n**Uso:**\n- Ver historial completo de rutas del cliente\n- Analizar patrones de viaje\n- Auditoría de selecciones"
+			},
+			"response": []
+		},
+		{
+			"name": "Ejemplo: Mendoza → San Juan",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Tiene rutas alternativas\", function () {",
+							"    const json = pm.response.json();",
+							"    pm.expect(json.totalRutas).to.be.above(0);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/rutas-alternativas?origenLat=-32.8895&origenLng=-68.8458&destinoLat=-31.5375&destinoLng=-68.5364",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "rutas-alternativas"],
+					"query": [
+						{
+							"key": "origenLat",
+							"value": "-32.8895",
+							"description": "Mendoza"
+						},
+						{
+							"key": "origenLng",
+							"value": "-68.8458"
+						},
+						{
+							"key": "destinoLat",
+							"value": "-31.5375",
+							"description": "San Juan"
+						},
+						{
+							"key": "destinoLng",
+							"value": "-68.5364"
+						}
+					]
+				},
+				"description": "Ejemplo adicional: Ruta entre Mendoza y San Juan"
+			},
+			"response": []
+		},
+		{
+			"name": "Ejemplo: Buenos Aires → La Plata",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"pm.test(\"Status 200 OK\", function () {",
+							"    pm.response.to.have.status(200);",
+							"});",
+							"",
+							"pm.test(\"Distancia menor a 100 km\", function () {",
+							"    const json = pm.response.json();",
+							"    const rutaMasRapida = json.todasLasRutas.find(r => r.esMasRapida);",
+							"    pm.expect(rutaMasRapida.distanciaKm).to.be.below(100);",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{base_url}}/api/v1/distancias/rutas-alternativas?origenLat=-34.6037&origenLng=-58.3816&destinoLat=-34.9215&destinoLng=-57.9545",
+					"host": ["{{base_url}}"],
+					"path": ["api", "v1", "distancias", "rutas-alternativas"],
+					"query": [
+						{
+							"key": "origenLat",
+							"value": "-34.6037",
+							"description": "Buenos Aires"
+						},
+						{
+							"key": "origenLng",
+							"value": "-58.3816"
+						},
+						{
+							"key": "destinoLat",
+							"value": "-34.9215",
+							"description": "La Plata"
+						},
+						{
+							"key": "destinoLng",
+							"value": "-57.9545"
+						}
+					]
+				},
+				"description": "Ejemplo de ruta corta: Buenos Aires → La Plata (~60 km)"
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script que se ejecuta antes de cada request",
+					"console.log(\"🚀 Ejecutando: \" + pm.info.requestName);"
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					"// Script que se ejecuta después de cada request",
+					"pm.test(\"Tiempo de respuesta < 5s\", function () {",
+					"    pm.expect(pm.response.responseTime).to.be.below(5000);",
+					"});"
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8082",
+			"type": "string"
+		},
+		{
+			"key": "rutaId",
+			"value": "1",
+			"type": "string"
+		},
+		{
+			"key": "totalRutas",
+			"value": "3",
+			"type": "string"
+		},
+		{
+			"key": "origenLat",
+			"value": "-31.4135",
+			"type": "string"
+		},
+		{
+			"key": "origenLng",
+			"value": "-64.1811",
+			"type": "string"
+		},
+		{
+			"key": "destinoLat",
+			"value": "-32.9468",
+			"type": "string"
+		},
+		{
+			"key": "destinoLng",
+			"value": "-60.6393",
+			"type": "string"
+		}
+	]
+}

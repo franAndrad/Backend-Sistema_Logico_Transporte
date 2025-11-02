@@ -12,6 +12,7 @@ public class DirectionsResponse {
     
     @Data
     public static class Route {
+        private String summary;
         private List<Leg> legs;
     }
     
@@ -39,11 +40,6 @@ public class DirectionsResponse {
             return routes.get(0).getLegs().get(0).getDistance().getValue();
         }
         return null;
-    }
-    
-    public Double getDistanceInKilometers() {
-        Long meters = getDistanceInMeters();
-        return meters != null ? meters / 1000.0 : null;
     }
     
     public Long getDurationInSeconds() {

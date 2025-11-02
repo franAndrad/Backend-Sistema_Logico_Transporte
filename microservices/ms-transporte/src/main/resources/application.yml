@@ -12,10 +12,14 @@ spring:
   jpa:
     hibernate:
       ddl-auto: update
+    show-sql: false
+  h2:
+    console:
+      enabled: false
+  profiles:
+    active: dev 
 
-# Google Maps API
-google:
-  maps:
-    api:
-      url: ${GOOGLE_MAPS_URL:https://maps.googleapis.com}
-      key: ${GOOGLE_MAPS_API_KEY:fake-api-key-for-development}
+# Logging
+logging:
+  level:
+    ar.edu.utn.frc.backend.logistica: INFO

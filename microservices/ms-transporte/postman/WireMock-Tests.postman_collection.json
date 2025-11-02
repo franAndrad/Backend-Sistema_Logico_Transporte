@@ -31,47 +31,6 @@
 			"response": []
 		},
 		{
-			"name": "Test WireMock - Con parámetros (Buenos Aires → La Plata)",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json?origin=-34.603722,-58.381592&destination=-34.921230,-57.954590&key=test-key",
-					"protocol": "https",
-					"host": [
-						"8537q",
-						"wiremockapi",
-						"cloud"
-					],
-					"path": [
-						"maps",
-						"api",
-						"directions",
-						"json"
-					],
-					"query": [
-						{
-							"key": "origin",
-							"value": "-34.603722,-58.381592",
-							"description": "Buenos Aires (Obelisco)"
-						},
-						{
-							"key": "destination",
-							"value": "-34.921230,-57.954590",
-							"description": "La Plata (Centro)"
-						},
-						{
-							"key": "key",
-							"value": "test-key",
-							"description": "API Key de prueba"
-						}
-					]
-				},
-				"description": "Prueba WireMock con los parámetros que envía el microservicio.\n\n**Si funciona:** Debería devolver el mismo JSON que sin parámetros.\n**Si falla:** Necesitas configurar WireMock para aceptar query params."
-			},
-			"response": []
-		},
-		{
 			"name": "Test WireMock - Córdoba → Jujuy",
 			"request": {
 				"method": "GET",
@@ -108,47 +67,6 @@
 					]
 				},
 				"description": "Otra ruta de prueba con coordenadas diferentes."
-			},
-			"response": []
-		},
-		{
-			"name": "Test WireMock - Con diferentes parámetros",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "https://8537q.wiremockapi.cloud/maps/api/directions/json?origin=cualquier-cosa&destination=otra-cosa&key=whatever",
-					"protocol": "https",
-					"host": [
-						"8537q",
-						"wiremockapi",
-						"cloud"
-					],
-					"path": [
-						"maps",
-						"api",
-						"directions",
-						"json"
-					],
-					"query": [
-						{
-							"key": "origin",
-							"value": "cualquier-cosa",
-							"description": "Valor random para probar wildcards"
-						},
-						{
-							"key": "destination",
-							"value": "otra-cosa",
-							"description": "Otro valor random"
-						},
-						{
-							"key": "key",
-							"value": "whatever",
-							"description": "Key random"
-						}
-					]
-				},
-				"description": "Prueba con valores arbitrarios para confirmar que WireMock usa wildcards `.*` y acepta cualquier valor en los parámetros."
 			},
 			"response": []
 		},

@@ -17,6 +17,8 @@ public interface GoogleMapsClient {
     DirectionsResponse getDirections(
         @RequestParam("origin") String origin,
         @RequestParam("destination") String destination,
+        @RequestParam("mode") String mode,
+        @RequestParam("alternatives") boolean alternatives,
         @RequestParam("key") String key
     );
 }
