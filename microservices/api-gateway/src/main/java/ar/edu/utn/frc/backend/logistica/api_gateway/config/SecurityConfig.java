@@ -28,8 +28,8 @@ public class SecurityConfig {
         http
             .authorizeExchange(exchanges -> exchanges
                 // ========== RUTAS PÚBLICAS (sin autenticación) ==========
-                .pathMatchers("/actuator/health", "/actuator/info").permitAll()
-                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()  // Registro de clientes
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").permitAll() // Para prueba con el ms-cliente
+                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()  
                 
                 // ========== MS-CLIENTE: Gestión de Clientes ==========
                 .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
