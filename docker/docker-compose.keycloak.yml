@@ -1,14 +1,94 @@
+# =============================================================================
+# DOCKER COMPOSE - KEYCLOAK
+# =============================================================================
+# Este archivo configura el contenedor de Keycloak para el sistema de
+# autenticación y autorización OAuth2/OpenID Connect.
+#
+# COMANDOS ÚTILES:
+# - Iniciar:    docker-compose -f docker-compose.keycloak.yml up -d
+# - Detener:    docker-compose -f docker-compose.keycloak.yml down
+# - Logs:       docker-compose -f docker-compose.keycloak.yml logs -f
+# - Reiniciar:  docker-compose -f docker-compose.keycloak.yml restart
+# =============================================================================
+
 services:
+  # ---------------------------------------------------------------------------
+  # SERVICIO: Keycloak
+  # ---------------------------------------------------------------------------
+  # Keycloak es un sistema de gestión de identidad y acceso open source
+  # Proporciona autenticación OAuth2/OIDC para los microservicios
   keycloak:
+    # -------------------------------------------------------------------------
+    # Imagen de Docker
+    # -------------------------------------------------------------------------
+    # Usa la imagen oficial de Keycloak desde Quay.io
+    # La versión se configura mediante variable de entorno KEYCLOAK_VERSION
+    # Ejemplo: quay.io/keycloak/keycloak:21.1.1
     image: quay.io/keycloak/keycloak:${KEYCLOAK_VERSION}
+    
+    # -------------------------------------------------------------------------
+    # Nombre del Contenedor
+    # -------------------------------------------------------------------------
+    # Nombre personalizado para identificar el contenedor
+    # Se configura mediante variable de entorno KEYCLOAK_CONTAINER_NAME
     container_name: ${KEYCLOAK_CONTAINER_NAME}
+    
+    # -------------------------------------------------------------------------
+    # Variables de Entorno
+    # -------------------------------------------------------------------------
+    # Configuraciones inyectadas al contenedor desde el archivo .env
     environment:
+      # Usuario administrador de Keycloak
+      # Usado para acceder a la consola de administración
+      # URL: http://localhost:${KEYCLOAK_PORT}
       KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN}
+      
+      # Contraseña del usuario administrador
+      # ⚠️ IMPORTANTE: Cambiar en producción por seguridad
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+    
+    # -------------------------------------------------------------------------
+    # Comando de Inicio
+    # -------------------------------------------------------------------------
+    # Opciones de arranque del servidor Keycloak
     command: 
+      # start-dev: Inicia Keycloak en modo desarrollo
+      # - Sin HTTPS requerido
+      # - Sin caché persistente
+      # - Configuración optimizada para desarrollo rápido
+      # ⚠️ PRODUCCIÓN: Cambiar a "start" y configurar SSL/certificados
       - start-dev
+      
+      # --import-realm: Importa automáticamente los realms al iniciar
+      # Lee los archivos JSON desde /opt/keycloak/data/import/
+      # Útil para pre-cargar configuración (usuarios, roles, clientes)
       - --import-realm
+    
+    # -------------------------------------------------------------------------
+    # Mapeo de Puertos
+    # -------------------------------------------------------------------------
+    # Formato: "PUERTO_HOST:PUERTO_CONTENEDOR"
+    # PUERTO_HOST: Puerto en tu máquina local (configurable desde .env)
+    # PUERTO_CONTENEDOR: Puerto interno del contenedor (siempre 8080)
+    #
+    # Ejemplo: "8180:8080" → Accedes desde http://localhost:8180
+    # Keycloak escucha en el puerto 8080 interno
     ports:
       - "${KEYCLOAK_PORT}:8080"
+    
+    # -------------------------------------------------------------------------
+    # Volúmenes (Mapeo de Archivos/Directorios)
+    # -------------------------------------------------------------------------
+    # Monta directorios de tu máquina local dentro del contenedor
+    # Formato: "RUTA_LOCAL:RUTA_CONTENEDOR:OPCIONES"
     volumes:
+      # Directorio de importación de realms
+      # RUTA_LOCAL: ./keycloak/import (configurable desde .env)
+      # RUTA_CONTENEDOR: /opt/keycloak/data/import (fija, no cambiar)
+      # :ro = read-only (el contenedor solo puede leer, no escribir)
+      #
+      # ¿Qué hace?
+      # - Keycloak lee los archivos .json de este directorio al iniciar
+      # - Importa automáticamente los realms, usuarios, roles, clientes
+      # - Útil para tener configuración versionada en Git
       - ${KEYCLOAK_IMPORT_PATH}:/opt/keycloak/data/import:ro

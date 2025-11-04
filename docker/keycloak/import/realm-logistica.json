@@ -1,6 +1,7 @@
 {
   "realm": "logistica",
   "enabled": true,
+  
   "sslRequired": "none",
   "registrationAllowed": false,
   "loginWithEmailAllowed": true,
@@ -8,15 +9,18 @@
   "resetPasswordAllowed": false,
   "editUsernameAllowed": false,
   "bruteForceProtected": false,
+  
   "clients": [
     {
       "clientId": "api-gateway",
       "name": "API Gateway Client",
       "enabled": true,
       "protocol": "openid-connect",
+      
       "publicClient": false,
       "secret": "gateway-secret",
       "clientAuthenticatorType": "client-secret",
+      
       "redirectUris": [
         "http://localhost:8080/*",
         "*"
@@ -25,12 +29,14 @@
         "http://localhost:8080",
         "*"
       ],
+      
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
+      
       "defaultClientScopes": [
         "web-origins",
         "acr",
