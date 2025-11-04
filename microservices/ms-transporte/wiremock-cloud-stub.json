@@ -13,7 +13,7 @@
         "equalTo": "driving"
       },
       "alternatives": {
-        "equalTo": "true"
+        "equalTo": "false"
       },
       "key": {
         "matches": ".*"

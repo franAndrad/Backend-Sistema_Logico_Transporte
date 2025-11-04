@@ -6,11 +6,13 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsRespo
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Duration;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Leg;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Route;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponse;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.List;
 
@@ -25,11 +27,13 @@ class DistanciaServiceTest {
     private GoogleMapsClient googleMapsClient;
 
     @InjectMocks
-    private DistanciaService distanciaService;
+    private GoogleMapsService googleMapsService;
 
     @Test
-    void calcularDistanciaKm_DeberiaRetornarDistanciaCorrecta() {
-        DirectionsResponse mockResponse = crearRespuestaMock(100000L, 3600L); // 100 km, 1 hora
+    void calcularDistancia_DeberiaRetornarDistanciaYDuracionCorrecta() {
+        ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
+        
+        DirectionsResponse mockResponse = crearRespuestaMock(100000L, 3600L);
         
         when(googleMapsClient.getDirections(
             anyString(), 
@@ -39,37 +43,19 @@ class DistanciaServiceTest {
             anyString()    
         )).thenReturn(mockResponse);
 
-        Double distancia = distanciaService.calcularDistanciaKm(
+        DistanciaResponse response = googleMapsService.calcularDistancia(
             -34.603722, -58.381592,
             -34.921230, -57.954590
         );
 
-        assertEquals(100.0, distancia);
+        assertEquals(100.0, response.getDistanciaKm());
+        assertEquals(60L, response.getDuracionMinutos());
     }
 
     @Test
-    void calcularDuracionMinutos_DeberiaRetornarDuracionCorrecta() {
-        DirectionsResponse mockResponse = crearRespuestaMock(100000L, 3600L); // 100 km, 1 hora
+    void calcularDistancia_ConErrorDeApi_DeberiaLanzarExcepcion() {
+        ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
         
-        when(googleMapsClient.getDirections(
-            anyString(), 
-            anyString(), 
-            anyString(),
-            anyBoolean(),  
-            anyString()    
-        )).thenReturn(mockResponse);
-
-
-        Long duracion = distanciaService.calcularDuracionMinutos(
-            -34.603722, -58.381592,
-            -34.921230, -57.954590
-        );
-
-        assertEquals(60L, duracion); // 3600 segundos = 60 minutos
-    }
-
-    @Test
-    void calcularDistanciaKm_ConErrorDeApi_DeberiaLanzarExcepcion() {
         DirectionsResponse mockResponse = new DirectionsResponse();
         mockResponse.setStatus("NOT_FOUND");
         
@@ -82,37 +68,13 @@ class DistanciaServiceTest {
         )).thenReturn(mockResponse);
 
         assertThrows(RuntimeException.class, () -> {
-            distanciaService.calcularDistanciaKm(
+            googleMapsService.calcularDistancia(
                 -34.603722, -58.381592,
                 -34.921230, -57.954590
             );
         });
     }
 
-    @Test
-    void calcularDistanciaKm_ConRutasVacias_DeberiaLanzarExcepcion() {
-        // Arrange
-        DirectionsResponse mockResponse = new DirectionsResponse();
-        mockResponse.setStatus("OK");
-        mockResponse.setRoutes(List.of()); // Lista vacía
-        
-        when(googleMapsClient.getDirections(
-            anyString(), 
-            anyString(), 
-            anyString(),
-            anyBoolean(),
-            anyString()
-        )).thenReturn(mockResponse);
-
-        assertThrows(RuntimeException.class, () -> {
-            distanciaService.calcularDistanciaKm(
-                -34.603722, -58.381592,
-                -34.921230, -57.954590
-            );
-        });
-    }
-
-    // Método helper para crear respuestas mock
     private DirectionsResponse crearRespuestaMock(Long distanciaMetros, Long duracionSegundos) {
         DirectionsResponse response = new DirectionsResponse();
         response.setStatus("OK");

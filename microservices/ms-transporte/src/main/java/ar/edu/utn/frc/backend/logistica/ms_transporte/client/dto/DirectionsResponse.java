@@ -1,6 +1,5 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
 import java.util.List;
 
@@ -12,7 +11,6 @@ public class DirectionsResponse {
     
     @Data
     public static class Route {
-        private String summary;
         private List<Leg> legs;
     }
     
@@ -24,34 +22,11 @@ public class DirectionsResponse {
     
     @Data
     public static class Distance {
-        private Long value;  // Metros
+        private Long value;
     }
     
     @Data
     public static class Duration {
-        private Long value;  // Segundos
-    }
-    
-    // Utilities
-    public Long getDistanceInMeters() {
-        if (routes != null && !routes.isEmpty() 
-            && routes.get(0).getLegs() != null 
-            && !routes.get(0).getLegs().isEmpty()) {
-            return routes.get(0).getLegs().get(0).getDistance().getValue();
-        }
-        return null;
-    }
-    
-    public Long getDurationInSeconds() {
-        if (routes != null && !routes.isEmpty() 
-            && routes.get(0).getLegs() != null 
-            && !routes.get(0).getLegs().isEmpty()) {
-            return routes.get(0).getLegs().get(0).getDuration().getValue();
-        }
-        return null;
-    }
-    
-    public boolean isSuccess() {
-        return "OK".equals(status);
+        private Long value;
     }
 }

@@ -5,12 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-@FeignClient(
-    name = "google-maps-api",
-    url = "${google.maps.api.url}"
-)
-
-// Hacemos una interface por feign (requerido), conveniente usarlo con api externas (parseo, url, manejo errores, etc)
+@FeignClient(name = "google-maps-api", url = "${google.maps.api.url}")
 public interface GoogleMapsClient {
     
     @GetMapping("/maps/api/directions/json")
