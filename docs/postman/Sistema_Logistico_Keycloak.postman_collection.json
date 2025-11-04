@@ -657,14 +657,14 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{gateway_url}}/api/v1/rutas/health",
+							"raw": "{{gateway_url}}/api/v1/transportes/health",
 							"host": [
 								"{{gateway_url}}"
 							],
 							"path": [
 								"api",
 								"v1",
-								"rutas",
+								"transportes",
 								"health"
 							]
 						}
