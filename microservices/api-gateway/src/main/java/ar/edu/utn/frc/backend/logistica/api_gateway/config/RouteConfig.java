@@ -17,7 +17,7 @@ public class RouteConfig {
                         .uri("http://localhost:8081"))
 
                 .route(spec -> spec
-                        .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**")
+                        .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
                         .uri("http://localhost:8082"))
                 .build();
     }

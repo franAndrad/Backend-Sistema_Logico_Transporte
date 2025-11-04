@@ -27,59 +27,63 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             .authorizeExchange(exchanges -> exchanges
+
+                // ========== RUTAS PRUEBA ==========
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
+                .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
+
                 // ========== RUTAS PÚBLICAS (sin autenticación) ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").permitAll() // Para prueba con el ms-cliente
-                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()  
+                // .pathMatchers(HttpMethod.POST, "/api/v1/clientes").permitAll()  
                 
-                // ========== MS-CLIENTE: Gestión de Clientes ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.DELETE, "/api/v1/clientes/{id}").hasRole("ADMIN")
+                // // ========== MS-CLIENTE: Gestión de Clientes ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.GET, "/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/clientes/{id}").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.DELETE, "/api/v1/clientes/{id}").hasRole("ADMIN")
                 
-                // ========== MS-CLIENTE: Gestión de Contenedores ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/contenedores").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/contenedores/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // // ========== MS-CLIENTE: Gestión de Contenedores ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/contenedores").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/contenedores").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/contenedores/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
                 
-                // ========== MS-CLIENTE: Solicitudes de Transporte ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/**").hasAnyRole("CLIENTE", "OPERADOR", "TRANSPORTISTA", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasRole("CLIENTE")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "ADMIN")
+                // // ========== MS-CLIENTE: Solicitudes de Transporte ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/**").hasAnyRole("CLIENTE", "OPERADOR", "TRANSPORTISTA", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasRole("CLIENTE")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "ADMIN")
                 
-                // ========== MS-TRANSPORTE: Rutas ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/rutas").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/rutas/**").hasAnyRole("OPERADOR", "CLIENTE", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/rutas").hasRole("OPERADOR")
+                // // ========== MS-TRANSPORTE: Rutas ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/rutas").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.GET, "/api/v1/rutas/**").hasAnyRole("OPERADOR", "CLIENTE", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/rutas").hasRole("OPERADOR")
                 
-                // ========== MS-TRANSPORTE: Tramos ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/tramos").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/tramos").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/{id}").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.DELETE, "/api/v1/tramos/{id}").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/iniciar").hasRole("TRANSPORTISTA")
-                .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/finalizar").hasRole("TRANSPORTISTA")
+                // // ========== MS-TRANSPORTE: Tramos ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/tramos").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.GET, "/api/v1/tramos/**").hasAnyRole("OPERADOR", "TRANSPORTISTA", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/tramos").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/{id}").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.DELETE, "/api/v1/tramos/{id}").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/iniciar").hasRole("TRANSPORTISTA")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/finalizar").hasRole("TRANSPORTISTA")
                 
-                // ========== MS-TRANSPORTE: Camiones ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/camiones/**").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/camiones/**").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.DELETE, "/api/v1/camiones/**").hasRole("ADMIN")
+                // // ========== MS-TRANSPORTE: Camiones ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/camiones/**").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/camiones/**").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.DELETE, "/api/v1/camiones/**").hasRole("ADMIN")
                 
-                // ========== MS-TRANSPORTE: Depósitos ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/**").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos/**").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.DELETE, "/api/v1/depositos/**").hasRole("ADMIN")
+                // // ========== MS-TRANSPORTE: Depósitos ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/depositos/**").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasRole("OPERADOR")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/depositos/**").hasAnyRole("OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.DELETE, "/api/v1/depositos/**").hasRole("ADMIN")
                 
-                // ========== MS-TRANSPORTE: Tarifas ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/tarifas/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/tarifas").hasRole("ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/tarifas/**").hasRole("ADMIN")
-                .pathMatchers(HttpMethod.DELETE, "/api/v1/tarifas/**").hasRole("ADMIN")
+                // // ========== MS-TRANSPORTE: Tarifas ==========
+                // .pathMatchers(HttpMethod.GET, "/api/v1/tarifas/**").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // .pathMatchers(HttpMethod.POST, "/api/v1/tarifas").hasRole("ADMIN")
+                // .pathMatchers(HttpMethod.PUT, "/api/v1/tarifas/**").hasRole("ADMIN")
+                // .pathMatchers(HttpMethod.DELETE, "/api/v1/tarifas/**").hasRole("ADMIN")
                 
                 // ========== Cualquier otra ruta requiere autenticación ==========
                 .anyExchange().authenticated()
