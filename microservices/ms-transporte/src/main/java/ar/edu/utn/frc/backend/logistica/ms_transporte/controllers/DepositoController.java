@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.controllers;
 
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DepositoResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.DepositoService;
 import jakarta.validation.Valid;
@@ -26,7 +27,12 @@ public class DepositoController {
     }
 
     @PostMapping
-    public Deposito create(@Valid @RequestBody Deposito deposito) {
-        return depositoService.save(deposito);
+    public DepositoResponseDTO create(@Valid @RequestBody Deposito deposito) {
+        Deposito nuevo = depositoService.save(deposito);
+
+        return new DepositoResponseDTO(
+                nuevo.getIdDeposito(),
+                "Depósito creado correctamente"
+        );
     }
 }

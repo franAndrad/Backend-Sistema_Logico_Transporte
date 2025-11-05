@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.controllers;
 
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponse;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.GoogleMapsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ public class DistanciaController {
     private final GoogleMapsService googleMapsService;
     
     @GetMapping
-    public ResponseEntity<DistanciaResponse> calcularDistancia(
+    public ResponseEntity<DistanciaResponseDTO> calcularDistancia(
         @RequestParam Double origenLat,
         @RequestParam Double origenLng,
         @RequestParam Double destinoLat,

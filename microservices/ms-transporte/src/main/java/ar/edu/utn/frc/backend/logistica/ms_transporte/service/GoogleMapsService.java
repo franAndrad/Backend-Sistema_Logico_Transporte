@@ -2,7 +2,7 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponse;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -18,8 +18,8 @@ public class GoogleMapsService {
     @Value("${google.maps.api.key}")
     private String apiKey;
 
-    public DistanciaResponse calcularDistancia(Double origenLat, Double origenLng, 
-                                                Double destinoLat, Double destinoLng) {
+    public DistanciaResponseDTO calcularDistancia(Double origenLat, Double origenLng,
+                                                  Double destinoLat, Double destinoLng) {
         
         String origin = origenLat + "," + origenLng;
         String destination = destinoLat + "," + destinoLng;
@@ -41,7 +41,7 @@ public class GoogleMapsService {
         double distanciaKm = leg.getDistance().getValue() / 1000.0;
         long duracionMinutos = leg.getDuration().getValue() / 60;
 
-        return new DistanciaResponse(
+        return new DistanciaResponseDTO(
             origenLat, origenLng, 
             destinoLat, destinoLng,
             distanciaKm, duracionMinutos

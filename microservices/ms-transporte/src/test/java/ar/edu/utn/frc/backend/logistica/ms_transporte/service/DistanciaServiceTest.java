@@ -6,7 +6,7 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsRespo
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Duration;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Leg;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Route;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponse;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -43,7 +43,7 @@ class DistanciaServiceTest {
             anyString()    
         )).thenReturn(mockResponse);
 
-        DistanciaResponse response = googleMapsService.calcularDistancia(
+        DistanciaResponseDTO response = googleMapsService.calcularDistancia(
             -34.603722, -58.381592,
             -34.921230, -57.954590
         );
