@@ -42,7 +42,6 @@ $RECYCLE.BIN/
 *.iml
 *.ipr
 *.iws
-out/
 
 # Eclipse
 .project
