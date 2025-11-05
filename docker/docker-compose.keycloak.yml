@@ -1,17 +1,96 @@
 # =============================================================================
-# DOCKER COMPOSE - KEYCLOAK
+# DOCKER COMPOSE - KEYCLOAK CON POSTGRESQL
 # =============================================================================
-# Este archivo configura el contenedor de Keycloak para el sistema de
-# autenticación y autorización OAuth2/OpenID Connect.
+# Este archivo configura Keycloak con PostgreSQL como base de datos persistente
+# para autenticación y autorización OAuth2/OpenID Connect.
 #
 # COMANDOS ÚTILES:
-# - Iniciar:    docker-compose -f docker-compose.keycloak.yml up -d
-# - Detener:    docker-compose -f docker-compose.keycloak.yml down
-# - Logs:       docker-compose -f docker-compose.keycloak.yml logs -f
-# - Reiniciar:  docker-compose -f docker-compose.keycloak.yml restart
+# - Iniciar:    docker compose -f docker-compose.keycloak.yml up -d
+# - Detener:    docker compose -f docker-compose.keycloak.yml down
+# - Logs:       docker compose -f docker-compose.keycloak.yml logs -f
+# - Reiniciar:  docker compose -f docker-compose.keycloak.yml restart
+# - Ver volúmenes: docker volume ls
+#
+# ACCESOS:
+# - Keycloak Admin: http://localhost:8180/admin (user: admin, pass: admin)
+# - pgAdmin Web:    http://localhost:5050 (user: admin@admin.com, pass: admin)
+# - PostgreSQL:     localhost:5433 (user: keycloak, pass: keycloak123, db: keycloakdb)
+#
+# ⚠️ IMPORTANTE: PERSISTENCIA DE DATOS
+# -----------------------------------------------------------------------------
+# Los datos de Keycloak se almacenan en PostgreSQL y persisten en un volumen Docker.
 # =============================================================================
 
 services:
+  # ---------------------------------------------------------------------------
+  # SERVICIO: PostgreSQL para Keycloak
+  # ---------------------------------------------------------------------------
+  # Base de datos PostgreSQL dedicada para almacenar todos los datos de Keycloak
+  # Incluye: usuarios, roles, clientes, realms, sesiones, tokens, configuraciones
+  postgres-keycloak:
+    # -------------------------------------------------------------------------
+    # Imagen de Docker
+    # -------------------------------------------------------------------------
+    # PostgreSQL 15 Alpine (versión ligera)
+    image: postgres:15-alpine
+    
+    # -------------------------------------------------------------------------
+    # Nombre del Contenedor
+    # -------------------------------------------------------------------------
+    container_name: postgres-keycloak
+    
+    # -------------------------------------------------------------------------
+    # Variables de Entorno
+    # -------------------------------------------------------------------------
+    environment:
+      # Nombre de la base de datos para Keycloak
+      POSTGRES_DB: ${POSTGRES_DB}
+      
+      # Usuario de PostgreSQL
+      POSTGRES_USER: ${POSTGRES_USER}
+      
+      # Contraseña del usuario de PostgreSQL
+      # ⚠️ IMPORTANTE: Cambiar en producción
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    
+    # -------------------------------------------------------------------------
+    # Mapeo de Puertos
+    # -------------------------------------------------------------------------
+    # PUERTO_HOST:PUERTO_CONTENEDOR
+    # Puerto 5433 en el host para evitar conflicto con PostgreSQL local (5432)
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    
+    # -------------------------------------------------------------------------
+    # Volúmenes (Persistencia de Datos)
+    # -------------------------------------------------------------------------
+    # ⚠️ IMPORTANTE: Este volumen es CRÍTICO para la persistencia
+    # 
+    # ¿Qué hace?
+    # - Guarda TODOS los datos de PostgreSQL en un volumen Docker nombrado
+    # - Los datos sobreviven a reinicios del contenedor (docker restart)
+    # - Los datos sobreviven a detenciones del contenedor (docker stop/start)
+    # - Los datos NO se pierden al hacer "docker compose down"
+    volumes:
+      - postgres_keycloak_data:/var/lib/postgresql/data
+    
+    # -------------------------------------------------------------------------
+    # Redes
+    # -------------------------------------------------------------------------
+    networks:
+      - keycloak-network
+    
+    # -------------------------------------------------------------------------
+    # Health Check
+    # -------------------------------------------------------------------------
+    # Verifica que PostgreSQL esté lista para aceptar conexiones
+    # Keycloak esperará a que este health check sea "healthy" antes de iniciar
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   # ---------------------------------------------------------------------------
   # SERVICIO: Keycloak
   # ---------------------------------------------------------------------------
@@ -46,6 +125,16 @@ services:
       # Contraseña del usuario administrador
       # ⚠️ IMPORTANTE: Cambiar en producción por seguridad
       KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD}
+      
+      # Configuración de la base de datos PostgreSQL
+      KC_DB: ${KC_DB}
+      KC_DB_URL: ${KC_DB_URL}
+      KC_DB_USERNAME: ${KC_DB_USERNAME}
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      
+      # Configuración adicional para desarrollo
+      KC_HEALTH_ENABLED: "true"
+      KC_METRICS_ENABLED: "true"
     
     # -------------------------------------------------------------------------
     # Comando de Inicio
@@ -62,6 +151,16 @@ services:
       # --import-realm: Importa automáticamente los realms al iniciar
       # Lee los archivos JSON desde /opt/keycloak/data/import/
       # Útil para pre-cargar configuración (usuarios, roles, clientes)
+      # 
+      # ⚠️ IMPORTANTE: Estrategia de Importación = IGNORE_EXISTING
+      # - Primera vez: Importa el realm-logistica.json completo
+      # - Siguientes veces: Si el realm ya existe en la DB, NO lo reemplaza
+      # - Los cambios que hagas en la consola admin SE MANTIENEN
+      # - Solo importa realms nuevos que no existan en PostgreSQL
+      # 
+      # Para forzar reimportación (reemplazar datos):
+      # - Eliminar el volumen: docker compose down -v
+      # - O cambiar estrategia a OVERWRITE_EXISTING (no recomendado)
       - --import-realm
     
     # -------------------------------------------------------------------------
@@ -92,3 +191,169 @@ services:
       # - Importa automáticamente los realms, usuarios, roles, clientes
       # - Útil para tener configuración versionada en Git
       - ${KEYCLOAK_IMPORT_PATH}:/opt/keycloak/data/import:ro
+    
+    # -------------------------------------------------------------------------
+    # Redes
+    # -------------------------------------------------------------------------
+    networks:
+      - keycloak-network
+    
+    # -------------------------------------------------------------------------
+    # Dependencias
+    # -------------------------------------------------------------------------
+    # Keycloak esperará a que PostgreSQL esté saludable antes de iniciar
+    depends_on:
+      postgres-keycloak:
+        condition: service_healthy
+
+  # ---------------------------------------------------------------------------
+  # SERVICIO: pgAdmin - Interfaz Web para PostgreSQL
+  # ---------------------------------------------------------------------------
+  # Herramienta de administración gráfica para PostgreSQL
+  # Permite visualizar tablas, ejecutar consultas SQL y gestionar la base de datos
+  pgadmin:
+    # -------------------------------------------------------------------------
+    # Imagen de Docker
+    # -------------------------------------------------------------------------
+    # pgAdmin4 oficial (versión web)
+    image: dpage/pgadmin4:latest
+    
+    # -------------------------------------------------------------------------
+    # Nombre del Contenedor
+    # -------------------------------------------------------------------------
+    container_name: pgadmin-keycloak
+    
+    # -------------------------------------------------------------------------
+    # Variables de Entorno
+    # -------------------------------------------------------------------------
+    environment:
+      # Email para login en pgAdmin (usuario administrador)
+      # Usar este email para acceder a http://localhost:5050
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      
+      # Contraseña para login en pgAdmin
+      # ⚠️ IMPORTANTE: Cambiar en producción
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+      
+      # Configuración adicional
+      # Deshabilita el modo servidor para desarrollo
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      
+      # Deshabilita la verificación de contraseña maestra
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: "False"
+    
+    # -------------------------------------------------------------------------
+    # Mapeo de Puertos
+    # -------------------------------------------------------------------------
+    # PUERTO_HOST:PUERTO_CONTENEDOR
+    # Puerto 5050 en el host para acceder a la interfaz web de pgAdmin
+    # Acceso: http://localhost:5050
+    ports:
+      - "${PGADMIN_PORT}:80"
+    
+    # -------------------------------------------------------------------------
+    # Volúmenes (Persistencia de Configuraciones)
+    # -------------------------------------------------------------------------
+    # Guarda las conexiones y configuraciones de pgAdmin
+    # Así no tienes que reconfigurar las conexiones cada vez que reinicias
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    
+    # -------------------------------------------------------------------------
+    # Redes
+    # -------------------------------------------------------------------------
+    # Comparte la misma red con PostgreSQL para poder conectarse
+    networks:
+      - keycloak-network
+    
+    # -------------------------------------------------------------------------
+    # Dependencias
+    # -------------------------------------------------------------------------
+    # pgAdmin esperará a que PostgreSQL esté disponible
+    depends_on:
+      postgres-keycloak:
+        condition: service_healthy
+    
+    # -------------------------------------------------------------------------
+    # Cómo usar pgAdmin:
+    # -------------------------------------------------------------------------
+    # 1. Acceder a: http://localhost:5050
+    # 2. Login con:
+    #    - Email: admin@admin.com (configurado en .env)
+    #    - Password: admin (configurado en .env)
+    # 
+    # 3. Agregar servidor PostgreSQL:
+    #    - Click derecho en "Servers" → Register → Server
+    #    - Pestaña "General":
+    #      Name: Keycloak DB
+    #    - Pestaña "Connection":
+    #      Host: postgres-keycloak (nombre del servicio en docker)
+    #      Port: 5432 (puerto INTERNO, no el 5433)
+    #      Maintenance database: keycloakdb
+    #      Username: keycloak
+    #      Password: keycloak123
+    #      Save password: ✓ (marcar)
+    #    - Click "Save"
+    # 
+    # 4. Explorar tablas:
+    #    - Servers → Keycloak DB → Databases → keycloakdb → Schemas → public → Tables
+    #    - Ver usuarios: Click derecho en "user_entity" → View/Edit Data → All Rows
+    # 
+    # 5. Ejecutar consultas SQL:
+    #    - Tools → Query Tool
+    #    - Ejemplo: SELECT username, email FROM user_entity;
+
+# =============================================================================
+# REDES
+# =============================================================================
+networks:
+  keycloak-network:
+    driver: bridge
+
+# =============================================================================
+# VOLÚMENES
+# =============================================================================
+# Volúmenes nombrados para persistencia de datos
+volumes:
+  # ---------------------------------------------------------------------------
+  # Volumen de PostgreSQL
+  # ---------------------------------------------------------------------------
+  # Nombre: postgres_keycloak_data
+  # Driver: local (almacenamiento en el host)
+  # 
+  # ¿Dónde está físicamente?
+  # - Windows: C:\ProgramData\docker\volumes\docker_postgres_keycloak_data\_data
+  # 
+  # Comandos útiles:
+  # - Ver volúmenes: docker volume ls
+  # - Inspeccionar: docker volume inspect docker_postgres_keycloak_data
+  # - Respaldar datos: docker run --rm -v docker_postgres_keycloak_data:/data -v $(pwd):/backup busybox tar czf /backup/keycloak-backup.tar.gz /data
+  # - Eliminar volumen: docker volume rm docker_postgres_keycloak_data (⚠️ PERDERÁS TODOS LOS DATOS)
+  # 
+  # ⚠️ CRÍTICO: NO elimines este volumen si quieres mantener tus usuarios y configuraciones
+  postgres_keycloak_data:
+    driver: local
+  
+  # ---------------------------------------------------------------------------
+  # Volumen de pgAdmin
+  # ---------------------------------------------------------------------------
+  # Nombre: pgadmin_data
+  # Driver: local (almacenamiento en el host)
+  # 
+  # ¿Qué guarda?
+  # - Conexiones configuradas a servidores PostgreSQL
+  # - Consultas SQL guardadas
+  # - Preferencias de usuario (tema, idioma, etc.)
+  # - Historial de consultas
+  # 
+  # ¿Por qué es útil?
+  # - No tienes que reconfigurar la conexión a PostgreSQL cada vez
+  # - Las consultas guardadas persisten entre reinicios
+  # 
+  # ¿Dónde está físicamente?
+  # - Windows: C:\ProgramData\docker\volumes\docker_pgadmin_data\_data
+  # 
+  # ⚠️ NOTA: Este volumen es opcional
+  # Si lo eliminas, solo pierdes la configuración de pgAdmin, NO los datos de PostgreSQL
+  pgadmin_data:
+    driver: local
