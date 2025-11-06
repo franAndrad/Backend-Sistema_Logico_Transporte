@@ -7,7 +7,6 @@ import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -27,41 +26,34 @@ public class SecurityConfig {
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
             .authorizeExchange(ex -> ex
-            .pathMatchers("/auth", "/token").permitAll()
-            .pathMatchers("/realms/logistica/.well-known/openid-configuration").permitAll()
-            .pathMatchers("/realms/logistica/**", "/resources/**", "/js/**").permitAll()
-            .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
-            .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
-            .anyExchange().authenticated()
+                .pathMatchers("/auth", "/token").permitAll()
+                .pathMatchers("/realms/logistica/.well-known/openid-configuration").permitAll()
+                .pathMatchers("/realms/logistica/**", "/resources/**", "/js/**").permitAll()
+
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
+                .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
+
+                .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(grantedAuthoritiesExtractor()))
             )
             .csrf(ServerHttpSecurity.CsrfSpec::disable);
-        
+
         return http.build();
     }
 
     @Bean
     public Converter<Jwt, Mono<AbstractAuthenticationToken>> grantedAuthoritiesExtractor() {
-        JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
-        
-        jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
-            // Obtener el claim "realm_access" que contiene los roles de Keycloak
+        JwtAuthenticationConverter conv = new JwtAuthenticationConverter();
+        conv.setJwtGrantedAuthoritiesConverter(jwt -> {
             Map<String, List<String>> realmAccess = jwt.getClaim("realm_access");
-            
-            if (realmAccess == null || realmAccess.get("roles") == null) {
-                return List.of();
-            }
-            
-            // Convertir cada rol al formato ROLE_XXXX esperado por Spring Security
-            return realmAccess.get("roles")
-                .stream()
-                .map(role -> String.format("ROLE_%s", role.toUpperCase()))
+            if (realmAccess == null || realmAccess.get("roles") == null) return List.of();
+            return realmAccess.get("roles").stream()
+                .map(r -> "ROLE_" + r.toUpperCase())
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
         });
-        
-        return new ReactiveJwtAuthenticationConverterAdapter(jwtAuthenticationConverter);
+        return new ReactiveJwtAuthenticationConverterAdapter(conv);
     }
 }

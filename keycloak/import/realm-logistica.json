@@ -1,15 +1,13 @@
 {
   "realm": "logistica",
   "enabled": true,
-  
   "sslRequired": "none",
-  "registrationAllowed": false,
+
   "loginWithEmailAllowed": true,
+  "registrationAllowed": false,
   "duplicateEmailsAllowed": false,
-  "resetPasswordAllowed": false,
-  "editUsernameAllowed": false,
   "bruteForceProtected": false,
-  
+
   "clients": [
     {
       "clientId": "api-gateway",
@@ -21,115 +19,20 @@
       "secret": "gateway-secret",
       "clientAuthenticatorType": "client-secret",
 
-      "redirectUris": [
-        "https://oauth.pstmn.io/*",
-        "https://localhost:8443/*"
-      ],
+      "redirectUris": ["https://oauth.pstmn.io/*", "https://localhost:8443/*"],
+      "webOrigins": ["https://oauth.pstmn.io", "https://localhost:8443"],
 
-      "webOrigins": [
-        "https://oauth.pstmn.io",
-        "https://localhost:8443"
-      ],
-      "standardFlowEnabled": true,
+      "standardFlowEnabled": true, 
+      "directAccessGrantsEnabled": true, 
+      "serviceAccountsEnabled": true, 
       "implicitFlowEnabled": false,
-      "directAccessGrantsEnabled": true,
-      "serviceAccountsEnabled": true,
-      "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
 
-      "defaultClientScopes": [
-        "web-origins",
-        "acr",
-        "profile",
-        "roles",
-        "email"
-      ],
-      "optionalClientScopes": [
-        "address",
-        "phone",
-        "offline_access",
-        "microprofile-jwt"
-      ]
+      "defaultClientScopes": ["profile", "email", "roles", "web-origins"],
+      "optionalClientScopes": ["offline_access", "microprofile-jwt"]
     }
   ],
-  "users": [
-    {
-      "username": "cliente1",
-      "enabled": true,
-      "emailVerified": true,
-      "email": "cliente1@logistica.com",
-      "firstName": "Cliente",
-      "lastName": "Test",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "cliente123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "default-roles-logistica",
-        "cliente"
-      ]
-    },
-    {
-      "username": "operador1",
-      "enabled": true,
-      "emailVerified": true,
-      "email": "operador1@logistica.com",
-      "firstName": "Operador",
-      "lastName": "Test",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "operador123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "default-roles-logistica",
-        "operador"
-      ]
-    },
-    {
-      "username": "transportista1",
-      "enabled": true,
-      "emailVerified": true,
-      "email": "transportista1@logistica.com",
-      "firstName": "Transportista",
-      "lastName": "Test",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "transportista123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "default-roles-logistica",
-        "transportista"
-      ]
-    },
-    {
-      "username": "admin",
-      "enabled": true,
-      "emailVerified": true,
-      "email": "admin@logistica.com",
-      "firstName": "Admin",
-      "lastName": "Test",
-      "credentials": [
-        {
-          "type": "password",
-          "value": "admin123",
-          "temporary": false
-        }
-      ],
-      "realmRoles": [
-        "default-roles-logistica",
-        "admin"
-      ]
-    }
-  ],
+
   "roles": {
     "realm": [
       {
@@ -150,15 +53,71 @@
       }
     ]
   },
-  "defaultRole": {
-    "name": "default-roles-logistica",
-    "description": "Default roles for logistica realm",
-    "composite": true,
-    "composites": {
-      "realm": [
-        "offline_access",
-        "uma_authorization"
-      ]
+
+  "users": [
+    {
+      "username": "cliente1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "cliente1@logistica.com",
+      "firstName": "Cliente",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "cliente123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["cliente"]
+    },
+    {
+      "username": "operador1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "operador1@logistica.com",
+      "firstName": "Operador",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "operador123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["operador"]
+    },
+    {
+      "username": "transportista1",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "transportista1@logistica.com",
+      "firstName": "Transportista",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "transportista123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["transportista"]
+    },
+    {
+      "username": "admin",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "admin@logistica.com",
+      "firstName": "Admin",
+      "lastName": "Test",
+      "credentials": [
+        {
+          "type": "password",
+          "value": "admin123",
+          "temporary": false
+        }
+      ],
+      "realmRoles": ["admin"]
     }
-  }
+  ]
 }
