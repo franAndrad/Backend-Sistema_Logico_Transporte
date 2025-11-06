@@ -1,5 +1,5 @@
 server:
-  port: 8082
+  port: 8080
 
 spring:
   application:
@@ -19,7 +19,6 @@ spring:
   profiles:
     active: dev 
 
-# Logging
 logging:
   level:
     ar.edu.utn.frc.backend.logistica: INFO

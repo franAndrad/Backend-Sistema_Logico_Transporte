@@ -13,3 +13,7 @@ spring:
     hibernate:
       ddl-auto: update
 
+logging:
+  level:
+    ar.edu.utn.frc.backend.logistica: INFO
+

@@ -17,7 +17,7 @@ services:
 
   api-gateway:
     build:
-      context: ../microservices/api-gateway
+      context: ./microservices/api-gateway
     environment:
       KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/logistica
       KEYCLOAK_JWK_URI: http://localhost:8180/realms/logistica/protocol/openid-connect/certs
@@ -32,7 +32,13 @@ services:
 
   ms-cliente:
     build:
-      context: ../microservices/ms-cliente
+      context: ./microservices/ms-cliente
+    networks:
+      - app-network
+
+  ms-transporte:
+    build:
+      context: ./microservices/ms-transporte
     networks:
       - app-network
 

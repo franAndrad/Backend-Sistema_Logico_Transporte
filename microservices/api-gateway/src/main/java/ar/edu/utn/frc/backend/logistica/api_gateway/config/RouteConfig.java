@@ -16,9 +16,9 @@ public class RouteConfig {
                         .path("/api/v1/clientes/**", "/api/v1/contenedores/**", "/api/v1/solicitudes/**")
                         .uri("http://ms-cliente:8080"))
 
-                // .route(spec -> spec
-                //         .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
-                //         .uri("http://localhost:8082"))
+                .route(spec -> spec
+                        .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
+                        .uri("http://ms-transporte:8080"))
                 .build();
     }
 }
