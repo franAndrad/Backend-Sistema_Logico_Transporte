@@ -1,0 +1,41 @@
+services:
+  keycloak:
+    image: quay.io/keycloak/keycloak:21.1.1
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_HOSTNAME_STRICT: "false"
+      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8180:8080"
+    command: ["start-dev", "--import-realm"]
+    networks:
+      - app-network
+    volumes:
+      - ./keycloak/import:/opt/keycloak/data/import:ro
+
+  api-gateway:
+    build:
+      context: ../microservices/api-gateway
+    environment:
+      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/logistica
+      KEYCLOAK_JWK_URI: http://localhost:8180/realms/logistica/protocol/openid-connect/certs
+    ports:
+      - "8080:8080"
+    networks:
+      - app-network
+    depends_on:
+      - keycloak
+    extra_hosts:
+      - "localhost:host-gateway"
+
+  ms-cliente:
+    build:
+      context: ../microservices/ms-cliente
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
