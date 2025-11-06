@@ -32,6 +32,7 @@ public class SecurityConfig {
 
                 .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
                 .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
 
                 .anyExchange().authenticated()
             )
