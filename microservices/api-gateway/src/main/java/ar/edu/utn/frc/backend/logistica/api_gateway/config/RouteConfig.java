@@ -14,11 +14,11 @@ public class RouteConfig {
         return builder.routes()
                 .route(spec -> spec
                         .path("/api/v1/clientes/**", "/api/v1/contenedores/**", "/api/v1/solicitudes/**")
-                        .uri("http://localhost:8081"))
+                        .uri("http://ms-cliente:8080"))
 
-                .route(spec -> spec
-                        .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
-                        .uri("http://localhost:8082"))
+                // .route(spec -> spec
+                //         .path("/api/v1/rutas/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
+                //         .uri("http://localhost:8082"))
                 .build();
     }
 }

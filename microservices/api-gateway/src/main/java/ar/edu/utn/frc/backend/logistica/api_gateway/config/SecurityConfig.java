@@ -29,9 +29,8 @@ public class SecurityConfig {
             .authorizeExchange(exchanges -> exchanges
 
                 // ========== RUTAS PRUEBA ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")  
                 .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
-
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
