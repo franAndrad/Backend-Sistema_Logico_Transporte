@@ -12,6 +12,19 @@ public class RouteConfig {
     @Bean
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
+                .route("kc-auth", s -> s.path("/auth")
+                        .filters(f -> f.rewritePath("/auth","/realms/logistica/protocol/openid-connect/auth"))
+                        .uri("http://keycloak:8080"))
+                .route("kc-token", s -> s.path("/token")
+                        .filters(f -> f.rewritePath("/token","/realms/logistica/protocol/openid-connect/token"))
+                        .uri("http://keycloak:8080"))
+                .route("kc-discovery", s -> s
+                        .path("/realms/logistica/.well-known/openid-configuration")
+                        .uri("http://keycloak:8080"))
+                .route("kc-realm-all", s -> s
+                        .path("/realms/logistica/**", "/resources/**", "/js/**")
+                        .uri("http://keycloak:8080"))
+                
                 .route(spec -> spec
                         .path("/api/v1/clientes/**", "/api/v1/contenedores/**", "/api/v1/solicitudes/**")
                         .uri("http://ms-cliente:8080"))

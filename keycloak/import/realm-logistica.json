@@ -16,28 +16,27 @@
       "name": "API Gateway Client",
       "enabled": true,
       "protocol": "openid-connect",
-      
+
       "publicClient": false,
       "secret": "gateway-secret",
       "clientAuthenticatorType": "client-secret",
-      
+
       "redirectUris": [
-        "http://localhost:8080/*",
-        "https://oauth.pstmn.io/v1/callback",
-        "*"
+        "https://oauth.pstmn.io/*",
+        "https://localhost:8443/*"
       ],
+
       "webOrigins": [
-        "http://localhost:8080",
-        "*"
+        "https://oauth.pstmn.io",
+        "https://localhost:8443"
       ],
-      
       "standardFlowEnabled": true,
       "implicitFlowEnabled": false,
       "directAccessGrantsEnabled": true,
       "serviceAccountsEnabled": true,
       "authorizationServicesEnabled": false,
       "fullScopeAllowed": true,
-      
+
       "defaultClientScopes": [
         "web-origins",
         "acr",

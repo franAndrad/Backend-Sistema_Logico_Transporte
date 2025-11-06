@@ -26,12 +26,13 @@ public class SecurityConfig {
     @Bean
     public SecurityWebFilterChain springSecurityFilterChain(ServerHttpSecurity http) {
         http
-            .authorizeExchange(exchanges -> exchanges
-
-                // ========== RUTAS PRUEBA ==========
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")  
-                .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
-                .anyExchange().authenticated()
+            .authorizeExchange(ex -> ex
+            .pathMatchers("/auth", "/token").permitAll()
+            .pathMatchers("/realms/logistica/.well-known/openid-configuration").permitAll()
+            .pathMatchers("/realms/logistica/**", "/resources/**", "/js/**").permitAll()
+            .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
+            .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
+            .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
                 .jwt(jwt -> jwt.jwtAuthenticationConverter(grantedAuthoritiesExtractor()))

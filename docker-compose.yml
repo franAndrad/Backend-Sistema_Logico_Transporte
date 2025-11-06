@@ -7,11 +7,10 @@ services:
       KC_HOSTNAME_STRICT: "false"
       KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
       KC_HTTP_ENABLED: "true"
-    ports:
-      - "8180:8080"
+      KC_PROXY: "edge"
+      KC_HOSTNAME_URL: "${PUBLIC_BASE_URL:-https://localhost:8443}"
     command: ["start-dev", "--import-realm"]
-    networks:
-      - app-network
+    networks: [ app-network ]
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import:ro
 
@@ -19,28 +18,20 @@ services:
     build:
       context: ./microservices/api-gateway
     environment:
-      KEYCLOAK_ISSUER_URI: http://localhost:8180/realms/logistica
-      KEYCLOAK_JWK_URI: http://localhost:8180/realms/logistica/protocol/openid-connect/certs
+      KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/logistica
+      KEYCLOAK_JWK_URI: http://keycloak:8080/realms/logistica/protocol/openid-connect/certs
     ports:
-      - "8080:8080"
-    networks:
-      - app-network
-    depends_on:
-      - keycloak
-    extra_hosts:
-      - "localhost:host-gateway"
+      - "8443:8443"
+    depends_on: [ keycloak ]
+    networks: [ app-network ]
 
   ms-cliente:
-    build:
-      context: ./microservices/ms-cliente
-    networks:
-      - app-network
+    build: ./microservices/ms-cliente
+    networks: [ app-network ]
 
   ms-transporte:
-    build:
-      context: ./microservices/ms-transporte
-    networks:
-      - app-network
+    build: ./microservices/ms-transporte
+    networks: [ app-network ]
 
 networks:
   app-network:
