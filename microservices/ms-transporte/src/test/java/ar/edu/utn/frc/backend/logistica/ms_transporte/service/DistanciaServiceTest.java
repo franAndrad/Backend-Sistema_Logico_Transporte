@@ -1,12 +1,12 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Distance;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Duration;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Leg;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponse.Route;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponse;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Distance;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Duration;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Leg;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Route;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -33,7 +33,7 @@ class DistanciaServiceTest {
     void calcularDistancia_DeberiaRetornarDistanciaYDuracionCorrecta() {
         ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
         
-        DirectionsResponse mockResponse = crearRespuestaMock(100000L, 3600L);
+        DirectionsResponseDTO mockResponse = crearRespuestaMock(100000L, 3600L);
         
         when(googleMapsClient.getDirections(
             anyString(), 
@@ -43,7 +43,7 @@ class DistanciaServiceTest {
             anyString()    
         )).thenReturn(mockResponse);
 
-        DistanciaResponse response = googleMapsService.calcularDistancia(
+        DistanciaResponseDTO response = googleMapsService.calcularDistancia(
             -34.603722, -58.381592,
             -34.921230, -57.954590
         );
@@ -56,7 +56,7 @@ class DistanciaServiceTest {
     void calcularDistancia_ConErrorDeApi_DeberiaLanzarExcepcion() {
         ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
         
-        DirectionsResponse mockResponse = new DirectionsResponse();
+        DirectionsResponseDTO mockResponse = new DirectionsResponseDTO();
         mockResponse.setStatus("NOT_FOUND");
         
         when(googleMapsClient.getDirections(
@@ -75,8 +75,8 @@ class DistanciaServiceTest {
         });
     }
 
-    private DirectionsResponse crearRespuestaMock(Long distanciaMetros, Long duracionSegundos) {
-        DirectionsResponse response = new DirectionsResponse();
+    private DirectionsResponseDTO crearRespuestaMock(Long distanciaMetros, Long duracionSegundos) {
+        DirectionsResponseDTO response = new DirectionsResponseDTO();
         response.setStatus("OK");
 
         Distance distance = new Distance();

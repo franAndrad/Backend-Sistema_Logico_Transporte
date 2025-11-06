@@ -4,7 +4,7 @@ import lombok.Data;
 import java.util.List;
 
 @Data
-public class DirectionsResponse {
+public class DirectionsResponseDTO {
     
     private String status;
     private List<Route> routes;

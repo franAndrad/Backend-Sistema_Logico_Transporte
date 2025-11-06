@@ -7,7 +7,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DistanciaResponse {
+public class DistanciaResponseDTO {
     private Double origenLat;
     private Double origenLng;
 
