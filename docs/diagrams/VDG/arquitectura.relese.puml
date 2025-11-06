@@ -1,0 +1,53 @@
+@startuml arquitectura
+!include <C4/C4_Container>
+
+' Icon packs
+!define DEVICONS https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/devicons/
+!define FONTAWESOME https://raw.githubusercontent.com/tupadr3/plantuml-icon-font-sprites/master/font-awesome-5/
+!include DEVICONS/java.puml
+!include DEVICONS/docker.puml
+!include DEVICONS/postgresql.puml
+!include FONTAWESOME/users.puml
+!include FONTAWESOME/cloud.puml
+
+LAYOUT_WITH_LEGEND()
+
+skinparam roundcorner 15
+skinparam shadowing true
+skinparam linetype ortho
+
+Person(cliente, "Cliente", "Usuario", $sprite="users")
+
+' ======= Todo en el mismo docker-compose =======
+Container_Boundary(docker_env, "Docker (Compose) <$docker>") {
+
+  Container(api_gateway, "API Gateway", "Spring Cloud Gateway", "Enrutamiento y seguridad", $sprite="java")
+
+  Container(ms_cliente, "MS Cliente", "Spring Boot", "Clientes / Solicitudes", $sprite="java")
+  Container(ms_transporte, "MS Transporte", "Spring Boot", "Rutas / Tarifas", $sprite="java")
+
+  ContainerDb(db_app, "PostgreSQL App", "DB", "Datos de negocio", $sprite="postgresql")
+
+  ' Keycloak y su propia base
+  Container(keycloak, "Keycloak", "IAM / OIDC", "AuthN/AuthZ", $sprite="java")
+  ContainerDb(db_kc, "PostgreSQL Keycloak", "DB", "Realm, usuarios, roles", $sprite="postgresql")
+}
+
+' Sistema externo (sigue fuera del compose)
+System_Ext(maps_api, "Google Maps API", "Ruteo", $sprite="cloud")
+
+' ======= Relaciones mínimas =======
+Rel(cliente, api_gateway, "HTTPS")
+
+Rel(api_gateway, ms_cliente, "REST")
+Rel(api_gateway, ms_transporte, "REST")
+
+Rel(ms_cliente, db_app, "JDBC")
+Rel(ms_transporte, db_app, "JDBC")
+
+Rel(api_gateway, keycloak, "OIDC (interno)")
+Rel(keycloak, db_kc, "JDBC")
+
+Rel(ms_transporte, maps_api, "HTTPS")
+
+@enduml
