@@ -33,6 +33,8 @@ services:
     build: ./microservices/ms-transporte
     networks: [ app-network ]
 
+    
+
 networks:
   app-network:
     driver: bridge
