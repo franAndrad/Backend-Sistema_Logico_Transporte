@@ -26,11 +26,11 @@ Container_Boundary(docker_env, "Docker (Compose) <$docker>") {
   Container(ms_cliente, "MS Cliente", "Spring Boot", "Clientes / Solicitudes", $sprite="java")
   Container(ms_transporte, "MS Transporte", "Spring Boot", "Rutas / Tarifas", $sprite="java")
 
-  ' ContainerDb(db_app, "PostgreSQL App", "DB", "Datos de negocio", $sprite="postgresql")
+  ContainerDb(db_app, "PostgreSQL App", "DB", "Datos de negocio", $sprite="postgresql")
 
   ' Keycloak y su propia base
   Container(keycloak, "Keycloak", "IAM / OIDC", "AuthN/AuthZ", $sprite="java")
-  ' ContainerDb(db_kc, "PostgreSQL Keycloak", "DB", "Realm, usuarios, roles", $sprite="postgresql")
+  ContainerDb(db_kc, "PostgreSQL Keycloak", "DB", "Realm, usuarios, roles", $sprite="postgresql")
 }
 
 ' Sistema externo (sigue fuera del compose)
@@ -42,11 +42,11 @@ Rel(cliente, api_gateway, "HTTPS")
 Rel(api_gateway, ms_cliente, "REST")
 Rel(api_gateway, ms_transporte, "REST")
 
-' Rel(ms_cliente, db_app, "JDBC")
-' Rel(ms_transporte, db_app, "JDBC")
+Rel(ms_cliente, db_app, "JDBC")
+Rel(ms_transporte, db_app, "JDBC")
 
 Rel(api_gateway, keycloak, "OIDC (interno)")
-' Rel(keycloak, db_kc, "JDBC")
+Rel(keycloak, db_kc, "JDBC")
 
 Rel(ms_transporte, maps_api, "HTTPS")
 
