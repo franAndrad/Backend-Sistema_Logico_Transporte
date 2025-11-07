@@ -19,16 +19,17 @@ public class Deposito {
     private Integer idDeposito;
 
     @Column(name = "NOMBRE", nullable = false, length = 80)
-    @NotBlank(message = "El nombre es obligatorio")
     private String nombre;
 
     @Column(name = "DIRECCION", nullable = false, length = 120)
-    @NotBlank(message = "La dirección es obligatoria")
     private String direccion;
 
     @Column(name = "COSTO_ESTADIA_DIARIO", nullable = false)
     @DecimalMin(value = "0.01", message = "El costo debe ser mayor a 0")
     private BigDecimal costoEstadiaDiario;
+
+    @Column(name = "ACTIVO", nullable = false)
+    private Boolean activo = true;
 
     @Column(name = "LATITUD", precision = 10, scale = 8, nullable = false)
     @DecimalMin(value = "-90.0", message = "Latitud mínima permitida -90")

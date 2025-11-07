@@ -1,4 +1,4 @@
-package ar.edu.utn.frc.backend.logistica.ms_transporte.dto;
+package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

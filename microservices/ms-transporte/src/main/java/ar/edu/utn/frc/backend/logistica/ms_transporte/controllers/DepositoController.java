@@ -1,6 +1,6 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.controllers;
 
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DepositoResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.*;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.DepositoService;
 import jakarta.validation.Valid;
@@ -16,9 +16,15 @@ public class DepositoController {
     @Autowired
     private DepositoService depositoService;
 
+    // ===================== Consultas =====================
     @GetMapping
     public List<Deposito> getAll() {
         return depositoService.findAll();
+    }
+
+    @GetMapping("/activos")
+    public List<Deposito> getAllActives() {
+        return depositoService.findAllActivos();
     }
 
     @GetMapping("/{idDeposito}")
@@ -26,13 +32,38 @@ public class DepositoController {
         return depositoService.findById(idDeposito);
     }
 
-    @PostMapping
-    public DepositoResponseDTO create(@Valid @RequestBody Deposito deposito) {
-        Deposito nuevo = depositoService.save(deposito);
-
-        return new DepositoResponseDTO(
-                nuevo.getIdDeposito(),
-                "Depósito creado correctamente"
-        );
+    @GetMapping("/cercanos")
+    public List<DepositoCercanoResponseDTO> buscarCercanos(
+            @RequestParam Double latitud,
+            @RequestParam Double longitud
+    ) {
+        return depositoService.buscarDepositosCercanos(latitud, longitud);
     }
+
+    // ===================== Creación =====================
+    @PostMapping
+    public DepositoCreateResponseDTO create(
+            @Valid @RequestBody DepositoCreateRequestDTO dto) {
+        return depositoService.save(dto);
+    }
+
+    // ===================== Actualización =====================
+    @PutMapping("/{idDeposito}")
+    public DepositoResponseDTO actualizar(
+            @PathVariable Integer idDeposito,
+            @Valid @RequestBody DepositoUpdateResponseDTO dto) {
+        return depositoService.actualizarDeposito(idDeposito, dto);
+    }
+
+    // ===================== Activación / Desactivación =====================
+    @PatchMapping("/{idDeposito}/desactivar")
+    public DepositoResponseDTO desactivar(@PathVariable Integer idDeposito) {
+        return depositoService.desactivar(idDeposito);
+    }
+
+    @PatchMapping("/{idDeposito}/activar")
+    public DepositoResponseDTO activar(@PathVariable Integer idDeposito) {
+        return depositoService.activar(idDeposito);
+    }
+
 }
