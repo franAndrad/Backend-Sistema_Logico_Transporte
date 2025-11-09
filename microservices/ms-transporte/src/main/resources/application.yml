@@ -16,4 +16,4 @@ google:
 
 logging:
   level:
-    ar.edu.utn.frc.backend.logistica: INFO
+    '[ar.edu.utn.frc.backend.logistica]': INFO

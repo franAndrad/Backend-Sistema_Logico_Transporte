@@ -3,9 +3,9 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.config.GoogleMapsProperties;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -14,9 +14,7 @@ import org.springframework.stereotype.Service;
 public class GoogleMapsService {
 
     private final GoogleMapsClient googleMapsClient;
-
-    @Value("${google.maps.api.key}")
-    private String apiKey;
+    private final GoogleMapsProperties googleMapsProperties;
 
     public DistanciaResponseDTO calcularDistancia(Double origenLat, Double origenLng, 
                                                 Double destinoLat, Double destinoLng) {
@@ -25,11 +23,11 @@ public class GoogleMapsService {
         String destination = destinoLat + "," + destinoLng;
 
         DirectionsResponseDTO response = googleMapsClient.getDirections(
-            origin, 
-            destination, 
-            "driving", 
-            false, 
-            apiKey
+            origin,
+            destination,
+            "driving",
+            false,
+            googleMapsProperties.getApi().getKey()
         );
 
         if (!"OK".equals(response.getStatus())) {

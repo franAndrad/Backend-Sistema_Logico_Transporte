@@ -118,8 +118,6 @@ class DepositoServiceTest {
         assertEquals(20, resp.getId());
         assertFalse(d.getActivo());
         verify(depositoRepository, times(1)).save(d);
-
-        
         when(depositoRepository.findById(20)).thenReturn(Optional.of(d));
         DepositoResponseDTO r2 = depositoService.activar(20);
         assertTrue(d.getActivo());

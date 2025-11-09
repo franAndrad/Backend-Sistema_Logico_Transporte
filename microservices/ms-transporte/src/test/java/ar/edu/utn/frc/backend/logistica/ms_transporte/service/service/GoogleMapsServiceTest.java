@@ -15,6 +15,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.config.GoogleMapsProperties;
 
 import java.util.List;
 
@@ -34,7 +35,9 @@ class GoogleMapsServiceTest {
 
     @Test
     void calcularDistancia_DeberiaRetornarDistanciaYDuracionCorrecta() {
-        ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
+    GoogleMapsProperties props = new GoogleMapsProperties();
+    props.getApi().setKey("test-key");
+    ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props);
         DirectionsResponseDTO mockResponse = crearRespuestaMock(100000L, 3600L);
         when(googleMapsClient.getDirections(
             anyString(), 
@@ -53,7 +56,9 @@ class GoogleMapsServiceTest {
 
     @Test
     void calcularDistancia_ConErrorDeApi_DeberiaLanzarExcepcion() {
-        ReflectionTestUtils.setField(googleMapsService, "apiKey", "test-key");
+    GoogleMapsProperties props2 = new GoogleMapsProperties();
+    props2.getApi().setKey("test-key");
+    ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props2);
         DirectionsResponseDTO mockResponse = new DirectionsResponseDTO();
         mockResponse.setStatus("NOT_FOUND");
         when(googleMapsClient.getDirections(
