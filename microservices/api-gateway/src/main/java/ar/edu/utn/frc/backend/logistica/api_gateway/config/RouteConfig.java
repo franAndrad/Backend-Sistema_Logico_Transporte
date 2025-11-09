@@ -13,8 +13,7 @@ public class RouteConfig {
     public RouteLocator customRouteLocator(RouteLocatorBuilder builder) {
         return builder.routes()
 
-                // ===== Keycloak: AUTH (UI) + TOKEN =====
-
+                // Keycloak: Autenticacion (UI) + Token
                 .route("kc-auth", s -> s.path("/auth")
                         .filters(f -> f.rewritePath("/auth","/realms/logistica/protocol/openid-connect/auth"))
                         .uri("http://keycloak:8080"))
@@ -28,14 +27,12 @@ public class RouteConfig {
                         .path("/realms/logistica/**", "/resources/**", "/js/**")
                         .uri("http://keycloak:8080"))
 
-                // ===== Microservice: CLIENTE =====
-
+                // ms-cliente
                 .route(spec -> spec
                         .path("/api/v1/clientes/**", "/api/v1/contenedores/**", "/api/v1/solicitudes/**")
                         .uri("http://ms-cliente:8080"))
 
-                // ===== Microservice: TRANSPORTE =====
-                
+                // ms-transporte
                 .route(spec -> spec
                         .path("/api/v1/rutas/**","/api/v1/distancia/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
                         .uri("http://ms-transporte:8080"))
