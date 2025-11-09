@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.backend.logistica.api_gateway.config;
 
+import org.springframework.boot.actuate.autoconfigure.observation.ObservationProperties.Http;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -31,9 +32,21 @@ public class SecurityConfig {
                 .pathMatchers("/realms/logistica/**", "/resources/**", "/js/**").permitAll()
 
                 .pathMatchers(HttpMethod.GET, "/api/v1/clientes/health").hasRole("CLIENTE")
-                .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
 
+                .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
+
+                .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
+                
+                // Depositos
+                .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/activar").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/desactivar").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/cercanos").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/activos").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos").hasRole("ADMIN")
+                
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
