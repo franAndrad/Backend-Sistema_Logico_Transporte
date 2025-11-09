@@ -10,13 +10,12 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/depositos")
+@RequestMapping("/api/v1/depositos")
 public class DepositoController {
 
     @Autowired
     private DepositoService depositoService;
 
-    // ===================== Consultas =====================
     @GetMapping
     public List<Deposito> getAll() {
         return depositoService.findAll();
@@ -40,14 +39,12 @@ public class DepositoController {
         return depositoService.buscarDepositosCercanos(latitud, longitud);
     }
 
-    // ===================== Creación =====================
     @PostMapping
     public DepositoCreateResponseDTO create(
             @Valid @RequestBody DepositoCreateRequestDTO dto) {
         return depositoService.save(dto);
     }
 
-    // ===================== Actualización =====================
     @PutMapping("/{idDeposito}")
     public DepositoResponseDTO actualizar(
             @PathVariable Integer idDeposito,
@@ -55,7 +52,6 @@ public class DepositoController {
         return depositoService.actualizarDeposito(idDeposito, dto);
     }
 
-    // ===================== Activación / Desactivación =====================
     @PatchMapping("/{idDeposito}/desactivar")
     public DepositoResponseDTO desactivar(@PathVariable Integer idDeposito) {
         return depositoService.desactivar(idDeposito);

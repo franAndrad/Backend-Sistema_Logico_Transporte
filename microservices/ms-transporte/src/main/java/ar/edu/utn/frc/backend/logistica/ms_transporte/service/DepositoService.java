@@ -107,13 +107,13 @@ public class DepositoService {
                 .orElseThrow(() -> new NoSuchElementException("Depósito no encontrado"));
 
         if (deposito.getActivo()) {
-            return new DepositoResponseDTO(idDeposito, "El depósito ya estaba acticado");
+            return new DepositoResponseDTO(idDeposito, "El depósito ya estaba activado");
         }
 
         deposito.setActivo(true);
         depositoRepository.save(deposito);
 
-        return new DepositoResponseDTO(idDeposito, "Depósito acticado correctamente");
+        return new DepositoResponseDTO(idDeposito, "Depósito activado correctamente");
     }
 
     private double distanciaEnKm(double lat1, double lon1, double lat2, double lon2) {
