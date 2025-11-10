@@ -28,6 +28,10 @@ services:
   ms-cliente:
     build: ./microservices/ms-cliente
     networks: [ app-network ]
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_AUTOCONFIGURE_EXCLUDE: "org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,org.springframework.boot.actuate.autoconfigure.security.servlet.ManagementWebSecurityAutoConfiguration"
 
   ms-transporte:
     build: ./microservices/ms-transporte
