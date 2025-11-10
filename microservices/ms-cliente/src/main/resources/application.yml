@@ -6,7 +6,16 @@ spring:
     name: ms-cliente
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/app?currentSchema=ms_cliente
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    default-schema: ms_cliente
+    schemas: ms_cliente
+    locations: classpath:db/migration
 
 logging:
   level:

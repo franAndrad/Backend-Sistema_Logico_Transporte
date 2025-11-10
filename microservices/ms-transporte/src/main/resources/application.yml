@@ -6,7 +6,19 @@ spring:
     name: ms-transporte
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate
+    properties:
+      '[hibernate.default_schema]': ms_transporte
+  datasource:
+    driver-class-name: org.postgresql.Driver
+    url: jdbc:postgresql://postgres:5432/app?currentSchema=ms_transporte
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    default-schema: ms_transporte
+    schemas: ms_transporte
+    locations: classpath:db/migration
+    
 
 google:
   maps:
@@ -17,3 +29,4 @@ google:
 logging:
   level:
     '[ar.edu.utn.frc.backend.logistica]': INFO
+

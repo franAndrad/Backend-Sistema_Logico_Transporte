@@ -1,4 +1,15 @@
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: app
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./init-schemas.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    networks: [app-network]
+
   keycloak:
     image: quay.io/keycloak/keycloak:21.1.1
     environment:
@@ -9,10 +20,28 @@ services:
       KC_HTTP_ENABLED: "true"
       KC_PROXY: "edge"
       KC_HOSTNAME_URL: "${PUBLIC_BASE_URL:-https://localhost:8443}"
+      KC_DB: postgres
+      KC_DB_URL_HOST: postgres
+      KC_DB_URL_DATABASE: app
+      KC_DB_USERNAME: admin
+      KC_DB_PASSWORD: admin
+      KC_DB_SCHEMA: keycloak
     command: ["start-dev", "--import-realm"]
     networks: [ app-network ]
     volumes:
       - ./keycloak/import:/opt/keycloak/data/import:ro
+
+  pgadmin:
+    image: dpage/pgadmin4:7
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on: [ postgres ]
+    networks: [ app-network ]
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
 
   api-gateway:
     build:
@@ -27,11 +56,25 @@ services:
 
   ms-cliente:
     build: ./microservices/ms-cliente
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app?currentSchema=ms_cliente
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: ms_cliente
     networks: [ app-network ]
 
   ms-transporte:
     build: ./microservices/ms-transporte
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/app?currentSchema=ms_transporte
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: ms_transporte
     networks: [ app-network ]
+
+volumes:
+  pgdata:
+  pgadmin_data:
 
 networks:
   app-network:
