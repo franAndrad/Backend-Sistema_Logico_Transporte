@@ -1,5 +1,6 @@
 package ar.edu.utn.frc.backend.logistica.api_gateway.config;
 
+import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
@@ -35,7 +36,31 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
 
                 .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
-                
+
+                //Cliente
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/*").hasAnyRole("OPERADOR", "CLIENTE", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/clientes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.DELETE, "/api/v1/clientes/*").hasRole("ADMIN")
+
+                //Contenedor
+                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/cliente/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/contenedores").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/contenedores/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.DELETE, "/api/v1/contenedores/*").hasRole("ADMIN")
+
+                //Solicitud
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/cliente/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/*/estado").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasAnyRole("CLIENTE", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*/estado").hasAnyRole("TRANSPORTISTA","OPERADOR", "ADMIN")
+
                 // Depositos
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/activar").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/desactivar").hasRole("ADMIN")
