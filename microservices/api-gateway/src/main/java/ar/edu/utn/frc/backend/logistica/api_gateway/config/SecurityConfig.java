@@ -39,13 +39,22 @@ public class SecurityConfig {
                 // Depositos
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/activar").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/desactivar").hasRole("ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/cercanos").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/cercanos").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/depositos/*").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/depositos/activos").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/depositos").hasRole("ADMIN")
-                
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
+
+                // Camiones
+                .pathMatchers(HttpMethod.PATCH, "/api/v1/camiones/*/habilitar").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.PATCH, "/api/v1/camiones/*/deshabilitar").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/camiones/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/camiones/disponibles").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/camiones/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
+
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

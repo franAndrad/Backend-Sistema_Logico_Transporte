@@ -10,10 +10,10 @@ CREATE TABLE IF NOT EXISTS depositos (
 
 CREATE TABLE IF NOT EXISTS camiones (
   dominio VARCHAR(20) PRIMARY KEY,
-  capacidad_peso REAL NOT NULL,
-  capacidad_volumen REAL NOT NULL,
+  capacidad REAL NOT NULL,
+  volumen REAL NOT NULL,
   disponibilidad BOOLEAN DEFAULT true,
-  costo_base_km REAL NOT NULL,
+  costo_base DECIMAL(10,2) NOT NULL,
   consumo_combustible REAL NOT NULL
 );
 

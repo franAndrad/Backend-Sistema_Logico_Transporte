@@ -3,6 +3,8 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito;
 import jakarta.validation.constraints.DecimalMax;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,14 +22,17 @@ public class DepositoCreateRequestDTO {
     @NotBlank(message = "La dirección es obligatoria")
     private String direccion;
 
+    @NotNull(message = "El costo es obligatorio")
     @DecimalMin(value = "0.01", message = "El costo debe ser mayor a 0")
     private BigDecimal costoEstadiaDiario;
 
     @DecimalMin(value = "-90.0")
     @DecimalMax(value = "90.0")
+    @NotNull(message = "La latitud es obligatoria")
     private BigDecimal latitud;
 
     @DecimalMin(value = "-180.0")
     @DecimalMax(value = "180.0")
+    @NotNull(message = "La longitud es obligatoria")
     private BigDecimal longitud;
 }

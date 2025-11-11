@@ -18,7 +18,6 @@ spring:
     default-schema: ms_transporte
     schemas: ms_transporte
     locations: classpath:db/migration
-    
 
 google:
   maps:
