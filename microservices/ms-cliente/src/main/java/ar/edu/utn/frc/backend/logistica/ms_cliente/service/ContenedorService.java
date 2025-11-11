@@ -8,7 +8,7 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ClienteRepository;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ContenedorRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
+import java.util.Objects;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -65,10 +65,14 @@ public class ContenedorService {
     }
 
     public ContenedorResponseDTO create(ContenedorCreateDTO dto) {
+        
+        final Integer idCliente = Objects.requireNonNull(dto.getClienteId(), "idCliente no puede ser null");
+        
         if (contenedorRepository.existsByIdentificacion(dto.getIdentificacion())) {
             throw new IllegalStateException("Identificación de contenedor duplicada");
         }
-        Cliente cliente = clienteRepository.findById(dto.getClienteId())
+
+        Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
 
         Contenedor cont = new Contenedor();

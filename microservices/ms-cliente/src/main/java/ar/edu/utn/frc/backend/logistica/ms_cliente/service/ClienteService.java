@@ -6,7 +6,6 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ClienteRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -71,7 +70,6 @@ public class ClienteService {
         Cliente cliente = clienteRepository.findByIdClienteAndActivoTrue(id)
                 .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
 
-        // Validar cambio de CUIT
         if (dto.getCuit() != null && !dto.getCuit().isBlank()) {
             String nuevoCuit = dto.getCuit();
             String actualCuit = cliente.getCuit();

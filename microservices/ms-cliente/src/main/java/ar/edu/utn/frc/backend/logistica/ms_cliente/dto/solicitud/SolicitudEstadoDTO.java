@@ -4,7 +4,6 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.time.LocalDateTime;
 
 @Data

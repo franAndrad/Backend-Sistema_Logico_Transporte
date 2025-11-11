@@ -6,7 +6,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.service.DepositoService;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController

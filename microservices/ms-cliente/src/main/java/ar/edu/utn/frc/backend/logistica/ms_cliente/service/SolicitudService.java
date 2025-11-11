@@ -9,10 +9,10 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ContenedorReposito
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.SolicitudRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Service
 @Slf4j
@@ -42,7 +42,7 @@ public class SolicitudService {
                 .collect(Collectors.toList());
     }
 
-    public SolicitudDetailsDTO getById(Integer id) {
+    public SolicitudDetailsDTO getById(int id) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
         return new SolicitudDetailsDTO(
@@ -56,7 +56,7 @@ public class SolicitudService {
         );
     }
 
-    public List<SolicitudListDTO> listByCliente(Integer clienteId) {
+    public List<SolicitudListDTO> listByCliente(int clienteId) {
         return solicitudRepository.findByCliente_IdCliente(clienteId).stream()
                 .map(s -> new SolicitudListDTO(
                         s.getIdSolicitud(),
@@ -68,16 +68,20 @@ public class SolicitudService {
                 .collect(Collectors.toList());
     }
 
-    public SolicitudEstadoDTO getEstado(Integer id) {
+    public SolicitudEstadoDTO getEstado(int id) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
         return new SolicitudEstadoDTO(s.getIdSolicitud(), s.getEstado(), s.getFechaActualizacion(), s.getDescripcionEstado());
     }
 
     public SolicitudResponseDTO create(SolicitudCreateDTO dto) {
-        Cliente cliente = clienteRepository.findById(dto.getIdCliente())
+        final Integer idCliente = Objects.requireNonNull(dto.getIdCliente(), "idCliente no puede ser null");
+        final Integer idContenedor = Objects.requireNonNull(dto.getIdContenedor(), "idContenedor no puede ser null");
+
+
+        Cliente cliente = clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
-        Contenedor contenedor = contenedorRepository.findById(dto.getIdContenedor())
+        Contenedor contenedor = contenedorRepository.findById(idContenedor)
                 .orElseThrow(() -> new NoSuchElementException("Contenedor no encontrado"));
 
 
@@ -99,7 +103,7 @@ public class SolicitudService {
         return new SolicitudResponseDTO(saved.getIdSolicitud(), "Solicitud creada (BORRADOR)");
     }
 
-    public SolicitudResponseDTO update(Integer id, SolicitudUpdateDTO dto) {
+    public SolicitudResponseDTO update(int id, SolicitudUpdateDTO dto) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
         s.setEstado(dto.getEstado());
@@ -108,7 +112,7 @@ public class SolicitudService {
         return new SolicitudResponseDTO(saved.getIdSolicitud(), "Solicitud actualizada");
     }
 
-    public SolicitudResponseDTO updateEstado(Integer id, SolicitudEstadoUpdateDTO dto) {
+    public SolicitudResponseDTO updateEstado(int id, SolicitudEstadoUpdateDTO dto) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
         s.setEstado(dto.getEstado());

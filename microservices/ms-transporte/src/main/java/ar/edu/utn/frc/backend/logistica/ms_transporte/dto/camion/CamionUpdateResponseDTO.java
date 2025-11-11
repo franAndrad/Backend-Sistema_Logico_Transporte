@@ -1,10 +1,8 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion;
 
 import java.math.BigDecimal;
-
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

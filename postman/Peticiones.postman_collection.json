@@ -1,0 +1,2936 @@
+{
+	"info": {
+		"_postman_id": "c8d68ac7-f772-4935-86d1-c0f5b46d7cbc",
+		"name": "Gateway Proxy Prueba",
+		"description": "Colección completa para probar el sistema de logística con autenticación Keycloak y roles (CLIENTE, OPERADOR, TRANSPORTISTA, ADMIN)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "46403717"
+	},
+	"item": [
+		{
+			"name": "👤 MS-Cliente",
+			"item": [
+				{
+					"name": "Cliente",
+					"item": [
+						{
+							"name": "Create cliente",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": " { \"keycloakId\": \"keycloak-use4\",\r\n  \"direccionFacturacion\": \"Av. Factura 100\",\r\n   \"direccionEnvio\": \"Calle Envio 200\",\r\n    \"razonSocial\": \"Mi Empresa SA\",\r\n     \"cuit\": \"11111111111\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/clientes",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"clientes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get cliente",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/clientes",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"clientes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Cliente ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/clientes/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"clientes",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Cliente",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"direccionFacturacion\": \"Av. Factura 999\",\r\n \"direccionEnvio\": \"Calle Envio 222\",\r\n  \"razonSocial\": \"Mi Empresa Renovada\",\r\n   \"cuit\": \"30712345678\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/clientes/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"clientes",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete cliente",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Deposito Modificado\",\r\n  \"direccion\": \"Av. Siempre Viva 742\",\r\n  \"costoEstadiaDiario\": 199.99,\r\n  \"latitud\": -31.4311,\r\n  \"longitud\": -64.1911\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/clientes/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"clientes",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Contenedor",
+					"item": [
+						{
+							"name": "Create contenedor",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"identificacion\": \"NT-BA-2025-01\",\r\n \"clienteId\": 1,\r\n  \"peso\": 1800,\r\n   \"volumen\": 12.5,\r\n    \"estado\": \"EN_ORIGEN\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/contenedores",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"contenedores"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get contenedor",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/contenedores",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"contenedores"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update contenedor",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"peso\": 1900,\r\n \"volumen\": 12.5,\r\n  \"estado\": \"EN_TRANSITO\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/contenedores/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"contenedores",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete contenedor",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Deposito Modificado\",\r\n  \"direccion\": \"Av. Siempre Viva 742\",\r\n  \"costoEstadiaDiario\": 199.99,\r\n  \"latitud\": -31.4311,\r\n  \"longitud\": -64.1911\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/contenedores/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"contenedores",
+										"1"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Solicitudes",
+					"item": [
+						{
+							"name": "Get solicitud",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get solicitud ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get solicitud ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes/cliente/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes",
+										"cliente",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get solicitud estado",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes/1/estado",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes",
+										"1",
+										"estado"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create solicitud",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"idCliente\": 1,\r\n \"idContenedor\": 1,\r\n  \"origenDireccion\": \"Puerto Buenos Aires\",\r\n   \"destinoDireccion\": \"Depósito Córdoba\",\r\n    \"origenLatitud\": -34.6037,\r\n     \"origenLongitud\": -58.3816,\r\n      \"destinoLatitud\": -31.4201,\r\n       \"destinoLongitud\": -64.1888\r\n       }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update solicitud",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"estado\": \"PROGRAMADA\",\r\n \"tarifaId\": 10 }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Cliente Copy",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": " { \"estado\": \"EN_TRANSITO\",\r\n  \"descripcion\": \"Salió del origen\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/solicitudes/1/estado",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"solicitudes",
+										"1",
+										"estado"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "client_authentication",
+									"value": "header",
+									"type": "string"
+								},
+								{
+									"key": "grant_type",
+									"value": "authorization_code",
+									"type": "string"
+								},
+								{
+									"key": "scope",
+									"value": "openid profile email",
+									"type": "string"
+								},
+								{
+									"key": "authUrl",
+									"value": "{{gateway_url}}/auth",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "{{gateway_url}}/token",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://oauth.pstmn.io/v1/callback",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "{{client_secret}}",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{client_id}}",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "token",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/clientes/health",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"clientes",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "🗺️ MS-Transporte",
+			"item": [
+				{
+					"name": "Deposito",
+					"item": [
+						{
+							"name": "Get Depositos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Depositos Activos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/activos",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"activos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Depositos ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Depositos Cercanos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/cercanos?latitud=-31.41&longitud=-64.18",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"cercanos"
+									],
+									"query": [
+										{
+											"key": "latitud",
+											"value": "-31.41"
+										},
+										{
+											"key": "longitud",
+											"value": "-64.18"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Depósito Central\",\r\n  \"direccion\": \"Av. Colón 1234, Córdoba\",\r\n  \"costoEstadiaDiario\": 500,\r\n  \"latitud\": -31.417,\r\n  \"longitud\": -64.183\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"nombre\": \"Deposito Modificado\",\r\n  \"direccion\": \"Av. Siempre Viva 742\",\r\n  \"costoEstadiaDiario\": 199.99,\r\n  \"latitud\": -31.4311,\r\n  \"longitud\": -64.1911\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deactivate Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/1/desactivar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"1",
+										"desactivar"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Active Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/1/activar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"1",
+										"activar"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Camion",
+					"item": [
+						{
+							"name": "Get Camiones",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/camiones",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"camiones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Camiones Activos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/camiones/disponibles",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"camiones",
+										"disponibles"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Camiones ByDominio",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Depositos Cercanos",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/cercanos?latitud=-31.41&longitud=-64.18",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"cercanos"
+									],
+									"query": [
+										{
+											"key": "latitud",
+											"value": "-31.41"
+										},
+										{
+											"key": "longitud",
+											"value": "-64.18"
+										}
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Camion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"dominio\": \"ABC123\",\r\n  \"capacidad\": 3500.0,\r\n  \"volumen\": 25.5,\r\n  \"costoBase\": 120.75,\r\n  \"consumoCombustible\": 8.4\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/camiones",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"camiones"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Camion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"capacidad\": 4000.0,\r\n  \"volumen\": 30.0,\r\n  \"costoBase\": 150.50,\r\n  \"consumoCombustible\": 9.2\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/camiones/ABC123",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"camiones",
+										"ABC123"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Deactivate Camion",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/ABC123/deshabilitar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"ABC123",
+										"deshabilitar"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Active Deposito",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PATCH",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/depositos/ABC123/habilitar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"depositos",
+										"ABC123",
+										"habilitar"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Distancia",
+					"item": [
+						{
+							"name": "Obtener Distancia",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status 200 OK\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/distancia?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"distancia"
+									],
+									"query": [
+										{
+											"key": "origenLat",
+											"value": "-31.4135"
+										},
+										{
+											"key": "origenLng",
+											"value": "-64.1811"
+										},
+										{
+											"key": "destinoLat",
+											"value": "-32.9468"
+										},
+										{
+											"key": "destinoLng",
+											"value": "-60.6393"
+										}
+									]
+								},
+								"description": "**PASO 1**: Obtiene todas las rutas alternativas disponibles entre origen y destino.\n\n**Comportamiento:**\n- Primera llamada: Consulta la API de Google Maps\n- Resultado se CACHEA por 15 minutos\n- Siguientes llamadas (mismas coordenadas): responde desde caché (instantáneo)\n\n**Notas:**\n- Marca una ruta como \"más rápida\" (menor duración)\n- Numera las rutas de 1 a N\n- NO guarda nada en BD (solo en memoria/caché)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Health Check",
+					"request": {
+						"auth": {
+							"type": "oauth2",
+							"oauth2": [
+								{
+									"key": "authUrl",
+									"value": "{{gateway_url}}/auth",
+									"type": "string"
+								},
+								{
+									"key": "accessTokenUrl",
+									"value": "{{gateway_url}}/token",
+									"type": "string"
+								},
+								{
+									"key": "redirect_uri",
+									"value": "https://oauth.pstmn.io/v1/callback",
+									"type": "string"
+								},
+								{
+									"key": "useBrowser",
+									"value": false,
+									"type": "boolean"
+								},
+								{
+									"key": "scope",
+									"value": "",
+									"type": "string"
+								},
+								{
+									"key": "clientSecret",
+									"value": "{{client_secret}}",
+									"type": "string"
+								},
+								{
+									"key": "clientId",
+									"value": "{{client_id}}",
+									"type": "string"
+								},
+								{
+									"key": "tokenName",
+									"value": "token",
+									"type": "string"
+								},
+								{
+									"key": "addTokenTo",
+									"value": "header",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{gateway_url}}/api/v1/transportes/health",
+							"host": [
+								"{{gateway_url}}"
+							],
+							"path": [
+								"api",
+								"v1",
+								"transportes",
+								"health"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"packages": {},
+				"requests": {},
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "gateway_url",
+			"value": "http://localhost:8080"
+		},
+		{
+			"key": "realm",
+			"value": "logistica"
+		},
+		{
+			"key": "client_id",
+			"value": "api-gateway"
+		},
+		{
+			"key": "client_secret",
+			"value": "gateway-secret"
+		}
+	]
+}
