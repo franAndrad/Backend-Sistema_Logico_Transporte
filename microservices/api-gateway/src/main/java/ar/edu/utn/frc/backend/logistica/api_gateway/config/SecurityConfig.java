@@ -1,6 +1,5 @@
 package ar.edu.utn.frc.backend.logistica.api_gateway.config;
 
-import org.springframework.boot.autoconfigure.graphql.GraphQlProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.convert.converter.Converter;
