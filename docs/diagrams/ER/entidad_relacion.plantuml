@@ -8,6 +8,7 @@ skinparam linetype ortho
 entity Deposito <<Transporte>> {
     * idDeposito : int <<PK>>
     * nombre : string
+    * nombre : stringf
     * direccion : string
     * latitud : decimal(10,8)
     * longitud : decimal(11,8)

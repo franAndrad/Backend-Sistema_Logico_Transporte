@@ -17,20 +17,8 @@ public class Cliente {
     @Column(name = "id_cliente")
     private Integer idCliente;
 
-    @Column(name = "keycloak_id", nullable = false)
+    @Column(name = "keycloak_id", nullable = false, unique = true)
     private String keycloakId;
-
-    @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false)
-    private String apellido;
-
-    @Column(nullable = false, unique = true)
-    private String email;
-
-    @Column(nullable = false)
-    private String telefono;
 
     @Column(name = "direccion_facturacion", nullable = false)
     private String direccionFacturacion;
@@ -41,7 +29,7 @@ public class Cliente {
     @Column(name = "razon_social")
     private String razonSocial;
 
-    @Column(length = 11)
+    @Column(length = 11, unique = true)
     private String cuit;
 
     @Column(nullable = false)

@@ -1,17 +1,14 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.service;
 
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.*;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.*;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Cliente;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ClienteRepository;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
@@ -25,107 +22,81 @@ public class ClienteService {
     }
 
     public List<ClienteListDTO> listAll() {
-        return clienteRepository.findAll().stream()
+        return clienteRepository.findByActivoTrue().stream()
                 .map(c -> new ClienteListDTO(
                         c.getIdCliente(),
-                        c.getNombre(),
-                        c.getEmail(),
-                        c.getTelefono(),
+                        c.getKeycloakId(),
+                        c.getRazonSocial(),
+                        c.getCuit(),
                         c.getActivo()
                 ))
                 .collect(Collectors.toList());
     }
 
     public ClienteDetailsDTO getById(Integer id, Authentication auth) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
-
-        // Validar que CLIENTE solo acceda a su propia información
-      //  if (isCliente(auth) && !isOwnResource(auth, cliente)) {
-       //     throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para acceder a este recurso");
-       // }
+        Cliente cliente = clienteRepository.findByIdClienteAndActivoTrue(id)
+                .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
 
         return new ClienteDetailsDTO(
                 cliente.getIdCliente(),
-                cliente.getNombre(),
-                cliente.getApellido(),
-                cliente.getEmail(),
+                cliente.getKeycloakId(),
                 cliente.getDireccionFacturacion(),
+                cliente.getDireccionEnvio(),
                 cliente.getRazonSocial(),
                 cliente.getCuit()
         );
     }
 
     public ClienteResponseDTO create(ClienteCreateDTO dto) {
-        // Validar email único
-      //  if (clienteRepository.findByEmail(dto.getEmail()).isPresent()) {
-      //      throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya está registrado");
-      //  }
+        if (clienteRepository.existsByKeycloakId(dto.getKeycloakId())) {
+            throw new IllegalStateException("Ya existe un cliente para ese usuario Keycloak");
+        }
+        if (dto.getCuit() != null && !dto.getCuit().isBlank() && clienteRepository.existsByCuit(dto.getCuit())) {
+            throw new IllegalStateException("Ya existe un cliente con ese CUIT");
+        }
 
         Cliente cliente = new Cliente();
-        cliente.setNombre(dto.getNombre());
-        cliente.setApellido(dto.getApellido());
-        cliente.setEmail(dto.getEmail());
-        cliente.setTelefono(dto.getTelefono());
+        cliente.setKeycloakId(dto.getKeycloakId());
         cliente.setDireccionFacturacion(dto.getDireccionFacturacion());
+        cliente.setDireccionEnvio(dto.getDireccionEnvio());
+        cliente.setRazonSocial(dto.getRazonSocial());
+        cliente.setCuit(dto.getCuit());
         cliente.setActivo(true);
-
-        // TODO: Integrar con Keycloak para crear usuario y obtener keycloakId
-        // Por ahora, usar un placeholder
-        cliente.setKeycloakId("keycloak-" + System.currentTimeMillis());
 
         Cliente saved = clienteRepository.save(cliente);
         return new ClienteResponseDTO(saved.getIdCliente(), "Cliente creado correctamente");
     }
 
     public ClienteResponseDTO update(Integer id, ClienteUpdateDTO dto, Authentication auth) {
-        log.debug("Intentando actualizar cliente id={} con dto={}", id, dto);
-        try {
-            Cliente cliente = clienteRepository.findById(id)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
+        Cliente cliente = clienteRepository.findByIdClienteAndActivoTrue(id)
+                .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
 
-            if (isCliente(auth) && !isOwnResource(auth, cliente)) {
-                log.warn("Acceso no autorizado a actualización cliente id={} por auth={}", id, auth);
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "No tiene permiso para actualizar este recurso");
+        // Validar cambio de CUIT
+        if (dto.getCuit() != null && !dto.getCuit().isBlank()) {
+            String nuevoCuit = dto.getCuit();
+            String actualCuit = cliente.getCuit();
+            if ((actualCuit == null || !actualCuit.equals(nuevoCuit)) && clienteRepository.existsByCuit(nuevoCuit)) {
+                throw new IllegalStateException("Ya existe un cliente con ese CUIT");
             }
-
-            cliente.setTelefono(dto.getTelefono());
-            cliente.setDireccionFacturacion(dto.getDireccionFacturacion());
-            Cliente saved = clienteRepository.save(cliente);
-            log.info("Cliente id={} actualizado correctamente", saved.getIdCliente());
-            return new ClienteResponseDTO(saved.getIdCliente(), "Datos actualizados");
-        } catch (ResponseStatusException ex) {
-            throw ex; // ya controlada
-        } catch (Exception ex) {
-            log.error("Error inesperado actualizando cliente id={}: {}", id, ex.getMessage(), ex);
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Error interno actualizando cliente");
+            cliente.setCuit(nuevoCuit);
         }
+
+        cliente.setDireccionFacturacion(dto.getDireccionFacturacion());
+        cliente.setDireccionEnvio(dto.getDireccionEnvio());
+        cliente.setRazonSocial(dto.getRazonSocial());
+
+        Cliente saved = clienteRepository.save(cliente);
+        return new ClienteResponseDTO(saved.getIdCliente(), "Datos actualizados");
     }
 
     public ClienteResponseDTO delete(Integer id) {
-        Cliente cliente = clienteRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Cliente no encontrado"));
+        Cliente cliente = clienteRepository.findByIdClienteAndActivoTrue(id)
+                .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
 
-        // Soft delete: desactivar en lugar de eliminar
         cliente.setActivo(false);
         clienteRepository.save(cliente);
 
         return new ClienteResponseDTO(cliente.getIdCliente(), "Cliente eliminado");
     }
 
-    // Métodos auxiliares para validación de roles y ownership
-    private boolean isCliente(Authentication auth) {
-        return auth != null && auth.getAuthorities().contains(new SimpleGrantedAuthority("ROLE_CLIENTE"));
-    }
-
-    private boolean isOwnResource(Authentication auth, Cliente cliente) {
-        if (auth == null) {
-            return false;
-        }
-        if (auth.getPrincipal() instanceof Jwt jwt) {
-            String keycloakId = jwt.getSubject(); // O el claim que uses para identificar al usuario
-            return cliente.getKeycloakId().equals(keycloakId);
-        }
-        return false;
-    }
 }

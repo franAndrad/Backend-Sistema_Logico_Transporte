@@ -1,11 +1,10 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.controllers;
 
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.*;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.*;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.service.ClienteService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
@@ -21,13 +20,13 @@ public class ClienteController {
     }
 
     @GetMapping
-    //@PreAuthorize("hasAnyRole('OPERADOR', 'ADMIN')")
+
     public ResponseEntity<List<ClienteListDTO>> listAll() {
         return ResponseEntity.ok(clienteService.listAll());
     }
 
     @GetMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR', 'ADMIN')")
+
     public ResponseEntity<ClienteDetailsDTO> getById(
             @PathVariable Integer id,
             Authentication auth) {
@@ -35,7 +34,7 @@ public class ClienteController {
     }
 
     @PostMapping
-    //@PreAuthorize("permitAll()")
+
     public ResponseEntity<ClienteResponseDTO> create(
             @Valid @RequestBody ClienteCreateDTO dto) {
         ClienteResponseDTO response = clienteService.create(dto);
@@ -43,7 +42,7 @@ public class ClienteController {
     }
 
     @PutMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('CLIENTE', 'OPERADOR')")
+
     public ResponseEntity<ClienteResponseDTO> update(
             @PathVariable Integer id,
             @Valid @RequestBody ClienteUpdateDTO dto) {
@@ -51,7 +50,7 @@ public class ClienteController {
     }
 
     @DeleteMapping("/{id}")
-    //@PreAuthorize("hasRole('ADMIN')")
+
     public ResponseEntity<ClienteResponseDTO> delete(@PathVariable Integer id) {
         return ResponseEntity.ok(clienteService.delete(id));
     }
