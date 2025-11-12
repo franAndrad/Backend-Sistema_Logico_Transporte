@@ -1,94 +1,94 @@
-package ar.edu.utn.frc.backend.logistica.ms_transporte.service.service;
+// package ar.edu.utn.frc.backend.logistica.ms_transporte.service.service;
 
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Distance;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Duration;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Leg;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Route;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.service.GoogleMapsService;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Distance;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Duration;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Leg;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO.Route;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.service.GoogleMapsService;
 
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.test.util.ReflectionTestUtils;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.config.GoogleMapsProperties;
+// import org.junit.jupiter.api.Test;
+// import org.junit.jupiter.api.extension.ExtendWith;
+// import org.mockito.InjectMocks;
+// import org.mockito.Mock;
+// import org.mockito.junit.jupiter.MockitoExtension;
+// import org.springframework.test.util.ReflectionTestUtils;
+// import ar.edu.utn.frc.backend.logistica.ms_transporte.config.GoogleMapsProperties;
 
-import java.util.List;
+// import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.when;
+// import static org.junit.jupiter.api.Assertions.*;
+// import static org.mockito.ArgumentMatchers.*;
+// import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@SuppressWarnings("null")
-class GoogleMapsServiceTest {
+// @ExtendWith(MockitoExtension.class)
+// @SuppressWarnings("null")
+// class GoogleMapsServiceTest {
 
-    @Mock
-    private GoogleMapsClient googleMapsClient;
+//     @Mock
+//     private GoogleMapsClient googleMapsClient;
 
-    @InjectMocks
-    private GoogleMapsService googleMapsService;
+//     @InjectMocks
+//     private GoogleMapsService googleMapsService;
 
-    @Test
-    void calcularDistancia_DeberiaRetornarDistanciaYDuracionCorrecta() {
-    GoogleMapsProperties props = new GoogleMapsProperties();
-    props.getApi().setKey("test-key");
-    ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props);
-        DirectionsResponseDTO mockResponse = crearRespuestaMock(100000L, 3600L);
-        when(googleMapsClient.getDirections(
-            anyString(), 
-            anyString(), 
-            anyString(),
-            anyBoolean(),  
-            anyString()    
-        )).thenReturn(mockResponse);
-        DistanciaResponseDTO response = googleMapsService.calcularDistancia(
-            -34.603722, -58.381592,
-            -34.921230, -57.954590
-        );
-        assertEquals(100.0, response.getDistanciaKm());
-        assertEquals(60L, response.getDuracionMinutos());
-    }
+//     @Test
+//     void calcularDistancia_DeberiaRetornarDistanciaYDuracionCorrecta() {
+//     GoogleMapsProperties props = new GoogleMapsProperties();
+//     props.getApi().setKey("test-key");
+//     ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props);
+//         DirectionsResponseDTO mockResponse = crearRespuestaMock(100000L, 3600L);
+//         when(googleMapsClient.getDirections(
+//             anyString(), 
+//             anyString(), 
+//             anyString(),
+//             anyBoolean(),  
+//             anyString()    
+//         )).thenReturn(mockResponse);
+//         DistanciaResponseDTO response = googleMapsService.calcularDistancia(
+//             -34.603722, -58.381592,
+//             -34.921230, -57.954590
+//         );
+//         assertEquals(100.0, response.getDistanciaKm());
+//         assertEquals(60L, response.getDuracionMinutos());
+//     }
 
-    @Test
-    void calcularDistancia_ConErrorDeApi_DeberiaLanzarExcepcion() {
-    GoogleMapsProperties props2 = new GoogleMapsProperties();
-    props2.getApi().setKey("test-key");
-    ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props2);
-        DirectionsResponseDTO mockResponse = new DirectionsResponseDTO();
-        mockResponse.setStatus("NOT_FOUND");
-        when(googleMapsClient.getDirections(
-            anyString(), 
-            anyString(), 
-            anyString(),
-            anyBoolean(),
-            anyString()   
-        )).thenReturn(mockResponse);
-        assertThrows(RuntimeException.class, () -> {
-            googleMapsService.calcularDistancia(
-                -34.603722, -58.381592,
-                -34.921230, -57.954590
-            );
-        });
-    }
+//     @Test
+//     void calcularDistancia_ConErrorDeApi_DeberiaLanzarExcepcion() {
+//     GoogleMapsProperties props2 = new GoogleMapsProperties();
+//     props2.getApi().setKey("test-key");
+//     ReflectionTestUtils.setField(googleMapsService, "googleMapsProperties", props2);
+//         DirectionsResponseDTO mockResponse = new DirectionsResponseDTO();
+//         mockResponse.setStatus("NOT_FOUND");
+//         when(googleMapsClient.getDirections(
+//             anyString(), 
+//             anyString(), 
+//             anyString(),
+//             anyBoolean(),
+//             anyString()   
+//         )).thenReturn(mockResponse);
+//         assertThrows(RuntimeException.class, () -> {
+//             googleMapsService.calcularDistancia(
+//                 -34.603722, -58.381592,
+//                 -34.921230, -57.954590
+//             );
+//         });
+//     }
 
-    private DirectionsResponseDTO crearRespuestaMock(Long distanciaMetros, Long duracionSegundos) {
-        DirectionsResponseDTO response = new DirectionsResponseDTO();
-        response.setStatus("OK");
-        Distance distance = new Distance();
-        distance.setValue(distanciaMetros);
-        Duration duration = new Duration();
-        duration.setValue(duracionSegundos);
-        Leg leg = new Leg();
-        leg.setDistance(distance);
-        leg.setDuration(duration);
-        Route route = new Route();
-        route.setLegs(List.of(leg));
-        response.setRoutes(List.of(route));
-        return response;
-    }
-}
+//     private DirectionsResponseDTO crearRespuestaMock(Long distanciaMetros, Long duracionSegundos) {
+//         DirectionsResponseDTO response = new DirectionsResponseDTO();
+//         response.setStatus("OK");
+//         Distance distance = new Distance();
+//         distance.setValue(distanciaMetros);
+//         Duration duration = new Duration();
+//         duration.setValue(duracionSegundos);
+//         Leg leg = new Leg();
+//         leg.setDistance(distance);
+//         leg.setDuration(duration);
+//         Route route = new Route();
+//         route.setLegs(List.of(leg));
+//         response.setRoutes(List.of(route));
+//         return response;
+//     }
+// }

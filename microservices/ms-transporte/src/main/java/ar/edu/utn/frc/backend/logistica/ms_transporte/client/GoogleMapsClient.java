@@ -14,6 +14,7 @@ public interface GoogleMapsClient {
         @RequestParam("destination") String destination,
         @RequestParam("mode") String mode,
         @RequestParam("alternatives") boolean alternatives,
+        @RequestParam(value = "waypoints", required = false) String waypoints,
         @RequestParam("key") String key
     );
 }

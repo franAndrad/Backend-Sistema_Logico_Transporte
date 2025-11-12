@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
 
 @Service
 public class DepositoService {
@@ -27,6 +29,21 @@ public class DepositoService {
     public Deposito findById(int idDeposito) {
         return depositoRepository.findById(idDeposito)
                 .orElseThrow(() -> new NoSuchElementException("Depósito no encontrado"));
+    }
+
+    public List<Deposito> findActivosByIdsKeepingOrder(List<Integer> ids) {
+        if (ids == null) return List.of();
+        var all = depositoRepository.findAllById(ids);
+        var byId = all.stream().collect(Collectors.toMap(Deposito::getIdDeposito, d -> d));
+        List<Deposito> ordered = new ArrayList<>();
+        for (Integer id : ids) {
+            var d = byId.get(id);
+            if (d == null) throw new NoSuchElementException("Depósito no encontrado: " + id);
+            if (Boolean.FALSE.equals(d.getActivo()))
+                throw new IllegalStateException("Depósito inactivo: " + id);
+            ordered.add(d);
+        }
+        return ordered;
     }
 
     public List<DepositoCercanoResponseDTO> buscarDepositosCercanos(Double lat, Double lng) {
