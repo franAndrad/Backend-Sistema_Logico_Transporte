@@ -60,6 +60,23 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*/estado").hasAnyRole("TRANSPORTISTA","OPERADOR", "ADMIN")
 
+                // Ruta
+                .pathMatchers(HttpMethod.GET, "/api/v1/rutas").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/rutas/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/rutas/solicitud/*").hasAnyRole("OPERADOR", "CLIENTE")
+                .pathMatchers(HttpMethod.POST, "/api/v1/rutas").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.DELETE, "/api/v1/rutas/*").hasRole("OPERADOR")
+
+                // Tramo
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/*").hasAnyRole("OPERADOR", "TRANSPORTISTA")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/ruta/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/iniciar").hasRole("TRANSPORTISTA")
+                .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/finalizar").hasRole("TRANSPORTISTA")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/*/camion").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.DELETE, "/api/v1/tramos/*/camion").hasRole("OPERADOR")
+
                 // Depositos
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/activar").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/desactivar").hasRole("ADMIN")
