@@ -13,7 +13,7 @@ import java.util.List;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionCreateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionCreateResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionUpdateResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionUpdateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Camion;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.CamionService;
 import jakarta.validation.Valid;
@@ -49,7 +49,7 @@ public class CamionController {
     @PutMapping("/{dominio}")
     public CamionCreateResponseDTO actualizar(
             @PathVariable String dominio,
-            @Valid @RequestBody CamionUpdateResponseDTO dto) {
+            @Valid @RequestBody CamionUpdateRequestDTO dto) {
         return camionService.actualizarCamion(dominio, dto);
     }
 

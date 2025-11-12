@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionCreateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionCreateResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionUpdateResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.camion.CamionUpdateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Camion;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.CamionRepository;
 import lombok.NonNull;
@@ -47,7 +47,7 @@ public class CamionService {
         return camionRepository.save(camion);
     }
 
-    public CamionCreateResponseDTO actualizarCamion(@NonNull String dominio, CamionUpdateResponseDTO dto) {
+    public CamionCreateResponseDTO actualizarCamion(@NonNull String dominio, CamionUpdateRequestDTO dto) {
         Camion camion = camionRepository.findById(dominio)
             .orElseThrow(() -> new NoSuchElementException("Camión no encontrado"));
 

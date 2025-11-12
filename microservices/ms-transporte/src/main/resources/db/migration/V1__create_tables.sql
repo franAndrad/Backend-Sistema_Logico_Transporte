@@ -31,33 +31,31 @@ CREATE TABLE IF NOT EXISTS tarifas (
 
 CREATE TABLE IF NOT EXISTS rutas (
   id_ruta SERIAL PRIMARY KEY,
-  id_solicitud INTEGER,
-  cantidad_tramos INTEGER DEFAULT 0,
-  cantidad_depositos INTEGER DEFAULT 0,
-  distancia_total REAL,
-  costo_total REAL,
-  estado VARCHAR(50) NOT NULL
+  id_solicitud INTEGER NOT NULL,
+  cantidad_tramos INTEGER NOT NULL DEFAULT 0,
+  cantidad_depositos INTEGER NOT NULL DEFAULT 0,
+  distancia_total NUMERIC(12,3) NOT NULL DEFAULT 0,
+  estado VARCHAR(20) NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS tramos (
   id_tramo SERIAL PRIMARY KEY,
-  id_ruta INTEGER NOT NULL REFERENCES rutas(id_ruta),
+  id_ruta INTEGER NOT NULL REFERENCES rutas(id_ruta) ON DELETE CASCADE,
   id_deposito_origen INTEGER REFERENCES depositos(id_deposito),
   id_deposito_destino INTEGER REFERENCES depositos(id_deposito),
-  id_tarifa INTEGER REFERENCES tarifas(id_tarifa),
-  keycloak_id_transportista VARCHAR(255),
+  keycloak_id_transportista VARCHAR(80),
   dominio_camion VARCHAR(20) REFERENCES camiones(dominio),
-  tipo VARCHAR(50) NOT NULL,
-  estado VARCHAR(50) NOT NULL,
-  distancia REAL NOT NULL,
-  costo_aproximado REAL,
-  costo_real REAL,
-  fecha_hora_inicio_estimada TIMESTAMP,
-  fecha_hora_fin_estimada TIMESTAMP,
-  fecha_hora_inicio TIMESTAMP,
-  fecha_hora_fin TIMESTAMP,
-  fecha_actualizacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  tipo   VARCHAR(30) NOT NULL,
+  estado VARCHAR(20) NOT NULL,
+  distancia NUMERIC(12,3),
+  costo_aproximado NUMERIC(14,2),
+  costo_real NUMERIC(14,2),
+  fh_inicio_estimada TIMESTAMP,
+  fh_fin_estimada TIMESTAMP,
+  fh_inicio TIMESTAMP,
+  fh_fin TIMESTAMP,
+  fh_actualizacion TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX IF NOT EXISTS idx_depositos_latlng ON depositos (latitud, longitud);
 CREATE INDEX IF NOT EXISTS idx_tramos_ruta ON tramos (id_ruta);
+CREATE INDEX IF NOT EXISTS idx_depositos_latlng ON depositos (latitud, longitud);

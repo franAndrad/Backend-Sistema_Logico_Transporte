@@ -85,7 +85,7 @@ public class DepositoService {
         );
     }
 
-    public DepositoResponseDTO actualizarDeposito(int id, DepositoUpdateResponseDTO dto) {
+    public DepositoResponseDTO actualizarDeposito(int id, DepositoUpdateRequestDTO dto) {
         Deposito deposito = depositoRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Depósito no encontrado"));
 

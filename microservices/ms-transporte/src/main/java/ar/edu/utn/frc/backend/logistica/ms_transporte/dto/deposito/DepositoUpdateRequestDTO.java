@@ -14,7 +14,7 @@ import java.math.BigDecimal;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DepositoUpdateResponseDTO {
+public class DepositoUpdateRequestDTO {
 
     @NotBlank(message = "El nombre es obligatorio")
     private String nombre;

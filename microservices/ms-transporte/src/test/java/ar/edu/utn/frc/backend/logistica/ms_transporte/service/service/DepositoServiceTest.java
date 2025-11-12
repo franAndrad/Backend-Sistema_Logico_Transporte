@@ -4,7 +4,7 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoCerca
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoCreateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoCreateResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoUpdateResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.DepositoUpdateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.DepositoRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.DepositoService;
@@ -96,7 +96,7 @@ class DepositoServiceTest {
     void actualizarDeposito_success() {
         Deposito existing = new Deposito(); existing.setIdDeposito(7); existing.setActivo(true);
         when(depositoRepository.findById(7)).thenReturn(Optional.of(existing));
-        DepositoUpdateResponseDTO dto = new DepositoUpdateResponseDTO(); dto.setNombre("N"); dto.setDireccion("D"); dto.setLatitud(BigDecimal.ONE); dto.setLongitud(BigDecimal.ONE); dto.setCostoEstadiaDiario(BigDecimal.ONE);
+        DepositoUpdateRequestDTO dto = new DepositoUpdateRequestDTO(); dto.setNombre("N"); dto.setDireccion("D"); dto.setLatitud(BigDecimal.ONE); dto.setLongitud(BigDecimal.ONE); dto.setCostoEstadiaDiario(BigDecimal.ONE);
         DepositoResponseDTO resp = depositoService.actualizarDeposito(7, dto);
         assertEquals(7, resp.getId());
         verify(depositoRepository).save(existing);
@@ -106,7 +106,7 @@ class DepositoServiceTest {
     void actualizarDeposito_inactive_throws() {
         Deposito existing = new Deposito(); existing.setIdDeposito(8); existing.setActivo(false);
         when(depositoRepository.findById(8)).thenReturn(Optional.of(existing));
-        DepositoUpdateResponseDTO dto = new DepositoUpdateResponseDTO();
+        DepositoUpdateRequestDTO dto = new DepositoUpdateRequestDTO();
         assertThrows(IllegalStateException.class, () -> depositoService.actualizarDeposito(8, dto));
     }
 

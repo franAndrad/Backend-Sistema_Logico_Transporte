@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class CamionUpdateResponseDTO {
+public class CamionUpdateRequestDTO {
     @NotNull(message = "La capacidad es obligatoria")
     @DecimalMin(value = "0.01", message = "La capacidad debe ser mayor a 0")
     private Float capacidad;

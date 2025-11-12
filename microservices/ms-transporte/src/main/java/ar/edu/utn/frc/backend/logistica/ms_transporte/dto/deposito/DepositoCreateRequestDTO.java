@@ -26,13 +26,13 @@ public class DepositoCreateRequestDTO {
     @DecimalMin(value = "0.01", message = "El costo debe ser mayor a 0")
     private BigDecimal costoEstadiaDiario;
 
-    @DecimalMin(value = "-90.0")
-    @DecimalMax(value = "90.0")
+    @DecimalMin(value = "-90.0", message = "Latitud mínima permitida -90")
+    @DecimalMax(value = "90.0", message = "Latitud máxima permitida 90")
     @NotNull(message = "La latitud es obligatoria")
     private BigDecimal latitud;
 
-    @DecimalMin(value = "-180.0")
-    @DecimalMax(value = "180.0")
+    @DecimalMin(value = "-180.0", message = "Longitud mínima permitida -180")
+    @DecimalMax(value = "180.0", message = "Longitud máxima permitida 180")
     @NotNull(message = "La longitud es obligatoria")
     private BigDecimal longitud;
 }

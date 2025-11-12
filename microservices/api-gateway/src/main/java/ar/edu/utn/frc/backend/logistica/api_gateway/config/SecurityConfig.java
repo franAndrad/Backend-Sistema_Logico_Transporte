@@ -36,64 +36,64 @@ public class SecurityConfig {
 
                 .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
 
-                //Cliente
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/*").hasAnyRole("OPERADOR", "CLIENTE", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
+                // ===================== Cliente =====================
                 .pathMatchers(HttpMethod.PUT, "/api/v1/clientes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.DELETE, "/api/v1/clientes/*").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes/*").hasAnyRole("OPERADOR", "CLIENTE", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/clientes").hasAnyRole("OPERADOR", "ADMIN")
 
-                //Contenedor
-                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // ===================== Contenedor =====================
                 .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/cliente/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/contenedores").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.PUT, "/api/v1/contenedores/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.DELETE, "/api/v1/contenedores/*").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")             
+                .pathMatchers(HttpMethod.POST, "/api/v1/contenedores").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/contenedores").hasAnyRole("OPERADOR", "ADMIN")
 
-                //Solicitud
-                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/cliente/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                // ===================== Solicitud =====================
                 .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/*/estado").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasAnyRole("CLIENTE", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/cliente/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*/estado").hasAnyRole("TRANSPORTISTA", "OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/solicitudes/*/estado").hasAnyRole("TRANSPORTISTA","OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/solicitudes").hasAnyRole("CLIENTE", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/solicitudes").hasAnyRole("OPERADOR", "ADMIN")
 
-                // Ruta
-                .pathMatchers(HttpMethod.GET, "/api/v1/rutas").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/rutas/*").hasRole("OPERADOR")
+                // ===================== Ruta =====================
                 .pathMatchers(HttpMethod.GET, "/api/v1/rutas/solicitud/*").hasAnyRole("OPERADOR", "CLIENTE")
-                .pathMatchers(HttpMethod.POST, "/api/v1/rutas").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.DELETE, "/api/v1/rutas/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/rutas/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.POST, "/api/v1/rutas").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/rutas").hasAnyRole("OPERADOR", "ADMIN")
 
-                // Tramo
-                .pathMatchers(HttpMethod.GET, "/api/v1/tramos").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/*").hasAnyRole("OPERADOR", "TRANSPORTISTA")
-                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/ruta/*").hasRole("OPERADOR")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/*").hasRole("OPERADOR")
+                // ===================== Tramo =====================
                 .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/iniciar").hasRole("TRANSPORTISTA")
                 .pathMatchers(HttpMethod.POST, "/api/v1/tramos/*/finalizar").hasRole("TRANSPORTISTA")
                 .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/*/camion").hasRole("OPERADOR")
                 .pathMatchers(HttpMethod.DELETE, "/api/v1/tramos/*/camion").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/ruta/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/tramos/*").hasRole("OPERADOR")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos/*").hasAnyRole("OPERADOR", "TRANSPORTISTA")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tramos").hasRole("OPERADOR")
 
-                // Depositos
+                // ===================== Depositos =====================
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/activar").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/depositos/*/desactivar").hasRole("ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/depositos/cercanos").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/*").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/depositos/activos").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/depositos/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/depositos").hasAnyRole("OPERADOR", "ADMIN")
 
-                // Camiones
+                // ===================== Camiones =====================
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/camiones/*/habilitar").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PATCH, "/api/v1/camiones/*/deshabilitar").hasRole("ADMIN")
-                .pathMatchers(HttpMethod.PUT, "/api/v1/camiones/*").hasAnyRole("OPERADOR", "ADMIN")
-                .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/camiones/disponibles").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/camiones/*").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/camiones/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
 
                 .anyExchange().authenticated()

@@ -31,12 +31,9 @@ public class Deposito {
     private Boolean activo = true;
 
     @Column(name = "LATITUD", precision = 11, scale = 8, nullable = false)
-    @DecimalMin(value = "-90.0", message = "Latitud mínima permitida -90")
-    @DecimalMax(value = "90.0", message = "Latitud máxima permitida 90")
+
     private BigDecimal latitud;
 
     @Column(name = "LONGITUD", precision = 11, scale = 8, nullable = false)
-    @DecimalMin(value = "-180.0", message = "Longitud mínima permitida -180")
-    @DecimalMax(value = "180.0", message = "Longitud máxima permitida 180")
     private BigDecimal longitud;
 }

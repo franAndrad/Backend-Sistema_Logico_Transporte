@@ -4,11 +4,16 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.client.GoogleMapsClient;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.config.GoogleMapsProperties;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.DistanciaResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCalculadaDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.LegCalculadoDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -98,4 +103,70 @@ public class GoogleMapsService {
                 + ","
                 + lng.stripTrailingZeros().toPlainString();
     }
+
+    public RutaCalculadaDTO calcularRutaYTramos(Double origenLat, Double origenLng, Double destinoLat, Double destinoLng, List<Integer> depositoIds) {
+
+    final String origin = origenLat + "," + origenLng;
+    final String destination = destinoLat + "," + destinoLng;
+    final String waypoints = buildWaypointsFromSelectedDepositos(depositoIds);
+
+    DirectionsResponseDTO response = googleMapsClient.getDirections(
+            origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
+
+    if (response == null || !"OK".equals(response.getStatus())) {
+        throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
+    }
+    var route = response.getRoutes().get(0);
+    var legs = route.getLegs();
+    if (legs == null || legs.isEmpty()) {
+        throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
+    }
+
+    long totalMeters = 0L;
+    long totalSeconds = 0L;
+
+    List<Integer> deposOrdenados = depositoIds == null ? List.of() : List.copyOf(new LinkedHashSet<>(depositoIds));
+    int puntos = deposOrdenados.size() + 2;
+
+    List<LegCalculadoDTO> legDtos = new ArrayList<>();
+
+    for (int i = 0; i < legs.size(); i++) {
+        var l = legs.get(i);
+        long meters = l.getDistance().getValue();
+        long seconds = l.getDuration().getValue();
+        totalMeters += meters;
+        totalSeconds += seconds;
+
+        Integer depOri = null, depDes = null;
+        String tipo;
+
+        if (deposOrdenados.isEmpty()) {
+            tipo = "ORIGEN_DESTINO";
+        } else if (i == 0) {
+            tipo = "ORIGEN_DEPOSITO";
+            depDes = deposOrdenados.get(0);
+        } else if (i == puntos - 2) {
+            tipo = "DEPOSITO_DESTINO";
+            depOri = deposOrdenados.get(deposOrdenados.size() - 1);
+        } else {
+            tipo = "DEPOSITO_DEPOSITO";
+            depOri = deposOrdenados.get(i - 1);
+            depDes = deposOrdenados.get(i);
+        }
+
+        legDtos.add(new LegCalculadoDTO(
+                BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP),
+                seconds / 60,
+                depOri,
+                depDes,
+                tipo
+        ));
+    }
+
+    return new RutaCalculadaDTO(
+            BigDecimal.valueOf(totalMeters / 1000.0).setScale(3, RoundingMode.HALF_UP),
+            totalSeconds / 60,
+            legDtos
+    );
+}
 }

@@ -47,7 +47,7 @@ public class DepositoController {
     @PutMapping("/{idDeposito}")
     public DepositoResponseDTO actualizar(
             @PathVariable Integer idDeposito,
-            @Valid @RequestBody DepositoUpdateResponseDTO dto) {
+            @Valid @RequestBody DepositoUpdateRequestDTO dto) {
         return depositoService.actualizarDeposito(idDeposito, dto);
     }
 
