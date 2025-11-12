@@ -34,7 +34,7 @@ public class SecurityConfig {
 
                 .pathMatchers(HttpMethod.GET, "/api/v1/transportes/health").hasRole("OPERADOR")
 
-                .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("CLIENTE")
+                .pathMatchers(HttpMethod.GET, "/api/v1/distancia").hasRole("OPERADOR")
 
                 // ===================== Cliente =====================
                 .pathMatchers(HttpMethod.PUT, "/api/v1/clientes/*").hasAnyRole("CLIENTE", "OPERADOR", "ADMIN")
