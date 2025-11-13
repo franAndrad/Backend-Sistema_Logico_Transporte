@@ -13,6 +13,11 @@ import java.util.List;
 @RequestMapping("/api/v1/clientes")
 public class ClienteController {
 
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "ms-clientes OK!";
+    }
+
     private final ClienteService clienteService;
 
     public ClienteController(ClienteService clienteService) {
