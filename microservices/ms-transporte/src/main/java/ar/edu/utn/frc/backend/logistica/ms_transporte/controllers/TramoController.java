@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import java.util.List;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("/api/v1/tramos")
@@ -53,16 +55,20 @@ public class TramoController {
 
     @PostMapping("/{id}/iniciar")
     public TramoResponseDTO iniciar(@PathVariable Integer id,
-            @RequestBody(required = false) TramoLifecycleRequestDTO body) {
+            @RequestBody(required = false) TramoLifecycleRequestDTO body,
+            @AuthenticationPrincipal Jwt jwt) {
         if (body == null)
             body = new TramoLifecycleRequestDTO();
-        return tramoService.iniciar(id, body);
+        String subject = jwt != null ? jwt.getSubject() : null;
+        return tramoService.iniciar(id, body, subject);
     }
 
     @PostMapping("/{id}/finalizar")
     public TramoResponseDTO finalizar(@PathVariable Integer id,
-            @RequestBody TramoLifecycleRequestDTO body) {
-        return tramoService.finalizar(id, body);
+            @RequestBody TramoLifecycleRequestDTO body,
+            @AuthenticationPrincipal Jwt jwt) {
+        String subject = jwt != null ? jwt.getSubject() : null;
+        return tramoService.finalizar(id, body, subject);
     }
 
     @PutMapping("/{id}/camion")

@@ -12,6 +12,7 @@ import java.util.Objects;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
 
 @Service
 @Slf4j
@@ -41,13 +42,23 @@ public class ContenedorService {
     public ContenedorDetailsDTO getById(Integer id) {
         Contenedor c = contenedorRepository.findByIdContenedorAndActivoTrue(id)
                 .orElseThrow(() -> new NoSuchElementException("Contenedor no encontrado"));
+        Cliente cl = c.getCliente();
+        ClienteDetailsDTO clienteDTO = new ClienteDetailsDTO(
+                cl.getIdCliente(),
+                cl.getKeycloakId(),
+                cl.getDireccionFacturacion(),
+                cl.getDireccionEnvio(),
+                cl.getRazonSocial(),
+                cl.getCuit()
+        );
         return new ContenedorDetailsDTO(
                 c.getIdContenedor(),
                 c.getIdentificacion(),
                 c.getPeso(),
                 c.getVolumen(),
                 c.getEstado(),
-                c.getActivo()
+                c.getActivo(),
+                clienteDTO
         );
     }
 

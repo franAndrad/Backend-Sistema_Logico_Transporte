@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 import java.util.Objects;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
 
 @Service
 @Slf4j
@@ -45,6 +47,23 @@ public class SolicitudService {
     public SolicitudDetailsDTO getById(int id) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
+
+        Cliente c = s.getCliente();
+        Contenedor cont = s.getContenedor();
+
+        ClienteDetailsDTO clienteDTO = new ClienteDetailsDTO(
+                c.getIdCliente(),
+                c.getKeycloakId(),
+                c.getDireccionFacturacion(),
+                c.getDireccionEnvio(),
+                c.getRazonSocial(),
+                c.getCuit()
+        );
+        ContenedorSummaryDTO contResumen = new ContenedorSummaryDTO(
+                cont.getIdContenedor(),
+                cont.getIdentificacion()
+        );
+
         return new SolicitudDetailsDTO(
                 s.getIdSolicitud(),
                 s.getOrigenDireccion(),
@@ -52,7 +71,9 @@ public class SolicitudService {
                 s.getEstado(),
                 s.getCostoEstimado(),
                 s.getTiempoEstimado(),
-                s.getContenedor().getIdentificacion()
+                cont.getIdentificacion(),
+                clienteDTO,
+                contResumen
         );
     }
 

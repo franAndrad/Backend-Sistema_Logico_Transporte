@@ -18,6 +18,12 @@ spring:
     default-schema: ms_transporte
     schemas: ms_transporte
     locations: classpath:db/migration
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${EXTERNAL_ISSUER_URI:https://localhost:8443/realms/logistica}
+          jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/logistica/protocol/openid-connect/certs}
 
 google:
   maps:
@@ -28,4 +34,3 @@ google:
 logging:
   level:
     '[ar.edu.utn.frc.backend.logistica]': INFO
-

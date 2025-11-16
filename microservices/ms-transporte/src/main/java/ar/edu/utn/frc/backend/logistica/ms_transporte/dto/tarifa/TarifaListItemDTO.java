@@ -1,0 +1,21 @@
+package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tarifa;
+
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import java.time.LocalDate;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class TarifaListItemDTO {
+    private Integer id;
+    private String concepto;
+    private Float valorBase;
+    private Float valorPorKm;
+    private Float valorPorPeso;
+    private Float valorPorVolumen;
+    private LocalDate fechaVigencia;
+    private Boolean activo;
+}
+

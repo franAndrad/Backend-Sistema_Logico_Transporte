@@ -96,6 +96,12 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
                 .pathMatchers(HttpMethod.GET, "/api/v1/camiones").hasAnyRole("OPERADOR", "ADMIN")
 
+                // ===================== Tarifas =====================
+                .pathMatchers(HttpMethod.GET, "/api/v1/tarifas/*").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.GET, "/api/v1/tarifas").hasAnyRole("OPERADOR", "ADMIN")
+                .pathMatchers(HttpMethod.POST, "/api/v1/tarifas").hasRole("ADMIN")
+                .pathMatchers(HttpMethod.PUT, "/api/v1/tarifas/*").hasRole("ADMIN")
+
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

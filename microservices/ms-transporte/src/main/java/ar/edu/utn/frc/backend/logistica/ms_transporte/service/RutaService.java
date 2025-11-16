@@ -13,11 +13,14 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -28,6 +31,8 @@ public class RutaService {
     private final RutaRepository rutaRepository;
     private final TramoRepository tramoRepository;
     private final GoogleMapsService googleMapsService;
+    private final TarifaRepository tarifaRepository;
+    private final CamionService camionService;
 
     public List<Ruta> findAll() {
         return rutaRepository.findAll();
@@ -63,6 +68,9 @@ public class RutaService {
         ruta.setDistanciaTotal(calculada.getDistanciaTotalKm());
         rutaRepository.save(ruta);
 
+        Tarifa tarifa = obtenerTarifaVigente();
+        BigDecimal consumoPromedio = obtenerConsumoPromedio();
+
         for (LegCalculadoDTO leg : calculada.getLegs()) {
             Tramo tramo = new Tramo();
             tramo.setRuta(ruta);
@@ -71,8 +79,7 @@ public class RutaService {
             tramo.setTipo(TipoTramo.valueOf(leg.getTipo())); 
             tramo.setEstado(EstadoTramo.PLANIFICADO);
             tramo.setDistancia(leg.getDistanciaKm());
-            tramo.setCostoAproximado(
-                    leg.getDistanciaKm() == null ? null : leg.getDistanciaKm().multiply(new BigDecimal("1.00")));
+            tramo.setCostoAproximado(calcularCostoAproximadoTramo(leg.getDistanciaKm(), tarifa, consumoPromedio));
             tramoRepository.save(tramo);
         }
 
@@ -153,5 +160,28 @@ public class RutaService {
 
         rutaRepository.delete(ruta);
         return new RutaResponseDTO(idRuta, "Ruta eliminada correctamente");
+    }
+
+    private Tarifa obtenerTarifaVigente() {
+        return tarifaRepository.findByActivoTrue().stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
+    }
+
+    private BigDecimal obtenerConsumoPromedio() {
+        var disponibles = camionService.findAllDisponibles();
+        if (disponibles == null || disponibles.isEmpty()) return BigDecimal.ZERO;
+        double avg = disponibles.stream()
+                .mapToDouble(c -> c.getConsumoCombustible() == null ? 0.0 : c.getConsumoCombustible())
+                .average().orElse(0.0);
+        return BigDecimal.valueOf(avg);
+    }
+
+    private BigDecimal calcularCostoAproximadoTramo(BigDecimal distanciaKm, Tarifa tarifa, BigDecimal consumoPromKm) {
+        if (distanciaKm == null) return null;
+        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal costoKmBase = BigDecimal.valueOf(tarifa.getValorPorKm()).multiply(distanciaKm);
+        BigDecimal costoCombustible = BigDecimal.valueOf(tarifa.getValorLitroCombustible())
+                .multiply(consumoPromKm).multiply(distanciaKm);
+        return costoGestion.add(costoKmBase).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
     }
 }

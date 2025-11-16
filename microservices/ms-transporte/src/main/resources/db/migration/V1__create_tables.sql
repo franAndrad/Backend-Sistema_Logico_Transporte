@@ -20,6 +20,7 @@ CREATE TABLE IF NOT EXISTS camiones (
 CREATE TABLE IF NOT EXISTS tarifas (
   id_tarifa SERIAL PRIMARY KEY,
   nombre VARCHAR(200) NOT NULL,
+  valor_base REAL NOT NULL CHECK (valor_base >= 0.01),
   valor_por_km REAL NOT NULL,
   valor_por_peso REAL NOT NULL,
   valor_por_volumen REAL NOT NULL,

@@ -12,27 +12,31 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 @Service
 @RequiredArgsConstructor
 public class TramoService {
 
-    private static final BigDecimal COSTO_KM_DEFAULT = new BigDecimal("1.00");
-
     private final TramoRepository tramoRepository;
     private final RutaRepository rutaRepository;
     private final CamionService camionService;
     private final RutaService rutaService;
+    private final TarifaRepository tarifaRepository;
 
     public List<Tramo> findAll() {
         return tramoRepository.findAll();
@@ -108,7 +112,7 @@ public class TramoService {
     }
 
     @Transactional
-    public TramoResponseDTO iniciar(int idTramo, TramoLifecycleRequestDTO body) {
+    public TramoResponseDTO iniciar(int idTramo, TramoLifecycleRequestDTO body, String subject) {
         Tramo tramo = findById(idTramo);
 
         if (body == null) body = new TramoLifecycleRequestDTO();
@@ -132,7 +136,10 @@ public class TramoService {
             throw new IllegalStateException("No se puede iniciar un tramo sin transportista asignado");
         }
 
-        // Validar con JWT
+        if (!tramo.getKeyCloakIdTransportista().equals(subject)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "El transportista asignado es el único que puede iniciar el tramo");
+        }
 
         tramo.setEstado(EstadoTramo.INICIADO);
         tramo.setFechaHoraInicio(
@@ -146,7 +153,7 @@ public class TramoService {
     }
 
     @Transactional
-    public TramoResponseDTO finalizar(Integer id, TramoLifecycleRequestDTO dto) {
+    public TramoResponseDTO finalizar(Integer id, TramoLifecycleRequestDTO dto, String subject) {
         Tramo t = findById(id);
 
         if (t.getEstado() != EstadoTramo.INICIADO) {
@@ -159,16 +166,61 @@ public class TramoService {
             throw new IllegalStateException("La fecha de fin no puede ser anterior al inicio");
         }
 
+        if (t.getKeyCloakIdTransportista() == null || t.getKeyCloakIdTransportista().isBlank()) {
+            throw new IllegalStateException("No se puede finalizar un tramo sin transportista asignado");
+        }
+        if (!t.getKeyCloakIdTransportista().equals(subject)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN,
+                    "El transportista asignado es el único que puede finalizar el tramo");
+        }
+
         t.setEstado(EstadoTramo.FINALIZADO);
         t.setFechaHoraFin(dto.getFechaHora() != null ? dto.getFechaHora() : LocalDateTime.now());
         t.setDistancia(dto.getKmRecorridos());
-        t.setCostoReal(dto.getKmRecorridos().multiply(COSTO_KM_DEFAULT));
+
+        BigDecimal km = dto.getKmRecorridos();
+        if (km == null) {
+            km = t.getDistancia();
+        }
+        if (km == null) {
+            km = BigDecimal.ZERO;
+        }
+
+        Tarifa tarifa = tarifaRepository.findByActivoTrue().stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
+
+        BigDecimal costoReal = calcularCostoRealTramo(km, tarifa, t.getDominioCamion());
+        t.setCostoReal(costoReal);
 
         tramoRepository.save(t);
         rutaService.recalcularDesdeTramos(t.getRuta().getIdRuta());
 
         return new TramoResponseDTO(t.getIdTramo(),
                 "Tramo finalizado. Costo calculado automáticamente: $" + t.getCostoReal());
+    }
+
+    private BigDecimal calcularCostoRealTramo(BigDecimal km, Tarifa tarifa, String dominioCamion) {
+        if (km == null) km = BigDecimal.ZERO;
+        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo()).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal costoCamionKm = BigDecimal.ZERO;
+        BigDecimal costoCombustible = BigDecimal.ZERO;
+
+        if (dominioCamion != null && !dominioCamion.isBlank()) {
+            Camion camion = camionService.findByDominio(dominioCamion);
+            if (camion != null) {
+                BigDecimal costoPorKmCamion = camion.getCostoBase() == null ? BigDecimal.ZERO : camion.getCostoBase();
+                BigDecimal consumo = camion.getConsumoCombustible() == null
+                        ? BigDecimal.ZERO
+                        : BigDecimal.valueOf(camion.getConsumoCombustible());
+                BigDecimal valorLitro = BigDecimal.valueOf(tarifa.getValorLitroCombustible());
+
+                costoCamionKm = costoPorKmCamion.multiply(km);
+                costoCombustible = consumo.multiply(valorLitro).multiply(km);
+            }
+        }
+
+        return costoGestion.add(costoCamionKm).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
     }
 
     @Transactional

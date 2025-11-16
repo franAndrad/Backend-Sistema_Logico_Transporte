@@ -1,6 +1,7 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor;
 
 import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.ContenedorEstado;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,5 +16,5 @@ public class ContenedorDetailsDTO {
     private Double volumen;
     private ContenedorEstado estado;
     private Boolean activo;
+    private ClienteDetailsDTO cliente;
 }
-
