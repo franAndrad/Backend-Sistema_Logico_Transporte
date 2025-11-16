@@ -157,10 +157,8 @@ public class GoogleMapsService {
 
 
     private String buildWaypointsFromSelectedDepositos(List<Integer> depositoIds) {
-        if (depositoIds == null)
-            return null; 
-        if (depositoIds.isEmpty())
-            return ""; 
+        if (depositoIds == null || depositoIds.isEmpty())
+            return ""; // forzar envío de param vacío para matchear stub WireMock
 
         depositoIds = List.copyOf(new LinkedHashSet<>(depositoIds));
 
