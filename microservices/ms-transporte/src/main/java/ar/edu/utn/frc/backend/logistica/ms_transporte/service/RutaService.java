@@ -13,26 +13,29 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.client.ClienteClient;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.math.RoundingMode;
+import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RutaService {
 
     private final RutaRepository rutaRepository;
     private final TramoRepository tramoRepository;
     private final GoogleMapsService googleMapsService;
-    private final TarifaRepository tarifaRepository;
-    private final CamionService camionService;
+    private final CostoService costoService;
+    private final ClienteClient clienteClient;
 
     public List<Ruta> findAll() {
         return rutaRepository.findAll();
@@ -68,8 +71,8 @@ public class RutaService {
         ruta.setDistanciaTotal(calculada.getDistanciaTotalKm());
         rutaRepository.save(ruta);
 
-        Tarifa tarifa = obtenerTarifaVigente();
-        BigDecimal consumoPromedio = obtenerConsumoPromedio();
+        // Calcular ventana temporal estimada por tramo, encadenada
+        LocalDateTime cursor = LocalDateTime.now();
 
         for (LegCalculadoDTO leg : calculada.getLegs()) {
             Tramo tramo = new Tramo();
@@ -79,7 +82,15 @@ public class RutaService {
             tramo.setTipo(TipoTramo.valueOf(leg.getTipo())); 
             tramo.setEstado(EstadoTramo.PLANIFICADO);
             tramo.setDistancia(leg.getDistanciaKm());
-            tramo.setCostoAproximado(calcularCostoAproximadoTramo(leg.getDistanciaKm(), tarifa, consumoPromedio));
+            // costo por tramo centralizado
+            tramo.setCostoAproximado(costoService.calcularCosto(leg.getDistanciaKm()));
+
+            // Fechas estimadas basadas en la duración del leg
+            tramo.setFechaHoraInicioEstimada(cursor);
+            long durMin = leg.getDuracionMin() == null ? 0L : leg.getDuracionMin();
+            cursor = cursor.plusMinutes(durMin);
+            tramo.setFechaHoraFinEstimada(cursor);
+
             tramoRepository.save(tramo);
         }
 
@@ -101,8 +112,22 @@ public class RutaService {
         return new RutaResponseDTO(ruta.getIdRuta(), "Ruta actualizada correctamente");
     }
 
+    private void actualizarEstadoSolicitud(Integer idSolicitud, String estado, String descripcion) {
+        try {
+            Map<String, String> body = new HashMap<>();
+            body.put("estado", estado);
+            body.put("descripcion", descripcion);
+            log.info("[RutaService] Actualizando estado de solicitud {} -> {} ({})", idSolicitud, estado, descripcion);
+            clienteClient.actualizarEstado(idSolicitud, body);
+            log.info("[RutaService] Estado de solicitud {} actualizado a {}", idSolicitud, estado);
+        } catch (Exception ex) {
+            log.warn("[RutaService] Falló actualizar estado de solicitud {} -> {}: {}", idSolicitud, estado, ex.toString());
+        }
+    }
+
     public void recalcularDesdeTramos(Integer idRuta) {
         Ruta ruta = findById(idRuta);
+        EstadoRuta estadoAnterior = ruta.getEstado();
         List<Tramo> tramos = tramoRepository.findByRuta(ruta);
 
         ruta.setCantidadTramos(tramos.size());
@@ -116,23 +141,60 @@ public class RutaService {
 
         long finalizados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.FINALIZADO).count();
         long iniciados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.INICIADO).count();
+        long asignados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.ASIGNADO).count();
         long planifOAsign = tramos.stream()
                 .filter(t -> t.getEstado() == EstadoTramo.PLANIFICADO || t.getEstado() == EstadoTramo.ASIGNADO)
                 .count();
+        boolean allCancelados = !tramos.isEmpty() && tramos.stream().allMatch(t -> t.getEstado() == EstadoTramo.CANCELADO);
+        // EN_DEPOSITO solo si hay un tramo DEPOSITO_DEPOSITO INICIADO
+        boolean anyDepositoIniciado = tramos.stream().anyMatch(t ->
+                t.getEstado() == EstadoTramo.INICIADO && t.getTipo() == TipoTramo.DEPOSITO_DEPOSITO
+        );
 
+        EstadoRuta nuevoEstado;
         if (tramos.isEmpty()) {
-            ruta.setEstado(EstadoRuta.ESTIMADA);
+            nuevoEstado = EstadoRuta.ESTIMADA;
         } else if (finalizados == tramos.size()) {
-            ruta.setEstado(EstadoRuta.COMPLETADA);
+            nuevoEstado = EstadoRuta.COMPLETADA;
         } else if (iniciados > 0) {
-            ruta.setEstado(EstadoRuta.EN_PROGRESO);
+            nuevoEstado = EstadoRuta.EN_PROGRESO;
         } else if (planifOAsign > 0) {
-            ruta.setEstado(EstadoRuta.ASIGNADA);
+            nuevoEstado = EstadoRuta.ASIGNADA;
         } else {
-            ruta.setEstado(EstadoRuta.ESTIMADA);
+            nuevoEstado = EstadoRuta.ESTIMADA;
         }
 
+        ruta.setEstado(nuevoEstado);
         rutaRepository.save(ruta);
+
+        Integer idSolicitud = ruta.getIdSolicitud();
+        if (idSolicitud != null) {
+            // COMPLETADA -> ENTREGADA
+            if (estadoAnterior != EstadoRuta.COMPLETADA && nuevoEstado == EstadoRuta.COMPLETADA) {
+                actualizarEstadoSolicitud(idSolicitud, "ENTREGADA", "Ruta completada");
+                return;
+            }
+            // CANCELADA -> CANCELADA
+            if (allCancelados) {
+                actualizarEstadoSolicitud(idSolicitud, "CANCELADA", "Ruta cancelada");
+                return;
+            }
+            // EN_DEPOSITO
+            if (anyDepositoIniciado) {
+                actualizarEstadoSolicitud(idSolicitud, "EN_DEPOSITO", "En depósito intermedio");
+                return;
+            }
+            // EN_TRANSITO
+            if (iniciados > 0) {
+                actualizarEstadoSolicitud(idSolicitud, "EN_TRANSITO", "Transporte en curso");
+                return;
+            }
+            // ASIGNADA
+            if (asignados > 0) {
+                actualizarEstadoSolicitud(idSolicitud, "ASIGNADA", "Ruta asignada");
+                return;
+            }
+        }
     }
 
     @Transactional
@@ -160,28 +222,5 @@ public class RutaService {
 
         rutaRepository.delete(ruta);
         return new RutaResponseDTO(idRuta, "Ruta eliminada correctamente");
-    }
-
-    private Tarifa obtenerTarifaVigente() {
-        return tarifaRepository.findByActivoTrue().stream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
-    }
-
-    private BigDecimal obtenerConsumoPromedio() {
-        var disponibles = camionService.findAllDisponibles();
-        if (disponibles == null || disponibles.isEmpty()) return BigDecimal.ZERO;
-        double avg = disponibles.stream()
-                .mapToDouble(c -> c.getConsumoCombustible() == null ? 0.0 : c.getConsumoCombustible())
-                .average().orElse(0.0);
-        return BigDecimal.valueOf(avg);
-    }
-
-    private BigDecimal calcularCostoAproximadoTramo(BigDecimal distanciaKm, Tarifa tarifa, BigDecimal consumoPromKm) {
-        if (distanciaKm == null) return null;
-        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo()).setScale(2, RoundingMode.HALF_UP);
-        BigDecimal costoKmBase = BigDecimal.valueOf(tarifa.getValorPorKm()).multiply(distanciaKm);
-        BigDecimal costoCombustible = BigDecimal.valueOf(tarifa.getValorLitroCombustible())
-                .multiply(consumoPromKm).multiply(distanciaKm);
-        return costoGestion.add(costoKmBase).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
     }
 }

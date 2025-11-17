@@ -8,6 +8,8 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.distancia.DistanciaCon
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.distancia.DistanciaResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.LegCalculadoDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,6 +30,8 @@ public class GoogleMapsService {
     private final GoogleMapsClient googleMapsClient;
     private final GoogleMapsProperties googleMapsProperties;
     private final DepositoService depositoService;
+    private final TarifaRepository tarifaRepository;
+    private final CamionService camionService;
 
     public DistanciaResponseDTO calcularDistancia( Double origenLat, Double origenLng,
             Double destinoLat, Double destinoLng, 
@@ -51,15 +55,20 @@ public class GoogleMapsService {
                     "Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
         }
         if (response.getRoutes() == null || response.getRoutes().isEmpty()
-                || response.getRoutes().get(0).getLegs() == null
-                || response.getRoutes().get(0).getLegs().isEmpty()) {
+                || response.getRoutes().getFirst().getLegs() == null
+                || response.getRoutes().getFirst().getLegs().isEmpty()) {
             throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
         }
 
-        DirectionsResponseDTO.Route route = response.getRoutes().get(0);
+        DirectionsResponseDTO.Route route = response.getRoutes().getFirst();
 
         long totalMeters = 0L;
         long totalSeconds = 0L;
+
+        // Calcular costo por tramo y total
+        Tarifa tarifa = obtenerTarifaVigente();
+        BigDecimal consumoProm = obtenerConsumoPromedio();
+        BigDecimal costoTotal = BigDecimal.ZERO;
 
         for (DirectionsResponseDTO.Leg l : route.getLegs()) {
             if (l.getDistance() == null || l.getDistance().getValue() == null) {
@@ -68,8 +77,14 @@ public class GoogleMapsService {
             if (l.getDuration() == null || l.getDuration().getValue() == null) {
                 throw new RuntimeException("Leg sin duración en respuesta de Google Maps");
             }
-            totalMeters += l.getDistance().getValue();
-            totalSeconds += l.getDuration().getValue();
+            long meters = l.getDistance().getValue();
+            long seconds = l.getDuration().getValue();
+            totalMeters += meters;
+            totalSeconds += seconds;
+
+            BigDecimal distanciaKmLeg = BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP);
+            BigDecimal costoLeg = calcularCostoAproximadoTramo(distanciaKmLeg, tarifa, consumoProm);
+            costoTotal = costoTotal.add(costoLeg);
         }
 
         double distanciaKm = totalMeters / 1000.0;
@@ -78,7 +93,8 @@ public class GoogleMapsService {
         return new DistanciaResponseDTO(
                 origenLat, origenLng,
                 destinoLat, destinoLng,
-                distanciaKm, duracionMinutos);
+                distanciaKm, duracionMinutos,
+                costoTotal.setScale(2, RoundingMode.HALF_UP));
     }
 
     
@@ -97,7 +113,7 @@ public class GoogleMapsService {
         if (response == null || !"OK".equals(response.getStatus())) {
             throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
         }
-        var route = response.getRoutes().get(0);
+        var route = response.getRoutes().getFirst();
         var legs = route.getLegs();
         if (legs == null || legs.isEmpty()) {
             throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
@@ -113,6 +129,10 @@ public class GoogleMapsService {
 
         List<LegCalculadoDTO> legDtos = new ArrayList<>();
 
+        Tarifa tarifa = obtenerTarifaVigente();
+        BigDecimal consumoProm = obtenerConsumoPromedio();
+        BigDecimal costoTotal = BigDecimal.ZERO;
+
         for (int i = 0; i < legs.size(); i++) {
             var l = legs.get(i);
             long meters = l.getDistance().getValue();
@@ -127,22 +147,27 @@ public class GoogleMapsService {
                 tipo = "ORIGEN_DESTINO";
             } else if (i == 0) {
                 tipo = "ORIGEN_DEPOSITO";
-                depDes = deposOrdenados.get(0);
+                depDes = deposOrdenados.getFirst();
             } else if (i == puntos - 2) {
                 tipo = "DEPOSITO_DESTINO";
-                depOri = deposOrdenados.get(deposOrdenados.size() - 1);
+                depOri = deposOrdenados.getLast();
             } else {
                 tipo = "DEPOSITO_DEPOSITO";
                 depOri = deposOrdenados.get(i - 1);
                 depDes = deposOrdenados.get(i);
             }
 
+            BigDecimal distanciaKmLeg = BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP);
+            BigDecimal costoLeg = calcularCostoAproximadoTramo(distanciaKmLeg, tarifa, consumoProm);
+            costoTotal = costoTotal.add(costoLeg);
+
             legDtos.add(new LegCalculadoDTO(
-                    BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP),
+                    distanciaKmLeg,
                     seconds / 60,
                     depOri,
                     depDes,
-                    tipo
+                    tipo,
+                    costoLeg.setScale(2, RoundingMode.HALF_UP)
             ));
         }
 
@@ -151,7 +176,8 @@ public class GoogleMapsService {
                 destinoLat, destinoLng,
                 BigDecimal.valueOf(totalMeters / 1000.0).setScale(3, RoundingMode.HALF_UP),
                 totalSeconds / 60,
-                legDtos
+                legDtos,
+                costoTotal.setScale(2, RoundingMode.HALF_UP)
         );
     }
 
@@ -197,7 +223,7 @@ public class GoogleMapsService {
     if (response == null || !"OK".equals(response.getStatus())) {
         throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
     }
-    var route = response.getRoutes().get(0);
+    var route = response.getRoutes().getFirst();
     var legs = route.getLegs();
     if (legs == null || legs.isEmpty()) {
         throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
@@ -225,10 +251,10 @@ public class GoogleMapsService {
             tipo = "ORIGEN_DESTINO";
         } else if (i == 0) {
             tipo = "ORIGEN_DEPOSITO";
-            depDes = deposOrdenados.get(0);
+            depDes = deposOrdenados.getFirst();
         } else if (i == puntos - 2) {
             tipo = "DEPOSITO_DESTINO";
-            depOri = deposOrdenados.get(deposOrdenados.size() - 1);
+            depOri = deposOrdenados.getLast();
         } else {
             tipo = "DEPOSITO_DEPOSITO";
             depOri = deposOrdenados.get(i - 1);
@@ -240,7 +266,8 @@ public class GoogleMapsService {
                 seconds / 60,
                 depOri,
                 depDes,
-                tipo
+                tipo,
+                null // costo no necesario aquí; RutaService calcula según tarifa vigente al persistir
         ));
     }
 
@@ -250,4 +277,27 @@ public class GoogleMapsService {
             legDtos
     );
 }
+
+    private Tarifa obtenerTarifaVigente() {
+        return tarifaRepository.findByActivoTrue().stream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
+    }
+
+    private BigDecimal obtenerConsumoPromedio() {
+        var disponibles = camionService.findAllDisponibles();
+        if (disponibles == null || disponibles.isEmpty()) return BigDecimal.ZERO;
+        double avg = disponibles.stream()
+                .mapToDouble(c -> c.getConsumoCombustible() == null ? 0.0 : c.getConsumoCombustible())
+                .average().orElse(0.0);
+        return BigDecimal.valueOf(avg);
+    }
+
+    private BigDecimal calcularCostoAproximadoTramo(BigDecimal distanciaKm, Tarifa tarifa, BigDecimal consumoPromKm) {
+        if (distanciaKm == null) return BigDecimal.ZERO;
+        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo()).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal costoKmBase = BigDecimal.valueOf(tarifa.getValorPorKm()).multiply(distanciaKm);
+        BigDecimal costoCombustible = BigDecimal.valueOf(tarifa.getValorLitroCombustible())
+                .multiply(consumoPromKm).multiply(distanciaKm);
+        return costoGestion.add(costoKmBase).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
+    }
 }

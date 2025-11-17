@@ -13,5 +13,6 @@ public class LegCalculadoDTO {
     private Long duracionMin;
     private Integer depositoOrigenId;
     private Integer depositoDestinoId; 
-    private String tipo; 
+    private String tipo;
+    private BigDecimal costoEstimado;
 }

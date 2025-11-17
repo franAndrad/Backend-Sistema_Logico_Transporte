@@ -10,15 +10,18 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ContenedorReposito
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.SolicitudRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 import java.util.Objects;
-import java.math.BigDecimal;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
+import java.util.stream.Collectors;
+import java.time.Duration;
+
 import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.TransporteClient;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.*;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
 
 @Service
 @Slf4j
@@ -51,25 +54,96 @@ public class SolicitudService {
                 .collect(Collectors.toList());
     }
 
+    private Integer calcularTiempoEstimadoMin(List<TramoDto> tramos) {
+        if (tramos == null || tramos.isEmpty()) return null;
+        long total = 0L;
+        boolean any = false;
+        for (TramoDto t : tramos) {
+            if (t.getFechaHoraInicioEstimada() != null && t.getFechaHoraFinEstimada() != null) {
+                long mins = Duration.between(t.getFechaHoraInicioEstimada(), t.getFechaHoraFinEstimada()).toMinutes();
+                if (mins > 0) {
+                    total += mins;
+                    any = true;
+                }
+            }
+        }
+        return any ? (int) total : null;
+    }
+
+    private Integer calcularTiempoRealMin(List<TramoDto> tramos) {
+        if (tramos == null || tramos.isEmpty()) return null;
+        long totalSeconds = 0L;
+        boolean anyPositive = false;
+        for (TramoDto t : tramos) {
+            if (t.getFechaHoraInicio() != null && t.getFechaHoraFin() != null) {
+                long secs = Duration.between(t.getFechaHoraInicio(), t.getFechaHoraFin()).getSeconds();
+                if (secs > 0) {
+                    totalSeconds += secs;
+                    anyPositive = true;
+                }
+            }
+        }
+        if (!anyPositive) return null;
+        // Redondear hacia arriba a minutos para no perder tramos cortos (<1 min)
+        int minutes = (int) Math.ceil(totalSeconds / 60.0);
+        return Math.max(minutes, 1);
+    }
+
     public SolicitudDetailsDTO getById(int id) {
         Solicitud s = solicitudRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
 
+        // Fallback: si tiempoEstimado es null, intentar calcularlo desde tramos
+        if (s.getTiempoEstimado() == null) {
+            try {
+                RutaDto rutaDtoTmp = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
+                if (rutaDtoTmp != null && rutaDtoTmp.getIdRuta() != null) {
+                    List<TramoDto> tramosTmp = transporteClient.obtenerTramosPorRuta(rutaDtoTmp.getIdRuta());
+                    Integer mins = calcularTiempoEstimadoMin(tramosTmp);
+                    if (mins != null) {
+                        s.setTiempoEstimado(mins);
+                        solicitudRepository.save(s);
+                    }
+                }
+            } catch (RuntimeException ex) {
+                log.warn("No fue posible backfillear tiempoEstimado desde tramos en getById: {}", ex.getMessage());
+            }
+        }
+
+        // Obtener ruta/tramos para adjuntar y (si ENTREGADA y faltan) backfillear costoFinal/tiempoReal
+        RutaDto rutaDto = null;
+        List<TramoDto> tramosDto = null;
+        try {
+            rutaDto = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
+            if (rutaDto != null && rutaDto.getIdRuta() != null) {
+                tramosDto = transporteClient.obtenerTramosPorRuta(rutaDto.getIdRuta());
+                if (s.getEstado() == SolicitudEstado.ENTREGADA) {
+                    // Backfill valores reales si faltan en la entidad
+                    if (s.getCostoFinal() == null) {
+                        BigDecimal totalReal = tramosDto.stream()
+                                .map(t -> t.getCostoReal() == null ? BigDecimal.ZERO : t.getCostoReal())
+                                .reduce(BigDecimal.ZERO, BigDecimal::add);
+                        s.setCostoFinal(totalReal.doubleValue());
+                    }
+                    if (s.getTiempoReal() == null) {
+                        Integer minsReal = calcularTiempoRealMin(tramosDto);
+                        if (minsReal != null) s.setTiempoReal(minsReal);
+                    }
+                    if (s.getCostoFinal() != null || s.getTiempoReal() != null) {
+                        try { solicitudRepository.save(s); } catch (RuntimeException ignore) {}
+                    }
+                }
+            }
+        } catch (RuntimeException ex) {
+            log.warn("No se pudieron obtener datos de ruta/tramos para la solicitud {}: {}", s.getIdSolicitud(), ex.getMessage());
+        }
+
         Cliente c = s.getCliente();
         Contenedor cont = s.getContenedor();
-
         ClienteDetailsDTO clienteDTO = new ClienteDetailsDTO(
-                c.getIdCliente(),
-                c.getKeycloakId(),
-                c.getDireccionFacturacion(),
-                c.getDireccionEnvio(),
-                c.getRazonSocial(),
-                c.getCuit()
-        );
-        ContenedorSummaryDTO contResumen = new ContenedorSummaryDTO(
-                cont.getIdContenedor(),
-                cont.getIdentificacion()
-        );
+                c.getIdCliente(), c.getKeycloakId(), c.getDireccionFacturacion(),
+                c.getDireccionEnvio(), c.getRazonSocial(), c.getCuit());
+        ContenedorSummaryDTO contResumen = new ContenedorSummaryDTO(cont.getIdContenedor(), cont.getIdentificacion());
 
         return new SolicitudDetailsDTO(
                 s.getIdSolicitud(),
@@ -80,7 +154,11 @@ public class SolicitudService {
                 s.getTiempoEstimado(),
                 cont.getIdentificacion(),
                 clienteDTO,
-                contResumen
+                contResumen,
+                rutaDto,
+                tramosDto,
+                s.getCostoFinal(),
+                s.getTiempoReal()
         );
     }
 
@@ -146,7 +224,6 @@ public class SolicitudService {
         s.setEstado(dto.getEstado());
         s.setDescripcionEstado(dto.getDescripcion());
 
-        // Si pasa a PROGRAMADA, crear Ruta en ms-transporte y calcular costoEstimado
         if (dto.getEstado() == SolicitudEstado.PROGRAMADA) {
             // Validar coordenadas
             if (s.getOrigenLatitud() == null || s.getOrigenLongitud() == null
@@ -170,28 +247,44 @@ public class SolicitudService {
                 log.warn("No se pudo crear la ruta (posible existencia previa o error de red): {}", ex.getMessage());
             }
 
-            // Obtener ruta: si tenemos idRuta de creación la consultamos por id; si no, por idSolicitud
+            // Obtener ruta por solicitud
             RutaDto ruta;
             try {
-                if (idRutaCreada != null) {
-                    // No hay endpoint directo por id en el cliente; usamos por solicitud como fallback común
-                    ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
-                } else {
-                    ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
-                }
+                ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
             } catch (RuntimeException ex) {
                 throw new IllegalStateException("No fue posible obtener la ruta para la solicitud " + s.getIdSolicitud());
             }
 
-            // Obtener tramos y sumar costos aproximados
+            // Obtener tramos, sumar costo y tiempo estimado desde fechas estimadas
             try {
                 List<TramoDto> tramos = transporteClient.obtenerTramosPorRuta(ruta.getIdRuta());
                 BigDecimal total = tramos == null ? BigDecimal.ZERO : tramos.stream()
                         .map(t -> t.getCostoAproximado() == null ? BigDecimal.ZERO : t.getCostoAproximado())
                         .reduce(BigDecimal.ZERO, BigDecimal::add);
                 s.setCostoEstimado(total.doubleValue());
+
+                Integer mins = calcularTiempoEstimadoMin(tramos);
+                if (mins != null) s.setTiempoEstimado(mins);
             } catch (RuntimeException ex) {
-                log.warn("No fue posible calcular el costo estimado desde tramos: {}", ex.getMessage());
+                log.warn("No fue posible calcular costo/tiempo estimado desde tramos: {}", ex.getMessage());
+            }
+        }
+
+        // Al pasar a ENTREGADA, calcular y persistir costoFinal y tiempoReal desde ms-transporte
+        if (dto.getEstado() == SolicitudEstado.ENTREGADA) {
+            try {
+                RutaDto ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
+                if (ruta != null && ruta.getIdRuta() != null) {
+                    List<TramoDto> tramos = transporteClient.obtenerTramosPorRuta(ruta.getIdRuta());
+                    BigDecimal totalReal = tramos == null ? BigDecimal.ZERO : tramos.stream()
+                            .map(t -> t.getCostoReal() == null ? BigDecimal.ZERO : t.getCostoReal())
+                            .reduce(BigDecimal.ZERO, BigDecimal::add);
+                    s.setCostoFinal(totalReal.doubleValue());
+                    Integer minsReal = calcularTiempoRealMin(tramos);
+                    if (minsReal != null) s.setTiempoReal(minsReal);
+                }
+            } catch (RuntimeException ex) {
+                log.warn("No fue posible calcular valores reales en ENTREGADA: {}", ex.getMessage());
             }
         }
 

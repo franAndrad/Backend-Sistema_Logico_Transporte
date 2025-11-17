@@ -101,6 +101,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -424,6 +439,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -474,7 +504,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{ \"identificacion\": \"NT-BA-2025-01\",\r\n \"clienteId\": 1,\r\n  \"peso\": 1800,\r\n   \"volumen\": 12.5,\r\n    \"estado\": \"EN_ORIGEN\" }",
+									"raw": "{ \"identificacion\": \"MT-BA-2025-01\",\r\n \"clienteId\": 1,\r\n  \"peso\": 1800,\r\n   \"volumen\": 12.5,\r\n    \"estado\": \"EN_ORIGEN\" }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -504,6 +534,21 @@
 								"auth": {
 									"type": "oauth2",
 									"oauth2": [
+										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
 										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
@@ -563,14 +608,15 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/contenedores",
+									"raw": "{{gateway_url}}/api/v1/contenedores/1",
 									"host": [
 										"{{gateway_url}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"contenedores"
+										"contenedores",
+										"1"
 									]
 								}
 							},
@@ -749,6 +795,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -830,6 +891,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -888,7 +964,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/solicitudes/1",
+									"raw": "{{gateway_url}}/api/v1/solicitudes/9",
 									"host": [
 										"{{gateway_url}}"
 									],
@@ -896,7 +972,7 @@
 										"api",
 										"v1",
 										"solicitudes",
-										"1"
+										"9"
 									]
 								}
 							},
@@ -970,7 +1046,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/solicitudes/cliente/1",
+									"raw": "{{gateway_url}}/api/v1/solicitudes/3",
 									"host": [
 										"{{gateway_url}}"
 									],
@@ -978,8 +1054,7 @@
 										"api",
 										"v1",
 										"solicitudes",
-										"cliente",
-										"1"
+										"3"
 									]
 								}
 							},
@@ -1075,6 +1150,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -1125,7 +1215,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{ \"idCliente\": 1,\r\n \"idContenedor\": 1,\r\n  \"origenDireccion\": \"Puerto Buenos Aires\",\r\n   \"destinoDireccion\": \"Depósito Córdoba\",\r\n    \"origenLatitud\": -34.6037,\r\n     \"origenLongitud\": -58.3816,\r\n      \"destinoLatitud\": -31.4201,\r\n       \"destinoLongitud\": -64.1888\r\n       }",
+									"raw": "{ \"idCliente\": 1, \"idContenedor\": 1, \"origenDireccion\": \"Av. 1\", \"destinoDireccion\": \"Av. 2\",   \"origenLatitud\": -31.417,\r\n  \"origenLongitud\": -64.183,\r\n  \"destinoLatitud\": -31.3487,\r\n  \"destinoLongitud\": -64.2576 }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1153,6 +1243,21 @@
 									"type": "oauth2",
 									"oauth2": [
 										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
 											"type": "string"
@@ -1203,7 +1308,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{ \"estado\": \"PROGRAMADA\",\r\n \"tarifaId\": 10 }",
+									"raw": "{ \"estado\": \"PROGRAMADA\",\r\n \"tarifaId\": 1 }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1211,7 +1316,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/solicitudes/1",
+									"raw": "{{gateway_url}}/api/v1/solicitudes/4",
 									"host": [
 										"{{gateway_url}}"
 									],
@@ -1219,18 +1324,33 @@
 										"api",
 										"v1",
 										"solicitudes",
-										"1"
+										"4"
 									]
 								}
 							},
 							"response": []
 						},
 						{
-							"name": "Update Cliente Copy",
+							"name": "Update Estado",
 							"request": {
 								"auth": {
 									"type": "oauth2",
 									"oauth2": [
+										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
 										{
 											"key": "accessTokenUrl",
 											"value": "{{gateway_url}}/token",
@@ -1282,7 +1402,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": " { \"estado\": \"EN_TRANSITO\",\r\n  \"descripcion\": \"Salió del origen\" }",
+									"raw": " { \"estado\": \"PROGRAMADA\",\r\n  \"descripcion\": \"Salió del origen\" }",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -1290,7 +1410,7 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/solicitudes/1/estado",
+									"raw": "{{gateway_url}}/api/v1/solicitudes/9/estado",
 									"host": [
 										"{{gateway_url}}"
 									],
@@ -1298,7 +1418,7 @@
 										"api",
 										"v1",
 										"solicitudes",
-										"1",
+										"9",
 										"estado"
 									]
 								}
@@ -2448,7 +2568,7 @@
 								"header": [],
 								"body": {
 									"mode": "raw",
-									"raw": "{\r\n  \"dominio\": \"ABC123\",\r\n  \"capacidad\": 3500.0,\r\n  \"volumen\": 25.5,\r\n  \"costoBase\": 120.75,\r\n  \"consumoCombustible\": 8.4\r\n}",
+									"raw": "{\r\n  \"dominio\": \"ABC153\",\r\n  \"capacidad\": 3500.0,\r\n  \"volumen\": 25.5,\r\n  \"costoBase\": 120.75,\r\n  \"consumoCombustible\": 8.4\r\n}",
 									"options": {
 										"raw": {
 											"language": "json"
@@ -2613,14 +2733,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/depositos/ABC123/deshabilitar",
+									"raw": "{{gateway_url}}/api/v1/camiones/ABC123/deshabilitar",
 									"host": [
 										"{{gateway_url}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"depositos",
+										"camiones",
 										"ABC123",
 										"deshabilitar"
 									]
@@ -2629,7 +2749,7 @@
 							"response": []
 						},
 						{
-							"name": "Active Deposito",
+							"name": "Activar Camion",
 							"request": {
 								"auth": {
 									"type": "oauth2",
@@ -2693,14 +2813,14 @@
 									}
 								},
 								"url": {
-									"raw": "{{gateway_url}}/api/v1/depositos/ABC123/habilitar",
+									"raw": "{{gateway_url}}/api/v1/camiones/ABC123/habilitar",
 									"host": [
 										"{{gateway_url}}"
 									],
 									"path": [
 										"api",
 										"v1",
-										"depositos",
+										"camiones",
 										"ABC123",
 										"habilitar"
 									]
@@ -2809,6 +2929,1678 @@
 										{
 											"key": "destinoLng",
 											"value": "-60.6393"
+										}
+									]
+								},
+								"description": "**PASO 1**: Obtiene todas las rutas alternativas disponibles entre origen y destino.\n\n**Comportamiento:**\n- Primera llamada: Consulta la API de Google Maps\n- Resultado se CACHEA por 15 minutos\n- Siguientes llamadas (mismas coordenadas): responde desde caché (instantáneo)\n\n**Notas:**\n- Marca una ruta como \"más rápida\" (menor duración)\n- Numera las rutas de 1 a N\n- NO guarda nada en BD (solo en memoria/caché)"
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tarifa",
+					"item": [
+						{
+							"name": "Get tarifa",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tarifas",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tarifas"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get tarifa ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tarifas/3",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tarifas",
+										"3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "POST Tarifa",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"concepto\": \"Tarifa estándar 2025\", \"valorBase\": 1500.0, \"valorPorKm\": 120.0, \"valorPorPeso\": 8.5, \"valorPorVolumen\": 12.0, \"valorPorTramo\": 500.0, \"valorLitroCombustible\": 950.0, \"fechaVigencia\": \"2025-12-01\" }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tarifas",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tarifas"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "PUT tarifa",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{ \"valorBase\": 1600.0, \"valorPorKm\": 125.0, \"valorPorPeso\": 8.5, \"valorPorVolumen\": 11.5, \"valorPorTramo\": 480.0, \"valorLitroCombustible\": 980.0, \"fechaVigencia\": \"2025-12-15\", \"activo\": true }",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tarifas/",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tarifas",
+										""
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Ruta",
+					"item": [
+						{
+							"name": "Get Rutas",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "operador123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "operador1",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/rutas",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"rutas"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Rutas ById",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/rutas/2",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"rutas",
+										"2"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Rutas BySolicitud",
+							"protocolProfileBehavior": {
+								"disableBodyPruning": true
+							},
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/rutas/solicitud/101",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"rutas",
+										"solicitud",
+										"101"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Ruta ById",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/rutas/3",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"rutas",
+										"3"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Create Ruta",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "grant_type",
+											"value": "authorization_code",
+											"type": "string"
+										},
+										{
+											"key": "password",
+											"value": "admin123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "admin",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"idSolicitud\": 101,\r\n  \"origenLat\": -31.417,\r\n  \"origenLon\": -64.183,\r\n  \"destinoLat\": -31.3487,\r\n  \"destinoLon\": -64.2576,\r\n  \"depositoIds\": []\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/rutas",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"rutas"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "Tramo",
+					"item": [
+						{
+							"name": "Get Tramos",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tramos ById",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Get Tramos ByRutaId",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/ruta/1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"ruta",
+										"1"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Assign Camion ByTramoId",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "operador123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "operador1",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"dominio\": \"ABC153\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/11/camion",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"11",
+										"camion"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Delete Camion ByTramoId",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "DELETE",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/7/camion",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"7",
+										"camion"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Update Tramo",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "operador123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "operador1",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "PUT",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"idRuta\": 5,\r\n  \"idDepositoOrigen\": 10,\r\n  \"idDepositoDestino\": 25,\r\n  \"keyCloakIdTransportista\": \"91b92c4f-ec84-48e2-b634-7119e09ac1d7\",\r\n  \"dominioCamion\": \"ABC153\",\r\n  \"tipo\": \"ORIGEN_A_DEPOSITO\",\r\n  \"estado\": \"PLANIFICADO\",\r\n  \"distancia\": 12.345,\r\n  \"costoAproximado\": 3456.78,\r\n  \"fechaHoraInicioEstimada\": \"2025-11-13T08:00:00\",\r\n  \"fechaHoraFinEstimada\": \"2025-11-13T12:00:00\"\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/11",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"11"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Iniciar Tramo",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "transportista123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "transportista1",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/11/iniciar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"11",
+										"iniciar"
+									]
+								}
+							},
+							"response": []
+						},
+						{
+							"name": "Finalizar Tramo",
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "password",
+											"value": "transportista123",
+											"type": "string"
+										},
+										{
+											"key": "username",
+											"value": "transportista1",
+											"type": "string"
+										},
+										{
+											"key": "grant_type",
+											"value": "password_credentials",
+											"type": "string"
+										},
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "POST",
+								"header": [],
+								"body": {
+									"mode": "raw",
+									"raw": "{\r\n  \"kmRecorridos\": 12.345\r\n}",
+									"options": {
+										"raw": {
+											"language": "json"
+										}
+									}
+								},
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/tramos/11/finalizar",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"tramos",
+										"11",
+										"finalizar"
+									]
+								}
+							},
+							"response": []
+						}
+					]
+				},
+				{
+					"name": "RutaTentativa",
+					"item": [
+						{
+							"name": "Distancia",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status 200 OK\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/distancia?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393&depositoIds=",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"distancia"
+									],
+									"query": [
+										{
+											"key": "origenLat",
+											"value": "-31.4135"
+										},
+										{
+											"key": "origenLng",
+											"value": "-64.1811"
+										},
+										{
+											"key": "destinoLat",
+											"value": "-32.9468"
+										},
+										{
+											"key": "destinoLng",
+											"value": "-60.6393"
+										},
+										{
+											"key": "depositoIds",
+											"value": ""
+										}
+									]
+								},
+								"description": "**PASO 1**: Obtiene todas las rutas alternativas disponibles entre origen y destino.\n\n**Comportamiento:**\n- Primera llamada: Consulta la API de Google Maps\n- Resultado se CACHEA por 15 minutos\n- Siguientes llamadas (mismas coordenadas): responde desde caché (instantáneo)\n\n**Notas:**\n- Marca una ruta como \"más rápida\" (menor duración)\n- Numera las rutas de 1 a N\n- NO guarda nada en BD (solo en memoria/caché)"
+							},
+							"response": []
+						},
+						{
+							"name": "Distancia Detallada",
+							"event": [
+								{
+									"listen": "test",
+									"script": {
+										"exec": [
+											"pm.test(\"Status 200 OK\", function () {",
+											"    pm.response.to.have.status(200);",
+											"});"
+										],
+										"type": "text/javascript",
+										"packages": {},
+										"requests": {}
+									}
+								}
+							],
+							"request": {
+								"auth": {
+									"type": "oauth2",
+									"oauth2": [
+										{
+											"key": "accessTokenUrl",
+											"value": "{{gateway_url}}/token",
+											"type": "string"
+										},
+										{
+											"key": "authUrl",
+											"value": "{{gateway_url}}/auth",
+											"type": "string"
+										},
+										{
+											"key": "addTokenTo",
+											"value": "header",
+											"type": "string"
+										},
+										{
+											"key": "redirect_uri",
+											"value": "https://oauth.pstmn.io/v1/callback",
+											"type": "string"
+										},
+										{
+											"key": "useBrowser",
+											"value": false,
+											"type": "boolean"
+										},
+										{
+											"key": "scope",
+											"value": "",
+											"type": "string"
+										},
+										{
+											"key": "clientSecret",
+											"value": "{{client_secret}}",
+											"type": "string"
+										},
+										{
+											"key": "clientId",
+											"value": "{{client_id}}",
+											"type": "string"
+										},
+										{
+											"key": "tokenName",
+											"value": "token",
+											"type": "string"
+										}
+									]
+								},
+								"method": "GET",
+								"header": [],
+								"url": {
+									"raw": "{{gateway_url}}/api/v1/distancia/detallada?origenLat=-31.4135&origenLng=-64.1811&destinoLat=-32.9468&destinoLng=-60.6393&depositoIds=1",
+									"host": [
+										"{{gateway_url}}"
+									],
+									"path": [
+										"api",
+										"v1",
+										"distancia",
+										"detallada"
+									],
+									"query": [
+										{
+											"key": "origenLat",
+											"value": "-31.4135"
+										},
+										{
+											"key": "origenLng",
+											"value": "-64.1811"
+										},
+										{
+											"key": "destinoLat",
+											"value": "-32.9468"
+										},
+										{
+											"key": "destinoLng",
+											"value": "-60.6393"
+										},
+										{
+											"key": "depositoIds",
+											"value": "1"
 										}
 									]
 								},

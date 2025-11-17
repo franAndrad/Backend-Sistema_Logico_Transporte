@@ -18,4 +18,5 @@ public class DistanciaConTramosResponseDTO {
     private BigDecimal distanciaKmTotal; 
     private Long duracionMinutosTotal; 
     private List<LegCalculadoDTO> tramos;
+    private BigDecimal costoEstimadoTotal;
 }
