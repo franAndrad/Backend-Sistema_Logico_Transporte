@@ -5,7 +5,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -16,7 +15,6 @@ public class TarifaService {
     @Autowired
     private TarifaRepository tarifaRepository;
 
-    // Lista solo vigentes (activas)
     public List<TarifaListItemDTO> listarVigentes() {
         return tarifaRepository.findByActivoTrue().stream()
                 .map(t -> new TarifaListItemDTO(
@@ -32,7 +30,7 @@ public class TarifaService {
                 .collect(Collectors.toList());
     }
 
-    public TarifaDetailDTO obtenerPorId(Integer id) {
+    public TarifaDetailDTO obtenerPorId(int id) {
         Tarifa t = tarifaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tarifa no encontrada"));
         return new TarifaDetailDTO(
@@ -50,9 +48,7 @@ public class TarifaService {
     }
 
     public TarifaCreateResponseDTO crear(TarifaCreateRequestDTO dto) {
-        // Si hay una activa y la nueva también será activa, desactivamos la anterior.
         if (tarifaRepository.existsByActivoTrue()) {
-            // desactivar todas (solo debería haber una) para asegurar unicidad
             tarifaRepository.findByActivoTrue().forEach(t -> {
                 t.setActivo(false);
                 tarifaRepository.save(t);
@@ -72,7 +68,7 @@ public class TarifaService {
         return new TarifaCreateResponseDTO(guardada.getIdTarifa(), "Tarifa creada correctamente");
     }
 
-    public TarifaResponseDTO actualizar(Integer id, TarifaUpdateRequestDTO dto) {
+    public TarifaResponseDTO actualizar(int id, TarifaUpdateRequestDTO dto) {
         Tarifa t = tarifaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tarifa no encontrada"));
 

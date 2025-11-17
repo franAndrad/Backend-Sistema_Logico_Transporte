@@ -3,7 +3,6 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.entities;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.time.LocalDate;
 
 @Entity

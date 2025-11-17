@@ -5,10 +5,8 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-
 import com.fasterxml.jackson.annotation.JsonBackReference;
 
 @Entity

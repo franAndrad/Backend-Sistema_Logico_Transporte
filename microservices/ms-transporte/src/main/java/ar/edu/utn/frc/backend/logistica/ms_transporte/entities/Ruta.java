@@ -4,7 +4,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoRuta;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.*;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;

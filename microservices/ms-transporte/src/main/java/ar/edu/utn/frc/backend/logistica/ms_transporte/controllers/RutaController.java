@@ -9,7 +9,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.service.RutaService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController

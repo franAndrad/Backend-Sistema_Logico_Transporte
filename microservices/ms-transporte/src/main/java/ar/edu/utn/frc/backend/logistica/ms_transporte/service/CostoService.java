@@ -4,7 +4,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 

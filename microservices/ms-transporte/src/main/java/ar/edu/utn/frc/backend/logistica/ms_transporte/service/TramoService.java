@@ -14,10 +14,8 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;

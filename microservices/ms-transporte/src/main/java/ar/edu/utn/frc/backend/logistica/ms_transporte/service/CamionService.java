@@ -79,7 +79,6 @@ public class CamionService {
         return new CamionResponseDTO(dominio, "Camión habilitado correctamente");
     }
 
-    // Falta Tramos para validar que no este en tramos activos
     public CamionResponseDTO deshabilitar(@NonNull String dominio) {
         Camion camion = camionRepository.findById(dominio)
                 .orElseThrow(() -> new NoSuchElementException("Camión no encontrado"));

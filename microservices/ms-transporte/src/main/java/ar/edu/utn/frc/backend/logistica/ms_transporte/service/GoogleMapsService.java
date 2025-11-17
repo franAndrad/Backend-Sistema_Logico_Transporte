@@ -10,7 +10,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.LegCalculadoDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -267,7 +266,7 @@ public class GoogleMapsService {
                 depOri,
                 depDes,
                 tipo,
-                null // costo no necesario aquí; RutaService calcula según tarifa vigente al persistir
+                null 
         ));
     }
 

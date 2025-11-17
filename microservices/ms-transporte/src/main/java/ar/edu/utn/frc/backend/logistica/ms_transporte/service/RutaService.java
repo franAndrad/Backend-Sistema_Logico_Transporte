@@ -18,7 +18,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -71,7 +70,6 @@ public class RutaService {
         ruta.setDistanciaTotal(calculada.getDistanciaTotalKm());
         rutaRepository.save(ruta);
 
-        // Calcular ventana temporal estimada por tramo, encadenada
         LocalDateTime cursor = LocalDateTime.now();
 
         for (LegCalculadoDTO leg : calculada.getLegs()) {
@@ -82,15 +80,11 @@ public class RutaService {
             tramo.setTipo(TipoTramo.valueOf(leg.getTipo())); 
             tramo.setEstado(EstadoTramo.PLANIFICADO);
             tramo.setDistancia(leg.getDistanciaKm());
-            // costo por tramo centralizado
             tramo.setCostoAproximado(costoService.calcularCosto(leg.getDistanciaKm()));
-
-            // Fechas estimadas basadas en la duración del leg
             tramo.setFechaHoraInicioEstimada(cursor);
             long durMin = leg.getDuracionMin() == null ? 0L : leg.getDuracionMin();
             cursor = cursor.plusMinutes(durMin);
             tramo.setFechaHoraFinEstimada(cursor);
-
             tramoRepository.save(tramo);
         }
 
@@ -146,7 +140,6 @@ public class RutaService {
                 .filter(t -> t.getEstado() == EstadoTramo.PLANIFICADO || t.getEstado() == EstadoTramo.ASIGNADO)
                 .count();
         boolean allCancelados = !tramos.isEmpty() && tramos.stream().allMatch(t -> t.getEstado() == EstadoTramo.CANCELADO);
-        // EN_DEPOSITO solo si hay un tramo DEPOSITO_DEPOSITO INICIADO
         boolean anyDepositoIniciado = tramos.stream().anyMatch(t ->
                 t.getEstado() == EstadoTramo.INICIADO && t.getTipo() == TipoTramo.DEPOSITO_DEPOSITO
         );
@@ -169,27 +162,22 @@ public class RutaService {
 
         Integer idSolicitud = ruta.getIdSolicitud();
         if (idSolicitud != null) {
-            // COMPLETADA -> ENTREGADA
             if (estadoAnterior != EstadoRuta.COMPLETADA && nuevoEstado == EstadoRuta.COMPLETADA) {
                 actualizarEstadoSolicitud(idSolicitud, "ENTREGADA", "Ruta completada");
                 return;
             }
-            // CANCELADA -> CANCELADA
             if (allCancelados) {
                 actualizarEstadoSolicitud(idSolicitud, "CANCELADA", "Ruta cancelada");
                 return;
             }
-            // EN_DEPOSITO
             if (anyDepositoIniciado) {
                 actualizarEstadoSolicitud(idSolicitud, "EN_DEPOSITO", "En depósito intermedio");
                 return;
             }
-            // EN_TRANSITO
             if (iniciados > 0) {
                 actualizarEstadoSolicitud(idSolicitud, "EN_TRANSITO", "Transporte en curso");
                 return;
             }
-            // ASIGNADA
             if (asignados > 0) {
                 actualizarEstadoSolicitud(idSolicitud, "ASIGNADA", "Ruta asignada");
                 return;

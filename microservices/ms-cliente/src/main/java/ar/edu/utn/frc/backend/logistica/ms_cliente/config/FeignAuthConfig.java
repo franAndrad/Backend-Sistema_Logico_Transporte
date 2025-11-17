@@ -21,7 +21,6 @@ public class FeignAuthConfig {
                 RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
                 if (!(attrs instanceof ServletRequestAttributes)) return;
                 HttpServletRequest req = ((ServletRequestAttributes) attrs).getRequest();
-                if (req == null) return;
                 String auth = req.getHeader("Authorization");
                 if (auth != null && !auth.isBlank()) {
                     template.header("Authorization", auth);
