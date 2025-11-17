@@ -4,8 +4,8 @@ import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.ContenedorEstado;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

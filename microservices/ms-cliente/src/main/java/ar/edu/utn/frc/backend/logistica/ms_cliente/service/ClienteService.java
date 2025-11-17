@@ -96,11 +96,9 @@ public class ClienteService {
             }
             cliente.setCuit(nuevoCuit);
         }
-
         cliente.setDireccionFacturacion(dto.getDireccionFacturacion());
         cliente.setDireccionEnvio(dto.getDireccionEnvio());
         cliente.setRazonSocial(dto.getRazonSocial());
-
         Cliente saved = clienteRepository.save(cliente);
         log.info("Cliente con id {} actualizado correctamente", saved.getIdCliente());
         return new ClienteResponseDTO(saved.getIdCliente(), "Datos actualizados");
@@ -113,11 +111,9 @@ public class ClienteService {
                     log.error("Cliente no encontrado con id {}", id);
                     return new NoSuchElementException("Cliente no encontrado");
                 });
-
         cliente.setActivo(false);
         clienteRepository.save(cliente);
         log.info("Cliente con id {} eliminado correctamente", cliente.getIdCliente());
-
         return new ClienteResponseDTO(cliente.getIdCliente(), "Cliente eliminado");
     }
 }

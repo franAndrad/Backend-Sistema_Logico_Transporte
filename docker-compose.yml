@@ -61,7 +61,6 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: ms_cliente
-
     networks: [ app-network ]
 
   ms-transporte:
@@ -71,7 +70,6 @@ services:
       SPRING_DATASOURCE_USERNAME: admin
       SPRING_DATASOURCE_PASSWORD: admin
       SPRING_JPA_PROPERTIES_HIBERNATE_DEFAULT_SCHEMA: ms_transporte
-
     networks: [ app-network ]
 
 volumes:

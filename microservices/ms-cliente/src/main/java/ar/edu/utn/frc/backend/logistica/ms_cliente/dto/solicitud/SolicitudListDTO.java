@@ -2,9 +2,9 @@ package ar.edu.utn.frc.backend.logistica.ms_cliente.dto.solicitud;
 
 import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

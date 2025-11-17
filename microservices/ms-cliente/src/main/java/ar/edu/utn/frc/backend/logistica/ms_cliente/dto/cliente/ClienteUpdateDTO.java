@@ -3,8 +3,8 @@ package ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

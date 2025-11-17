@@ -1,15 +1,14 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.dto.solicitud;
 
-import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.RutaDto;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.TramoDto;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.RutaDto;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
-
 import java.util.List;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

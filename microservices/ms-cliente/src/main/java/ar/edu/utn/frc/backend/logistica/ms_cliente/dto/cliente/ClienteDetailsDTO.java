@@ -1,8 +1,8 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.Data;
 
 @Data
 @AllArgsConstructor

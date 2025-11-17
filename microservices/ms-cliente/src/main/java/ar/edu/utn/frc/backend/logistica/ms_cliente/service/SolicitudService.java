@@ -1,27 +1,25 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.service;
 
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.solicitud.*;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Cliente;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Contenedor;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Solicitud;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ClienteRepository;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.TransporteClient;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ContenedorRepository;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.SolicitudRepository;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-import java.util.stream.Collectors;
-import java.time.Duration;
-
-import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.TransporteClient;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.*;
 import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.cliente.ClienteDetailsDTO;
-import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.contenedor.ContenedorSummaryDTO;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.repository.ClienteRepository;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.SolicitudEstado;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.client.transporte.dto.*;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Contenedor;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Solicitud;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.entities.Cliente;
+import ar.edu.utn.frc.backend.logistica.ms_cliente.dto.solicitud.*;
+import org.springframework.stereotype.Service;
+import java.util.NoSuchElementException;
+import java.util.stream.Collectors;
+import lombok.extern.slf4j.Slf4j;
+import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Objects;
+import java.util.List;
 
 @Service
 @Slf4j

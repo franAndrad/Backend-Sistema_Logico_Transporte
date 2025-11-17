@@ -1,9 +1,9 @@
 package ar.edu.utn.frc.backend.logistica.ms_cliente.entities;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
+import lombok.Data;
 
 @Entity
 @Table(name = "contenedores")
