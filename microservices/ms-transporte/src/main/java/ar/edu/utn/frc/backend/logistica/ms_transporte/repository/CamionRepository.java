@@ -1,9 +1,9 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.repository;
 
-import java.util.List;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Camion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Camion;
+import java.util.List;
 
 @Repository
 public interface CamionRepository extends JpaRepository<Camion, String> {

@@ -3,9 +3,9 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.controllers;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.distancia.DistanciaConTramosResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.distancia.DistanciaResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.GoogleMapsService;
-import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
+import lombok.RequiredArgsConstructor;
 
 import java.util.List;
 

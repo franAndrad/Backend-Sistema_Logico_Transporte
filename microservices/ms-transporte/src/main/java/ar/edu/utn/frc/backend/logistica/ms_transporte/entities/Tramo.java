@@ -2,12 +2,12 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.entities;
 
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
-import jakarta.persistence.*;
-import jakarta.validation.constraints.*;
-import lombok.*;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import jakarta.validation.constraints.*;
+import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import java.math.BigDecimal;
+import lombok.*;
 
 @Entity
 @Table(name = "tramos")

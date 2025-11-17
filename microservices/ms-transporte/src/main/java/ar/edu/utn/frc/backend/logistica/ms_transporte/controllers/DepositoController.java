@@ -1,11 +1,11 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.controllers;
 
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.*;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.DepositoService;
-import jakarta.validation.Valid;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.deposito.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController

@@ -1,14 +1,13 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.entities;
 
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoRuta;
-import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonManagedReference;
+import lombok.*;
 
 @Entity
 @Table(name = "rutas")

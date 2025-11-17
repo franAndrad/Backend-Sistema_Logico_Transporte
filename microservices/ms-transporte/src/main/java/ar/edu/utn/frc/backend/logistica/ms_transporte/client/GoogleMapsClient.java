@@ -1,9 +1,9 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.client;
 
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.dto.DirectionsResponseDTO;
-import org.springframework.cloud.openfeign.FeignClient;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.cloud.openfeign.FeignClient;
 
 @FeignClient(name = "google-maps-api", url = "${google.maps.api.url}")
 public interface GoogleMapsClient {

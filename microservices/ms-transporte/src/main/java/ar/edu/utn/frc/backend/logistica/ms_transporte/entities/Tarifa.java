@@ -1,9 +1,9 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.entities;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
-import lombok.*;
+import jakarta.persistence.*;
 import java.time.LocalDate;
+import lombok.*;
 
 @Entity
 @Table(name = "tarifas")

@@ -4,11 +4,11 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateRequest
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaUpdateRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Ruta;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.RutaService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Ruta;
 import org.springframework.web.bind.annotation.*;
+import lombok.RequiredArgsConstructor;
+import jakarta.validation.Valid;
 import java.util.List;
 
 @RestController

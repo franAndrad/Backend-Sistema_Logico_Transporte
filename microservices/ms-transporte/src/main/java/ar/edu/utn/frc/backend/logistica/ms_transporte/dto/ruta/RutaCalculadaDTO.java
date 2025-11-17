@@ -1,8 +1,8 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta;
 
-import lombok.*;
 import java.math.BigDecimal;
 import java.util.List;
+import lombok.*;
 
 @Data
 @NoArgsConstructor

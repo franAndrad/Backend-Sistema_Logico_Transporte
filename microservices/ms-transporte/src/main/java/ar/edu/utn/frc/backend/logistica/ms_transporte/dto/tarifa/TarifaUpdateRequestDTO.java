@@ -3,9 +3,9 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tarifa;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.time.LocalDate;
+import lombok.Data;
 
 @Data
 @NoArgsConstructor

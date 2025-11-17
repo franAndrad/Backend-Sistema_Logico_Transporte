@@ -1,8 +1,8 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte;
 
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.openfeign.EnableFeignClients;
+import org.springframework.boot.SpringApplication;
 
 @SpringBootApplication
 @EnableFeignClients

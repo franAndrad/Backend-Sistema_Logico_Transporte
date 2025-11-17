@@ -6,14 +6,14 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoCreateRespo
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoUpdateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoCreateRequestDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoResponseDTO;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.service.TramoService;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tramo;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
 import jakarta.validation.Valid;
 import java.util.List;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.oauth2.jwt.Jwt;
 
 @RestController
 @RequestMapping("/api/v1/tramos")

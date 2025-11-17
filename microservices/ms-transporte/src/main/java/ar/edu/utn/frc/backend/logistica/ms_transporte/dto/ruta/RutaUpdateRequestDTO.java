@@ -2,9 +2,9 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta;
 
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
+import lombok.Data;
 
 @Data
 @NoArgsConstructor

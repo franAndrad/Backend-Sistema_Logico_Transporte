@@ -1,33 +1,34 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateResponseDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaUpdateRequestDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateRequestDTO;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.LegCalculadoDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCalculadaDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaCreateResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaUpdateRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Ruta;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tramo;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoRuta;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoRuta;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.TipoTramo;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.RutaResponseDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.client.ClienteClient;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tramo;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Ruta;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+import java.util.NoSuchElementException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
+import java.util.Objects;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.NoSuchElementException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class RutaService {
 
     private final RutaRepository rutaRepository;
@@ -37,24 +38,35 @@ public class RutaService {
     private final ClienteClient clienteClient;
 
     public List<Ruta> findAll() {
+        log.info("Obteniendo todas las rutas");
         return rutaRepository.findAll();
     }
 
     public Ruta findById(Integer idRuta) {
+        log.info("Buscando ruta con ID {}", idRuta);
         if (idRuta == null) {
+            log.warn("ID de ruta nulo");
             throw new IllegalArgumentException("El ID de la ruta no puede ser nulo");
         }
         return rutaRepository.findById(idRuta)
-                .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada"));
+                .orElseThrow(() -> {
+                    log.error("Ruta no encontrada con ID {}", idRuta);
+                    return new NoSuchElementException("Ruta no encontrada");
+                });
     }
 
     public Ruta findBySolicitud(Integer idSolicitud) {
+        log.info("Buscando ruta para solicitud {}", idSolicitud);
         return rutaRepository.findByIdSolicitud(idSolicitud)
-                .orElseThrow(() -> new NoSuchElementException("No existe ruta para la solicitud: " + idSolicitud));
+                .orElseThrow(() -> {
+                    log.error("No existe ruta para la solicitud {}", idSolicitud);
+                    return new NoSuchElementException("No existe ruta para la solicitud: " + idSolicitud);
+                });
     }
 
     @Transactional
     public RutaCreateResponseDTO crear(RutaCreateRequestDTO dto) {
+        log.info("Creando ruta para solicitud {}", dto.getIdSolicitud());
         RutaCalculadaDTO calculada = googleMapsService.calcularRutaYTramos(
                 dto.getOrigenLat().doubleValue(),
                 dto.getOrigenLon().doubleValue(),
@@ -69,15 +81,16 @@ public class RutaService {
         ruta.setCantidadTramos(calculada.getLegs().size());
         ruta.setDistanciaTotal(calculada.getDistanciaTotalKm());
         rutaRepository.save(ruta);
+        log.info("Ruta {} creada con {} tramos", ruta.getIdRuta(), ruta.getCantidadTramos());
 
+        // Calcular ventana temporal estimada por tramo
         LocalDateTime cursor = LocalDateTime.now();
-
         for (LegCalculadoDTO leg : calculada.getLegs()) {
             Tramo tramo = new Tramo();
             tramo.setRuta(ruta);
             tramo.setIdDepositoOrigen(leg.getDepositoOrigenId());
             tramo.setIdDepositoDestino(leg.getDepositoDestinoId());
-            tramo.setTipo(TipoTramo.valueOf(leg.getTipo())); 
+            tramo.setTipo(TipoTramo.valueOf(leg.getTipo()));
             tramo.setEstado(EstadoTramo.PLANIFICADO);
             tramo.setDistancia(leg.getDistanciaKm());
             tramo.setCostoAproximado(costoService.calcularCosto(leg.getDistanciaKm()));
@@ -86,22 +99,24 @@ public class RutaService {
             cursor = cursor.plusMinutes(durMin);
             tramo.setFechaHoraFinEstimada(cursor);
             tramoRepository.save(tramo);
+            log.debug("Tramo {}-{} planificado, distancia {} km, costo aprox {}", leg.getDepositoOrigenId(), leg.getDepositoDestinoId(), leg.getDistanciaKm(), tramo.getCostoAproximado());
         }
 
-        return new RutaCreateResponseDTO(
-                ruta.getIdRuta(),
-                "Ruta creada con " + ruta.getCantidadTramos() + " tramos planificados");
+        return new RutaCreateResponseDTO(ruta.getIdRuta(), "Ruta creada con " + ruta.getCantidadTramos() + " tramos planificados");
     }
 
     public RutaResponseDTO actualizar(Integer idRuta, RutaUpdateRequestDTO dto) {
+        log.info("Actualizando ruta {}", idRuta);
         Ruta ruta = findById(idRuta);
 
         if (ruta.getEstado() == EstadoRuta.COMPLETADA) {
+            log.warn("Intento de actualizar ruta completada {}", idRuta);
             throw new IllegalStateException("No se puede actualizar una ruta completada");
         }
 
         ruta.setIdSolicitud(dto.getIdSolicitud());
         rutaRepository.save(ruta);
+        log.info("Ruta {} actualizada correctamente", idRuta);
 
         return new RutaResponseDTO(ruta.getIdRuta(), "Ruta actualizada correctamente");
     }
@@ -111,15 +126,16 @@ public class RutaService {
             Map<String, String> body = new HashMap<>();
             body.put("estado", estado);
             body.put("descripcion", descripcion);
-            log.info("[RutaService] Actualizando estado de solicitud {} -> {} ({})", idSolicitud, estado, descripcion);
+            log.info("Actualizando estado de solicitud {} -> {} ({})", idSolicitud, estado, descripcion);
             clienteClient.actualizarEstado(idSolicitud, body);
-            log.info("[RutaService] Estado de solicitud {} actualizado a {}", idSolicitud, estado);
+            log.info("Estado de solicitud {} actualizado a {}", idSolicitud, estado);
         } catch (Exception ex) {
-            log.warn("[RutaService] Falló actualizar estado de solicitud {} -> {}: {}", idSolicitud, estado, ex.toString());
+            log.warn("Falló actualizar estado de solicitud {} -> {}: {}", idSolicitud, estado, ex.toString());
         }
     }
 
     public void recalcularDesdeTramos(Integer idRuta) {
+        log.info("Recalculando ruta {} desde sus tramos", idRuta);
         Ruta ruta = findById(idRuta);
         EstadoRuta estadoAnterior = ruta.getEstado();
         List<Tramo> tramos = tramoRepository.findByRuta(ruta);
@@ -130,19 +146,14 @@ public class RutaService {
                 .filter(t -> t.getEstado() != EstadoTramo.CANCELADO)
                 .map(t -> t.getDistancia() == null ? BigDecimal.ZERO : t.getDistancia())
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
         ruta.setDistanciaTotal(totalKm);
 
         long finalizados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.FINALIZADO).count();
         long iniciados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.INICIADO).count();
         long asignados = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.ASIGNADO).count();
-        long planifOAsign = tramos.stream()
-                .filter(t -> t.getEstado() == EstadoTramo.PLANIFICADO || t.getEstado() == EstadoTramo.ASIGNADO)
-                .count();
+        long planifOAsign = tramos.stream().filter(t -> t.getEstado() == EstadoTramo.PLANIFICADO || t.getEstado() == EstadoTramo.ASIGNADO).count();
         boolean allCancelados = !tramos.isEmpty() && tramos.stream().allMatch(t -> t.getEstado() == EstadoTramo.CANCELADO);
-        boolean anyDepositoIniciado = tramos.stream().anyMatch(t ->
-                t.getEstado() == EstadoTramo.INICIADO && t.getTipo() == TipoTramo.DEPOSITO_DEPOSITO
-        );
+        boolean anyDepositoIniciado = tramos.stream().anyMatch(t -> t.getEstado() == EstadoTramo.INICIADO && t.getTipo() == TipoTramo.DEPOSITO_DEPOSITO);
 
         EstadoRuta nuevoEstado;
         if (tramos.isEmpty()) {
@@ -159,6 +170,7 @@ public class RutaService {
 
         ruta.setEstado(nuevoEstado);
         rutaRepository.save(ruta);
+        log.info("Ruta {} recalculada: estado {} -> {}", idRuta, estadoAnterior, nuevoEstado);
 
         Integer idSolicitud = ruta.getIdSolicitud();
         if (idSolicitud != null) {
@@ -180,35 +192,38 @@ public class RutaService {
             }
             if (asignados > 0) {
                 actualizarEstadoSolicitud(idSolicitud, "ASIGNADA", "Ruta asignada");
-                return;
             }
         }
     }
 
     @Transactional
     public RutaResponseDTO eliminar(Integer idRuta) {
+        log.info("Eliminando ruta {}", idRuta);
         if (idRuta == null) {
+            log.warn("ID de ruta nulo");
             throw new IllegalArgumentException("El ID de la ruta no puede ser nulo");
         }
 
         Ruta ruta = findById(idRuta);
-        if (ruta == null) {
-            throw new NoSuchElementException("Ruta no encontrada");
-        }
-
         List<Tramo> tramos = tramoRepository.findByRuta(ruta);
+
         boolean tieneIniciadosOFInalizados = tramos.stream()
                 .anyMatch(t -> t.getEstado().isIniciadoOFinalizado());
 
         if (tieneIniciadosOFInalizados) {
+            log.warn("No se puede eliminar ruta {}: contiene tramos iniciados o finalizados", idRuta);
             throw new IllegalStateException("No se puede eliminar una ruta con tramos iniciados o finalizados");
         }
 
         if (!tramos.isEmpty()) {
             tramoRepository.deleteAll(tramos);
+            log.debug("Tramos eliminados para ruta {}", idRuta);
         }
 
-        rutaRepository.delete(ruta);
+        rutaRepository.delete(Objects.requireNonNull(ruta));
+
+        log.info("Ruta {} eliminada correctamente", idRuta);
+
         return new RutaResponseDTO(idRuta, "Ruta eliminada correctamente");
     }
 }

@@ -1,11 +1,11 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.entities;
 
-import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
 import lombok.NoArgsConstructor;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
+import lombok.Data;
 
 @Entity
 @AllArgsConstructor
