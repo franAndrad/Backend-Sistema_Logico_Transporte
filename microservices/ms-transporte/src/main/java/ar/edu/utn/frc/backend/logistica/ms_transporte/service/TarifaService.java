@@ -3,7 +3,8 @@ package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tarifa.*;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -11,13 +12,15 @@ import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
+@Slf4j
 public class TarifaService {
 
-    @Autowired
-    private TarifaRepository tarifaRepository;
+    private final TarifaRepository tarifaRepository;
 
-    // Lista solo vigentes (activas)
     public List<TarifaListItemDTO> listarVigentes() {
+        log.info("Listando tarifas vigentes");
+
         return tarifaRepository.findByActivoTrue().stream()
                 .map(t -> new TarifaListItemDTO(
                         t.getIdTarifa(),
@@ -33,8 +36,11 @@ public class TarifaService {
     }
 
     public TarifaDetailDTO obtenerPorId(Integer id) {
+        log.info("Buscando tarifa con id {}", id);
+
         Tarifa t = tarifaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tarifa no encontrada"));
+
         return new TarifaDetailDTO(
                 t.getIdTarifa(),
                 t.getConcepto(),
@@ -50,29 +56,38 @@ public class TarifaService {
     }
 
     public TarifaCreateResponseDTO crear(TarifaCreateRequestDTO dto) {
-        // Si hay una activa y la nueva también será activa, desactivamos la anterior.
+        log.info("Creando nueva tarifa: {}", dto.getConcepto());
+
+        // Desactivar cualquier tarifa activa previa
         if (tarifaRepository.existsByActivoTrue()) {
-            // desactivar todas (solo debería haber una) para asegurar unicidad
             tarifaRepository.findByActivoTrue().forEach(t -> {
                 t.setActivo(false);
                 tarifaRepository.save(t);
             });
         }
-        Tarifa t = new Tarifa();
-        t.setConcepto(dto.getConcepto());
-        t.setValorBase(dto.getValorBase());
-        t.setValorPorKm(dto.getValorPorKm());
-        t.setValorPorPeso(dto.getValorPorPeso());
-        t.setValorPorVolumen(dto.getValorPorVolumen());
-        t.setValorPorTramo(dto.getValorPorTramo());
-        t.setValorLitroCombustible(dto.getValorLitroCombustible());
-        t.setFechaVigencia(dto.getFechaVigencia());
-        t.setActivo(true); // nueva tarifa vigente
-        Tarifa guardada = tarifaRepository.save(t);
-        return new TarifaCreateResponseDTO(guardada.getIdTarifa(), "Tarifa creada correctamente");
+
+        Tarifa nueva = new Tarifa();
+        nueva.setConcepto(dto.getConcepto());
+        nueva.setValorBase(dto.getValorBase());
+        nueva.setValorPorKm(dto.getValorPorKm());
+        nueva.setValorPorPeso(dto.getValorPorPeso());
+        nueva.setValorPorVolumen(dto.getValorPorVolumen());
+        nueva.setValorPorTramo(dto.getValorPorTramo());
+        nueva.setValorLitroCombustible(dto.getValorLitroCombustible());
+        nueva.setFechaVigencia(dto.getFechaVigencia());
+        nueva.setActivo(true);
+
+        Tarifa guardada = tarifaRepository.save(nueva);
+
+        return new TarifaCreateResponseDTO(
+                guardada.getIdTarifa(),
+                "Tarifa creada correctamente"
+        );
     }
 
     public TarifaResponseDTO actualizar(Integer id, TarifaUpdateRequestDTO dto) {
+        log.info("Actualizando tarifa {}", id);
+
         Tarifa t = tarifaRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Tarifa no encontrada"));
 
@@ -85,7 +100,7 @@ public class TarifaService {
         t.setFechaVigencia(dto.getFechaVigencia());
 
         if (dto.getActivo()) {
-            // activar esta y desactivar otras
+            // Activar esta y desactivar otras
             tarifaRepository.findByActivoTrue().forEach(other -> {
                 if (!other.getIdTarifa().equals(t.getIdTarifa())) {
                     other.setActivo(false);
@@ -98,7 +113,10 @@ public class TarifaService {
         }
 
         tarifaRepository.save(t);
-        return new TarifaResponseDTO(id, "Tarifa actualizada correctamente");
+
+        return new TarifaResponseDTO(
+                id,
+                "Tarifa actualizada correctamente"
+        );
     }
 }
-

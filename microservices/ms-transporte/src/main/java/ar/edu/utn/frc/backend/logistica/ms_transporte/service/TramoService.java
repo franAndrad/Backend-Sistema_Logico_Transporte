@@ -1,33 +1,26 @@
 package ar.edu.utn.frc.backend.logistica.ms_transporte.service;
 
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoAsignarCamionRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoCreateRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoCreateResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoLifecycleRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoResponseDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.TramoUpdateRequestDTO;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Camion;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Ruta;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tramo;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.tramo.*;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.*;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.enums.EstadoTramo;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.RutaRepository;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TramoRepository;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
-import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
+import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.*;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.server.ResponseStatusException;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class TramoService {
@@ -39,21 +32,27 @@ public class TramoService {
     private final TarifaRepository tarifaRepository;
 
     public List<Tramo> findAll() {
+        log.info("Obteniendo todos los tramos");
         return tramoRepository.findAll();
     }
 
     public Tramo findById(int idTramo) {
+        log.info("Buscando tramo con ID {}", idTramo);
         return tramoRepository.findById(idTramo)
                 .orElseThrow(() -> new NoSuchElementException("Tramo no encontrado"));
     }
 
     public List<Tramo> findByRuta(int rutaId) {
+        log.info("Buscando tramos para ruta {}", rutaId);
         Ruta ruta = rutaRepository.findById(rutaId)
                 .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada"));
+
         return tramoRepository.findByRuta(ruta);
     }
 
     public TramoCreateResponseDTO crear(TramoCreateRequestDTO dto) {
+        log.info("Creando tramo para la ruta {}", dto.getIdRuta());
+
         final Integer idRuta = Objects.requireNonNull(dto.getIdRuta(), "idRuta no puede ser null");
         Ruta r = rutaRepository.findById(idRuta)
                 .orElseThrow(() -> new NoSuchElementException("Ruta no encontrada"));
@@ -72,13 +71,17 @@ public class TramoService {
         tramoRepository.save(tramo);
         rutaService.recalcularDesdeTramos(r.getIdRuta());
 
+        log.info("Tramo {} creado", tramo.getIdTramo());
+
         return new TramoCreateResponseDTO(tramo.getIdTramo(), "Tramo creado correctamente (PLANIFICADO)");
     }
 
     public TramoResponseDTO actualizar(int idTramo, TramoUpdateRequestDTO dto) {
+        log.info("Actualizando tramo {}", idTramo);
         Tramo tramo = findById(idTramo);
 
         if (tramo.getEstado() == EstadoTramo.INICIADO || tramo.getEstado() == EstadoTramo.FINALIZADO) {
+            log.warn("Intento de actualizar tramo en estado {}", tramo.getEstado());
             throw new IllegalStateException("No se puede actualizar un tramo iniciado o finalizado");
         }
 
@@ -94,13 +97,18 @@ public class TramoService {
         tramoRepository.save(tramo);
         rutaService.recalcularDesdeTramos(tramo.getRuta().getIdRuta());
 
+        log.info("Tramo {} actualizado", idTramo);
+
         return new TramoResponseDTO(idTramo, "Tramo actualizado correctamente");
     }
 
     public TramoResponseDTO eliminar(Integer idTramo) {
+        log.info("Eliminando tramo {}", idTramo);
+
         Tramo tramo = findById(idTramo);
 
         if (tramo.getEstado() == EstadoTramo.INICIADO || tramo.getEstado() == EstadoTramo.FINALIZADO) {
+            log.warn("Intento de eliminar tramo en estado {}", tramo.getEstado());
             throw new IllegalStateException("No se puede eliminar un tramo iniciado o finalizado");
         }
 
@@ -108,83 +116,68 @@ public class TramoService {
         tramoRepository.delete(tramo);
 
         rutaService.recalcularDesdeTramos(rutaId);
+        log.info("Tramo {} eliminado", idTramo);
+
         return new TramoResponseDTO(idTramo, "Tramo eliminado correctamente");
     }
 
+    // --- INICIAR TRAMO ----------------------------------------------------
+
     @Transactional
     public TramoResponseDTO iniciar(int idTramo, TramoLifecycleRequestDTO body, String subject) {
+        log.info("Iniciando tramo {} por transportista {}", idTramo, subject);
         Tramo tramo = findById(idTramo);
 
         if (body == null) body = new TramoLifecycleRequestDTO();
 
-        if (tramo.getEstado() == EstadoTramo.INICIADO || tramo.getEstado() == EstadoTramo.FINALIZADO) {
-            throw new IllegalStateException("El tramo ya fue iniciado o finalizado");
-        }
-        if (tramo.getEstado() == EstadoTramo.CANCELADO) {
-            throw new IllegalStateException("El tramo está cancelado");
-        }
-
         if (tramo.getEstado() != EstadoTramo.ASIGNADO) {
+            log.warn("Intento de iniciar tramo {} en estado {}", idTramo, tramo.getEstado());
             throw new IllegalStateException("Para iniciar, el tramo debe estar en estado ASIGNADO");
         }
 
-        if (tramo.getDominioCamion() == null || tramo.getDominioCamion().isBlank()) {
-            throw new IllegalStateException("No se puede iniciar un tramo sin camión asignado");
-        }
-
-        if (tramo.getKeyCloakIdTransportista() == null || tramo.getKeyCloakIdTransportista().isBlank()) {
-            throw new IllegalStateException("No se puede iniciar un tramo sin transportista asignado");
-        }
-
-        if (!tramo.getKeyCloakIdTransportista().equals(subject)) {
+        if (!subject.equals(tramo.getKeyCloakIdTransportista())) {
+            log.warn("Transportista {} no autorizado para tramo {}", subject, idTramo);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "El transportista asignado es el único que puede iniciar el tramo");
         }
 
         tramo.setEstado(EstadoTramo.INICIADO);
         tramo.setFechaHoraInicio(
-            body.getFechaHora() != null ? body.getFechaHora() : LocalDateTime.now()
+                body.getFechaHora() != null ? body.getFechaHora() : LocalDateTime.now()
         );
 
         tramoRepository.save(tramo);
         rutaService.recalcularDesdeTramos(tramo.getRuta().getIdRuta());
 
+        log.info("Tramo {} iniciado correctamente", idTramo);
+
         return new TramoResponseDTO(idTramo, "Tramo iniciado");
     }
 
+    // --- FINALIZAR TRAMO ----------------------------------------------------
+
     @Transactional
     public TramoResponseDTO finalizar(Integer id, TramoLifecycleRequestDTO dto, String subject) {
+        log.info("Finalizando tramo {} por transportista {}", id, subject);
+
         Tramo t = findById(id);
 
         if (t.getEstado() != EstadoTramo.INICIADO) {
+            log.warn("Intento de finalizar tramo {} en estado {}", id, t.getEstado());
             throw new IllegalStateException("El tramo debe estar INICIADO para poder finalizarse");
         }
 
-        if (t.getFechaHoraInicio() != null &&
-                dto.getFechaHora() != null &&
-                dto.getFechaHora().isBefore(t.getFechaHoraInicio())) {
-            throw new IllegalStateException("La fecha de fin no puede ser anterior al inicio");
-        }
-
-        if (t.getKeyCloakIdTransportista() == null || t.getKeyCloakIdTransportista().isBlank()) {
-            throw new IllegalStateException("No se puede finalizar un tramo sin transportista asignado");
-        }
-        if (!t.getKeyCloakIdTransportista().equals(subject)) {
+        if (!subject.equals(t.getKeyCloakIdTransportista())) {
+            log.warn("Transportista {} no autorizado para finalizar tramo {}", subject, id);
             throw new ResponseStatusException(HttpStatus.FORBIDDEN,
                     "El transportista asignado es el único que puede finalizar el tramo");
         }
 
         t.setEstado(EstadoTramo.FINALIZADO);
         t.setFechaHoraFin(dto.getFechaHora() != null ? dto.getFechaHora() : LocalDateTime.now());
-        t.setDistancia(dto.getKmRecorridos());
+        t.setDistancia(dto.getKmRecorridos() != null ? dto.getKmRecorridos() : t.getDistancia());
 
-        BigDecimal km = dto.getKmRecorridos();
-        if (km == null) {
-            km = t.getDistancia();
-        }
-        if (km == null) {
-            km = BigDecimal.ZERO;
-        }
+        BigDecimal km = t.getDistancia() != null ? t.getDistancia() : BigDecimal.ZERO;
 
         Tarifa tarifa = tarifaRepository.findByActivoTrue().stream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
@@ -195,13 +188,19 @@ public class TramoService {
         tramoRepository.save(t);
         rutaService.recalcularDesdeTramos(t.getRuta().getIdRuta());
 
+        log.info("Tramo {} finalizado. Costo real: {}", id, costoReal);
+
         return new TramoResponseDTO(t.getIdTramo(),
                 "Tramo finalizado. Costo calculado automáticamente: $" + t.getCostoReal());
     }
 
     private BigDecimal calcularCostoRealTramo(BigDecimal km, Tarifa tarifa, String dominioCamion) {
+        log.debug("Calculando costo real para {} km con camion {}", km, dominioCamion);
+
         if (km == null) km = BigDecimal.ZERO;
-        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo()).setScale(2, RoundingMode.HALF_UP);
+
+        BigDecimal costoGestion = BigDecimal.valueOf(tarifa.getValorPorTramo())
+                .setScale(2, RoundingMode.HALF_UP);
 
         BigDecimal costoCamionKm = BigDecimal.ZERO;
         BigDecimal costoCombustible = BigDecimal.ZERO;
@@ -209,10 +208,14 @@ public class TramoService {
         if (dominioCamion != null && !dominioCamion.isBlank()) {
             Camion camion = camionService.findByDominio(dominioCamion);
             if (camion != null) {
-                BigDecimal costoPorKmCamion = camion.getCostoBase() == null ? BigDecimal.ZERO : camion.getCostoBase();
-                BigDecimal consumo = camion.getConsumoCombustible() == null
-                        ? BigDecimal.ZERO
-                        : BigDecimal.valueOf(camion.getConsumoCombustible());
+                BigDecimal costoPorKmCamion = camion.getCostoBase() != null
+                        ? camion.getCostoBase()
+                        : BigDecimal.ZERO;
+
+                BigDecimal consumo = camion.getConsumoCombustible() != null
+                        ? BigDecimal.valueOf(camion.getConsumoCombustible())
+                        : BigDecimal.ZERO;
+
                 BigDecimal valorLitro = BigDecimal.valueOf(tarifa.getValorLitroCombustible());
 
                 costoCamionKm = costoPorKmCamion.multiply(km);
@@ -220,21 +223,23 @@ public class TramoService {
             }
         }
 
-        return costoGestion.add(costoCamionKm).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
+        return costoGestion.add(costoCamionKm).add(costoCombustible)
+                .setScale(2, RoundingMode.HALF_UP);
     }
+
+    // --- ASIGNAR / DESASIGNAR CAMIÓN ----------------------------------------
 
     @Transactional
     public TramoResponseDTO asignarCamion(Integer id, TramoAsignarCamionRequestDTO dto) {
+        log.info("Asignando camión {} al tramo {}", dto.getDominio(), id);
+
         Tramo tramo = findById(id);
 
-        if (tramo.getEstado() == EstadoTramo.INICIADO
-                || tramo.getEstado() == EstadoTramo.FINALIZADO
-                || tramo.getEstado() == EstadoTramo.CANCELADO) {
+        if (tramo.getEstado() == EstadoTramo.INICIADO ||
+                tramo.getEstado() == EstadoTramo.FINALIZADO ||
+                tramo.getEstado() == EstadoTramo.CANCELADO) {
+            log.warn("No se puede asignar camión al tramo {} en estado {}", id, tramo.getEstado());
             throw new IllegalStateException("No se puede asignar camión en un tramo no editable");
-        }
-
-        if (dto == null || dto.getDominio() == null || dto.getDominio().isBlank()) {
-            throw new IllegalArgumentException("El dominio es obligatorio");
         }
 
         Camion camion = camionService.findByDominio(dto.getDominio());
@@ -246,11 +251,6 @@ public class TramoService {
             throw new IllegalStateException("El camión no está disponible");
         }
 
-        String actual = tramo.getDominioCamion() == null ? "" : tramo.getDominioCamion();
-        if (dto.getDominio().equalsIgnoreCase(actual)) {
-            return new TramoResponseDTO(tramo.getIdTramo(), "El camión ya estaba asignado");
-        }
-
         tramo.setDominioCamion(dto.getDominio());
         if (tramo.getEstado() == EstadoTramo.PLANIFICADO) {
             tramo.setEstado(EstadoTramo.ASIGNADO);
@@ -259,21 +259,22 @@ public class TramoService {
         tramoRepository.save(tramo);
         rutaService.recalcularDesdeTramos(tramo.getRuta().getIdRuta());
 
+        log.info("Camión {} asignado correctamente al tramo {}", dto.getDominio(), id);
+
         return new TramoResponseDTO(tramo.getIdTramo(), "Camión asignado correctamente");
     }
 
     @Transactional
     public TramoResponseDTO desasignarCamion(Integer id) {
+        log.info("Desasignando camión del tramo {}", id);
+
         Tramo tramo = findById(id);
 
-        if (tramo.getEstado() == EstadoTramo.INICIADO
-                || tramo.getEstado() == EstadoTramo.FINALIZADO
-                || tramo.getEstado() == EstadoTramo.CANCELADO) {
+        if (tramo.getEstado() == EstadoTramo.INICIADO ||
+                tramo.getEstado() == EstadoTramo.FINALIZADO ||
+                tramo.getEstado() == EstadoTramo.CANCELADO) {
+            log.warn("No se puede desasignar camión del tramo {} en estado {}", id, tramo.getEstado());
             throw new IllegalStateException("No se puede desasignar camión en un tramo no editable");
-        }
-
-        if (tramo.getDominioCamion() == null || tramo.getDominioCamion().isBlank()) {
-            return new TramoResponseDTO(tramo.getIdTramo(), "El tramo ya no tenía camión asignado");
         }
 
         tramo.setDominioCamion(null);
@@ -284,9 +285,8 @@ public class TramoService {
         tramoRepository.save(tramo);
         rutaService.recalcularDesdeTramos(tramo.getRuta().getIdRuta());
 
+        log.info("Camión desasignado del tramo {}", id);
+
         return new TramoResponseDTO(tramo.getIdTramo(), "Camión desasignado correctamente");
     }
-
-
-
 }

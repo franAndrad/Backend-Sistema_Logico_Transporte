@@ -10,7 +10,6 @@ import ar.edu.utn.frc.backend.logistica.ms_transporte.dto.ruta.LegCalculadoDTO;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Deposito;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.entities.Tarifa;
 import ar.edu.utn.frc.backend.logistica.ms_transporte.repository.TarifaRepository;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -22,9 +21,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
-@Slf4j
 public class GoogleMapsService {
 
     private final GoogleMapsClient googleMapsClient;
@@ -33,50 +32,44 @@ public class GoogleMapsService {
     private final TarifaRepository tarifaRepository;
     private final CamionService camionService;
 
-    public DistanciaResponseDTO calcularDistancia( Double origenLat, Double origenLng,
-            Double destinoLat, Double destinoLng, 
-            List<Integer> depositoIds
-    ) {
+    public DistanciaResponseDTO calcularDistancia(Double origenLat, Double origenLng,
+                                                  Double destinoLat, Double destinoLng,
+                                                  List<Integer> depositoIds) {
+        log.info("Calculando distancia de {}:{} a {}:{} con depósitos {}", origenLat, origenLng, destinoLat, destinoLng, depositoIds);
 
         final String origin = origenLat + "," + origenLng;
         final String destination = destinoLat + "," + destinoLng;
         final String waypoints = buildWaypointsFromSelectedDepositos(depositoIds);
 
-        DirectionsResponseDTO response = googleMapsClient.getDirections(
-                origin,
-                destination,
-                "driving",
-                false,
-                waypoints,
-                googleMapsProperties.getApi().getKey());
+        DirectionsResponseDTO response = googleMapsClient.getDirections(origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
 
         if (response == null || !"OK".equals(response.getStatus())) {
-            throw new RuntimeException(
-                    "Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
+            log.error("Error en Google Maps API: {}", (response != null ? response.getStatus() : "null"));
+            throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
         }
-        if (response.getRoutes() == null || response.getRoutes().isEmpty()
-                || response.getRoutes().getFirst().getLegs() == null
-                || response.getRoutes().getFirst().getLegs().isEmpty()) {
+
+        var route = response.getRoutes().getFirst();
+        if (route == null || route.getLegs() == null || route.getLegs().isEmpty()) {
+            log.error("Google Maps API devolvió sin rutas/legs");
             throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
         }
 
-        DirectionsResponseDTO.Route route = response.getRoutes().getFirst();
-
         long totalMeters = 0L;
         long totalSeconds = 0L;
-
-        // Calcular costo por tramo y total
         Tarifa tarifa = obtenerTarifaVigente();
         BigDecimal consumoProm = obtenerConsumoPromedio();
         BigDecimal costoTotal = BigDecimal.ZERO;
 
         for (DirectionsResponseDTO.Leg l : route.getLegs()) {
             if (l.getDistance() == null || l.getDistance().getValue() == null) {
+                log.error("Leg sin distancia en respuesta de Google Maps");
                 throw new RuntimeException("Leg sin distancia en respuesta de Google Maps");
             }
             if (l.getDuration() == null || l.getDuration().getValue() == null) {
+                log.error("Leg sin duración en respuesta de Google Maps");
                 throw new RuntimeException("Leg sin duración en respuesta de Google Maps");
             }
+
             long meters = l.getDistance().getValue();
             long seconds = l.getDuration().getValue();
             totalMeters += meters;
@@ -85,48 +78,47 @@ public class GoogleMapsService {
             BigDecimal distanciaKmLeg = BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP);
             BigDecimal costoLeg = calcularCostoAproximadoTramo(distanciaKmLeg, tarifa, consumoProm);
             costoTotal = costoTotal.add(costoLeg);
+            log.debug("Leg: {} m, {} s, distanciaKm {}, costoLeg {}", meters, seconds, distanciaKmLeg, costoLeg);
         }
 
         double distanciaKm = totalMeters / 1000.0;
         long duracionMinutos = totalSeconds / 60;
+        log.info("Distancia total {} km, duración {} min, costo total {}", distanciaKm, duracionMinutos, costoTotal);
 
         return new DistanciaResponseDTO(
                 origenLat, origenLng,
                 destinoLat, destinoLng,
                 distanciaKm, duracionMinutos,
-                costoTotal.setScale(2, RoundingMode.HALF_UP));
+                costoTotal.setScale(2, RoundingMode.HALF_UP)
+        );
     }
 
-    
-    public DistanciaConTramosResponseDTO calcularDistanciaConTramos(
-            Double origenLat, Double origenLng,
-            Double destinoLat, Double destinoLng,
-            List<Integer> depositoIds
-    ) {
+    public DistanciaConTramosResponseDTO calcularDistanciaConTramos(Double origenLat, Double origenLng,
+                                                                    Double destinoLat, Double destinoLng,
+                                                                    List<Integer> depositoIds) {
+        log.info("Calculando distancia con tramos de {}:{} a {}:{} con depósitos {}", origenLat, origenLng, destinoLat, destinoLng, depositoIds);
+
         final String origin = origenLat + "," + origenLng;
         final String destination = destinoLat + "," + destinoLng;
         final String waypoints = buildWaypointsFromSelectedDepositos(depositoIds);
 
-        DirectionsResponseDTO response = googleMapsClient.getDirections(
-                origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
-
+        DirectionsResponseDTO response = googleMapsClient.getDirections(origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
         if (response == null || !"OK".equals(response.getStatus())) {
+            log.error("Error en Google Maps API: {}", (response != null ? response.getStatus() : "null"));
             throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
         }
+
         var route = response.getRoutes().getFirst();
         var legs = route.getLegs();
         if (legs == null || legs.isEmpty()) {
+            log.error("Google Maps API devolvió sin rutas/legs");
             throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
         }
 
         long totalMeters = 0L;
         long totalSeconds = 0L;
-
-        List<Integer> deposOrdenados = (depositoIds == null)
-                ? List.of()
-                : List.copyOf(new LinkedHashSet<>(depositoIds));
-        int puntos = deposOrdenados.size() + 2; 
-
+        List<Integer> deposOrdenados = depositoIds == null ? List.of() : List.copyOf(new LinkedHashSet<>(depositoIds));
+        int puntos = deposOrdenados.size() + 2;
         List<LegCalculadoDTO> legDtos = new ArrayList<>();
 
         Tarifa tarifa = obtenerTarifaVigente();
@@ -147,10 +139,10 @@ public class GoogleMapsService {
                 tipo = "ORIGEN_DESTINO";
             } else if (i == 0) {
                 tipo = "ORIGEN_DEPOSITO";
-                depDes = deposOrdenados.getFirst();
+                depDes = deposOrdenados.get(0);
             } else if (i == puntos - 2) {
                 tipo = "DEPOSITO_DESTINO";
-                depOri = deposOrdenados.getLast();
+                depOri = deposOrdenados.get(deposOrdenados.size() - 1);
             } else {
                 tipo = "DEPOSITO_DEPOSITO";
                 depOri = deposOrdenados.get(i - 1);
@@ -161,15 +153,11 @@ public class GoogleMapsService {
             BigDecimal costoLeg = calcularCostoAproximadoTramo(distanciaKmLeg, tarifa, consumoProm);
             costoTotal = costoTotal.add(costoLeg);
 
-            legDtos.add(new LegCalculadoDTO(
-                    distanciaKmLeg,
-                    seconds / 60,
-                    depOri,
-                    depDes,
-                    tipo,
-                    costoLeg.setScale(2, RoundingMode.HALF_UP)
-            ));
+            legDtos.add(new LegCalculadoDTO(distanciaKmLeg, seconds / 60, depOri, depDes, tipo, costoLeg.setScale(2, RoundingMode.HALF_UP)));
+            log.debug("Leg {}: tipo {}, depOri {}, depDes {}, distancia {}, costo {}", i, tipo, depOri, depDes, distanciaKmLeg, costoLeg);
         }
+
+        log.info("Distancia total {} km, duración {} min, costo total {}", totalMeters / 1000.0, totalSeconds / 60, costoTotal);
 
         return new DistanciaConTramosResponseDTO(
                 origenLat, origenLng,
@@ -181,18 +169,20 @@ public class GoogleMapsService {
         );
     }
 
-
     private String buildWaypointsFromSelectedDepositos(List<Integer> depositoIds) {
-        if (depositoIds == null || depositoIds.isEmpty())
-            return ""; // forzar envío de param vacío para matchear stub WireMock
+        if (depositoIds == null || depositoIds.isEmpty()) {
+            log.debug("No hay depósitos seleccionados para waypoints");
+            return "";
+        }
 
         depositoIds = List.copyOf(new LinkedHashSet<>(depositoIds));
-
         List<Deposito> depos = depositoService.findActivosByIdsKeepingOrder(depositoIds);
         if (depos.isEmpty()) {
+            log.error("No hay depósitos válidos para los ids {}", depositoIds);
             throw new NoSuchElementException("No hay depósitos válidos para los ids: " + depositoIds);
         }
         if (depos.size() > 23) {
+            log.warn("Se permiten hasta 23 depósitos como waypoints, recibidos {}", depos.size());
             throw new IllegalArgumentException("Se permiten hasta 23 depósitos como waypoints.");
         }
 
@@ -202,93 +192,91 @@ public class GoogleMapsService {
     }
 
     private String toLatLng(BigDecimal lat, BigDecimal lng) {
-        return lat.stripTrailingZeros().toPlainString()
-                + ","
-                + lng.stripTrailingZeros().toPlainString();
+        return lat.stripTrailingZeros().toPlainString() + "," + lng.stripTrailingZeros().toPlainString();
     }
 
+    public RutaCalculadaDTO calcularRutaYTramos(Double origenLat, Double origenLng,
+                                                Double destinoLat, Double destinoLng,
+                                                List<Integer> depositoIds) {
+        log.info("Calculando ruta y tramos de {}:{} a {}:{} con depósitos {}", origenLat, origenLng, destinoLat, destinoLng, depositoIds);
 
-    public RutaCalculadaDTO calcularRutaYTramos(Double origenLat, Double origenLng, 
-            Double destinoLat, Double destinoLng, 
-            List<Integer> depositoIds
-    ) {
+        final String origin = origenLat + "," + origenLng;
+        final String destination = destinoLat + "," + destinoLng;
+        final String waypoints = buildWaypointsFromSelectedDepositos(depositoIds);
 
-    final String origin = origenLat + "," + origenLng;
-    final String destination = destinoLat + "," + destinoLng;
-    final String waypoints = buildWaypointsFromSelectedDepositos(depositoIds);
-
-    DirectionsResponseDTO response = googleMapsClient.getDirections(
-            origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
-
-    if (response == null || !"OK".equals(response.getStatus())) {
-        throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
-    }
-    var route = response.getRoutes().getFirst();
-    var legs = route.getLegs();
-    if (legs == null || legs.isEmpty()) {
-        throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
-    }
-
-    long totalMeters = 0L;
-    long totalSeconds = 0L;
-
-    List<Integer> deposOrdenados = depositoIds == null ? List.of() : List.copyOf(new LinkedHashSet<>(depositoIds));
-    int puntos = deposOrdenados.size() + 2;
-
-    List<LegCalculadoDTO> legDtos = new ArrayList<>();
-
-    for (int i = 0; i < legs.size(); i++) {
-        var l = legs.get(i);
-        long meters = l.getDistance().getValue();
-        long seconds = l.getDuration().getValue();
-        totalMeters += meters;
-        totalSeconds += seconds;
-
-        Integer depOri = null, depDes = null;
-        String tipo;
-
-        if (deposOrdenados.isEmpty()) {
-            tipo = "ORIGEN_DESTINO";
-        } else if (i == 0) {
-            tipo = "ORIGEN_DEPOSITO";
-            depDes = deposOrdenados.getFirst();
-        } else if (i == puntos - 2) {
-            tipo = "DEPOSITO_DESTINO";
-            depOri = deposOrdenados.getLast();
-        } else {
-            tipo = "DEPOSITO_DEPOSITO";
-            depOri = deposOrdenados.get(i - 1);
-            depDes = deposOrdenados.get(i);
+        DirectionsResponseDTO response = googleMapsClient.getDirections(origin, destination, "driving", false, waypoints, googleMapsProperties.getApi().getKey());
+        if (response == null || !"OK".equals(response.getStatus())) {
+            log.error("Error en Google Maps API: {}", (response != null ? response.getStatus() : "null"));
+            throw new RuntimeException("Error en Google Maps API: " + (response != null ? response.getStatus() : "null"));
         }
 
-        legDtos.add(new LegCalculadoDTO(
-                BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP),
-                seconds / 60,
-                depOri,
-                depDes,
-                tipo,
-                null // costo no necesario aquí; RutaService calcula según tarifa vigente al persistir
-        ));
+        var route = response.getRoutes().getFirst();
+        var legs = route.getLegs();
+        if (legs == null || legs.isEmpty()) {
+            log.error("Google Maps API devolvió sin rutas/legs");
+            throw new RuntimeException("Google Maps API devolvió sin rutas/legs");
+        }
+
+        long totalMeters = 0L;
+        long totalSeconds = 0L;
+        List<Integer> deposOrdenados = depositoIds == null ? List.of() : List.copyOf(new LinkedHashSet<>(depositoIds));
+        int puntos = deposOrdenados.size() + 2;
+        List<LegCalculadoDTO> legDtos = new ArrayList<>();
+
+        for (int i = 0; i < legs.size(); i++) {
+            var l = legs.get(i);
+            long meters = l.getDistance().getValue();
+            long seconds = l.getDuration().getValue();
+            totalMeters += meters;
+            totalSeconds += seconds;
+
+            Integer depOri = null, depDes = null;
+            String tipo;
+
+            if (deposOrdenados.isEmpty()) {
+                tipo = "ORIGEN_DESTINO";
+            } else if (i == 0) {
+                tipo = "ORIGEN_DEPOSITO";
+                depDes = deposOrdenados.get(0);
+            } else if (i == puntos - 2) {
+                tipo = "DEPOSITO_DESTINO";
+                depOri = deposOrdenados.get(deposOrdenados.size() - 1);
+            } else {
+                tipo = "DEPOSITO_DEPOSITO";
+                depOri = deposOrdenados.get(i - 1);
+                depDes = deposOrdenados.get(i);
+            }
+
+            legDtos.add(new LegCalculadoDTO(BigDecimal.valueOf(meters / 1000.0).setScale(3, RoundingMode.HALF_UP),
+                    seconds / 60, depOri, depDes, tipo, null));
+            log.debug("Leg {}: tipo {}, depOri {}, depDes {}, distancia {} km", i, tipo, depOri, depDes, meters / 1000.0);
+        }
+
+        log.info("Ruta calculada: distancia total {} km, duración total {} min", totalMeters / 1000.0, totalSeconds / 60);
+
+        return new RutaCalculadaDTO(
+                BigDecimal.valueOf(totalMeters / 1000.0).setScale(3, RoundingMode.HALF_UP),
+                totalSeconds / 60,
+                legDtos
+        );
     }
 
-    return new RutaCalculadaDTO(
-            BigDecimal.valueOf(totalMeters / 1000.0).setScale(3, RoundingMode.HALF_UP),
-            totalSeconds / 60,
-            legDtos
-    );
-}
-
     private Tarifa obtenerTarifaVigente() {
+        log.debug("Obteniendo tarifa vigente");
         return tarifaRepository.findByActivoTrue().stream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("No hay tarifa vigente"));
     }
 
     private BigDecimal obtenerConsumoPromedio() {
         var disponibles = camionService.findAllDisponibles();
-        if (disponibles == null || disponibles.isEmpty()) return BigDecimal.ZERO;
+        if (disponibles == null || disponibles.isEmpty()) {
+            log.warn("No hay camiones disponibles, consumo promedio = 0");
+            return BigDecimal.ZERO;
+        }
         double avg = disponibles.stream()
                 .mapToDouble(c -> c.getConsumoCombustible() == null ? 0.0 : c.getConsumoCombustible())
                 .average().orElse(0.0);
+        log.debug("Consumo promedio de combustible calculado: {}", avg);
         return BigDecimal.valueOf(avg);
     }
 
@@ -298,6 +286,8 @@ public class GoogleMapsService {
         BigDecimal costoKmBase = BigDecimal.valueOf(tarifa.getValorPorKm()).multiply(distanciaKm);
         BigDecimal costoCombustible = BigDecimal.valueOf(tarifa.getValorLitroCombustible())
                 .multiply(consumoPromKm).multiply(distanciaKm);
-        return costoGestion.add(costoKmBase).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
+        BigDecimal costoTotal = costoGestion.add(costoKmBase).add(costoCombustible).setScale(2, RoundingMode.HALF_UP);
+        log.debug("Costo tramo calculado: distancia {}, costoTotal {}", distanciaKm, costoTotal);
+        return costoTotal;
     }
 }
