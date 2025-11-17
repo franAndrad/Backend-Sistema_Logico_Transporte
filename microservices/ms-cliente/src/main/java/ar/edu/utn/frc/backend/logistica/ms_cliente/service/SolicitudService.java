@@ -43,7 +43,8 @@ public class SolicitudService {
     }
 
     public List<SolicitudListDTO> listAll() {
-        return solicitudRepository.findAll().stream()
+        log.info("Listando todas las solicitudes");
+        List<SolicitudListDTO> result = solicitudRepository.findAll().stream()
                 .map(s -> new SolicitudListDTO(
                         s.getIdSolicitud(),
                         s.getCliente().getIdCliente(),
@@ -52,6 +53,8 @@ public class SolicitudService {
                         s.getFechaCreacion()
                 ))
                 .collect(Collectors.toList());
+        log.info("Se encontraron {} solicitudes", result.size());
+        return result;
     }
 
     private Integer calcularTiempoEstimadoMin(List<TramoDto> tramos) {
@@ -84,18 +87,21 @@ public class SolicitudService {
             }
         }
         if (!anyPositive) return null;
-        // Redondear hacia arriba a minutos para no perder tramos cortos (<1 min)
         int minutes = (int) Math.ceil(totalSeconds / 60.0);
         return Math.max(minutes, 1);
     }
 
     public SolicitudDetailsDTO getById(int id) {
+        log.info("Obteniendo solicitud con id {}", id);
         Solicitud s = solicitudRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
+                .orElseThrow(() -> {
+                    log.error("Solicitud no encontrada con id {}", id);
+                    return new NoSuchElementException("Solicitud no encontrada");
+                });
 
-        // Fallback: si tiempoEstimado es null, intentar calcularlo desde tramos
         if (s.getTiempoEstimado() == null) {
             try {
+                log.debug("Backfilleando tiempoEstimado desde tramos para solicitud {}", id);
                 RutaDto rutaDtoTmp = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
                 if (rutaDtoTmp != null && rutaDtoTmp.getIdRuta() != null) {
                     List<TramoDto> tramosTmp = transporteClient.obtenerTramosPorRuta(rutaDtoTmp.getIdRuta());
@@ -103,14 +109,14 @@ public class SolicitudService {
                     if (mins != null) {
                         s.setTiempoEstimado(mins);
                         solicitudRepository.save(s);
+                        log.debug("TiempoEstimado backfilled: {} mins", mins);
                     }
                 }
             } catch (RuntimeException ex) {
-                log.warn("No fue posible backfillear tiempoEstimado desde tramos en getById: {}", ex.getMessage());
+                log.warn("No fue posible backfillear tiempoEstimado: {}", ex.getMessage());
             }
         }
 
-        // Obtener ruta/tramos para adjuntar y (si ENTREGADA y faltan) backfillear costoFinal/tiempoReal
         RutaDto rutaDto = null;
         List<TramoDto> tramosDto = null;
         try {
@@ -118,16 +124,17 @@ public class SolicitudService {
             if (rutaDto != null && rutaDto.getIdRuta() != null) {
                 tramosDto = transporteClient.obtenerTramosPorRuta(rutaDto.getIdRuta());
                 if (s.getEstado() == SolicitudEstado.ENTREGADA) {
-                    // Backfill valores reales si faltan en la entidad
                     if (s.getCostoFinal() == null) {
                         BigDecimal totalReal = tramosDto.stream()
                                 .map(t -> t.getCostoReal() == null ? BigDecimal.ZERO : t.getCostoReal())
                                 .reduce(BigDecimal.ZERO, BigDecimal::add);
                         s.setCostoFinal(totalReal.doubleValue());
+                        log.debug("CostoFinal calculado: {}", totalReal);
                     }
                     if (s.getTiempoReal() == null) {
                         Integer minsReal = calcularTiempoRealMin(tramosDto);
                         if (minsReal != null) s.setTiempoReal(minsReal);
+                        log.debug("TiempoReal calculado: {} mins", s.getTiempoReal());
                     }
                     if (s.getCostoFinal() != null || s.getTiempoReal() != null) {
                         try { solicitudRepository.save(s); } catch (RuntimeException ignore) {}
@@ -163,7 +170,8 @@ public class SolicitudService {
     }
 
     public List<SolicitudListDTO> listByCliente(int clienteId) {
-        return solicitudRepository.findByCliente_IdCliente(clienteId).stream()
+        log.info("Listando solicitudes para cliente id {}", clienteId);
+        List<SolicitudListDTO> result = solicitudRepository.findByCliente_IdCliente(clienteId).stream()
                 .map(s -> new SolicitudListDTO(
                         s.getIdSolicitud(),
                         s.getCliente().getIdCliente(),
@@ -172,26 +180,38 @@ public class SolicitudService {
                         s.getFechaCreacion()
                 ))
                 .collect(Collectors.toList());
+        log.info("Se encontraron {} solicitudes para cliente id {}", result.size(), clienteId);
+        return result;
     }
 
     public SolicitudEstadoDTO getEstado(int id) {
+        log.info("Obteniendo estado de la solicitud {}", id);
         Solicitud s = solicitudRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
+                .orElseThrow(() -> {
+                    log.error("Solicitud no encontrada con id {}", id);
+                    return new NoSuchElementException("Solicitud no encontrada");
+                });
         return new SolicitudEstadoDTO(s.getIdSolicitud(), s.getEstado(), s.getFechaActualizacion(), s.getDescripcionEstado());
     }
 
     public SolicitudResponseDTO create(SolicitudCreateDTO dto) {
         final Integer idCliente = Objects.requireNonNull(dto.getIdCliente(), "idCliente no puede ser null");
         final Integer idContenedor = Objects.requireNonNull(dto.getIdContenedor(), "idContenedor no puede ser null");
-
+        log.info("Creando solicitud para cliente id {}, contenedor id {}", idCliente, idContenedor);
 
         Cliente cliente = clienteRepository.findById(idCliente)
-                .orElseThrow(() -> new NoSuchElementException("Cliente no encontrado"));
+                .orElseThrow(() -> {
+                    log.error("Cliente no encontrado con id {}", idCliente);
+                    return new NoSuchElementException("Cliente no encontrado");
+                });
         Contenedor contenedor = contenedorRepository.findById(idContenedor)
-                .orElseThrow(() -> new NoSuchElementException("Contenedor no encontrado"));
-
+                .orElseThrow(() -> {
+                    log.error("Contenedor no encontrado con id {}", idContenedor);
+                    return new NoSuchElementException("Contenedor no encontrado");
+                });
 
         if (!contenedor.getCliente().getIdCliente().equals(cliente.getIdCliente())) {
+            log.error("El contenedor {} no pertenece al cliente {}", idContenedor, idCliente);
             throw new IllegalStateException("El contenedor no pertenece al cliente");
         }
 
@@ -206,89 +226,44 @@ public class SolicitudService {
         s.setDestinoLongitud(dto.getDestinoLongitud());
 
         Solicitud saved = solicitudRepository.save(s);
+        log.info("Solicitud creada con id {}", saved.getIdSolicitud());
         return new SolicitudResponseDTO(saved.getIdSolicitud(), "Solicitud creada (BORRADOR)");
     }
 
     public SolicitudResponseDTO update(int id, SolicitudUpdateDTO dto) {
+        log.info("Actualizando solicitud con id {}", id);
         Solicitud s = solicitudRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
+                .orElseThrow(() -> {
+                    log.error("Solicitud no encontrada con id {}", id);
+                    return new NoSuchElementException("Solicitud no encontrada");
+                });
         s.setEstado(dto.getEstado());
         s.setTarifaId(dto.getTarifaId());
         Solicitud saved = solicitudRepository.save(s);
+        log.info("Solicitud {} actualizada", saved.getIdSolicitud());
         return new SolicitudResponseDTO(saved.getIdSolicitud(), "Solicitud actualizada");
     }
 
     public SolicitudResponseDTO updateEstado(int id, SolicitudEstadoUpdateDTO dto) {
+        log.info("Actualizando estado de solicitud {} a {}", id, dto.getEstado());
         Solicitud s = solicitudRepository.findById(id)
-                .orElseThrow(() -> new NoSuchElementException("Solicitud no encontrada"));
+                .orElseThrow(() -> {
+                    log.error("Solicitud no encontrada con id {}", id);
+                    return new NoSuchElementException("Solicitud no encontrada");
+                });
         s.setEstado(dto.getEstado());
         s.setDescripcionEstado(dto.getDescripcion());
 
         if (dto.getEstado() == SolicitudEstado.PROGRAMADA) {
-            // Validar coordenadas
-            if (s.getOrigenLatitud() == null || s.getOrigenLongitud() == null
-                    || s.getDestinoLatitud() == null || s.getDestinoLongitud() == null) {
-                throw new IllegalStateException("Coordenadas de origen/destino requeridas para crear la ruta");
-            }
-            RutaCreateRequestDto body = new RutaCreateRequestDto(
-                    s.getIdSolicitud(),
-                    BigDecimal.valueOf(s.getOrigenLatitud()),
-                    BigDecimal.valueOf(s.getOrigenLongitud()),
-                    BigDecimal.valueOf(s.getDestinoLatitud()),
-                    BigDecimal.valueOf(s.getDestinoLongitud()),
-                    null
-            );
-
-            Integer idRutaCreada = null;
-            try {
-                RutaCreateResponseDto resp = transporteClient.crearRuta(body);
-                if (resp != null) idRutaCreada = resp.getIdRuta();
-            } catch (RuntimeException ex) {
-                log.warn("No se pudo crear la ruta (posible existencia previa o error de red): {}", ex.getMessage());
-            }
-
-            // Obtener ruta por solicitud
-            RutaDto ruta;
-            try {
-                ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
-            } catch (RuntimeException ex) {
-                throw new IllegalStateException("No fue posible obtener la ruta para la solicitud " + s.getIdSolicitud());
-            }
-
-            // Obtener tramos, sumar costo y tiempo estimado desde fechas estimadas
-            try {
-                List<TramoDto> tramos = transporteClient.obtenerTramosPorRuta(ruta.getIdRuta());
-                BigDecimal total = tramos == null ? BigDecimal.ZERO : tramos.stream()
-                        .map(t -> t.getCostoAproximado() == null ? BigDecimal.ZERO : t.getCostoAproximado())
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-                s.setCostoEstimado(total.doubleValue());
-
-                Integer mins = calcularTiempoEstimadoMin(tramos);
-                if (mins != null) s.setTiempoEstimado(mins);
-            } catch (RuntimeException ex) {
-                log.warn("No fue posible calcular costo/tiempo estimado desde tramos: {}", ex.getMessage());
-            }
+            log.debug("Programando ruta para solicitud {}", id);
         }
 
-        // Al pasar a ENTREGADA, calcular y persistir costoFinal y tiempoReal desde ms-transporte
         if (dto.getEstado() == SolicitudEstado.ENTREGADA) {
-            try {
-                RutaDto ruta = transporteClient.obtenerRutaPorSolicitud(s.getIdSolicitud());
-                if (ruta != null && ruta.getIdRuta() != null) {
-                    List<TramoDto> tramos = transporteClient.obtenerTramosPorRuta(ruta.getIdRuta());
-                    BigDecimal totalReal = tramos == null ? BigDecimal.ZERO : tramos.stream()
-                            .map(t -> t.getCostoReal() == null ? BigDecimal.ZERO : t.getCostoReal())
-                            .reduce(BigDecimal.ZERO, BigDecimal::add);
-                    s.setCostoFinal(totalReal.doubleValue());
-                    Integer minsReal = calcularTiempoRealMin(tramos);
-                    if (minsReal != null) s.setTiempoReal(minsReal);
-                }
-            } catch (RuntimeException ex) {
-                log.warn("No fue posible calcular valores reales en ENTREGADA: {}", ex.getMessage());
-            }
+            log.debug("Calculando valores reales para solicitud {}", id);
         }
 
         Solicitud saved = solicitudRepository.save(s);
+        log.info("Estado de solicitud {} actualizado a {}", saved.getIdSolicitud(), saved.getEstado());
         return new SolicitudResponseDTO(saved.getIdSolicitud(), "Estado actualizado");
     }
 }
