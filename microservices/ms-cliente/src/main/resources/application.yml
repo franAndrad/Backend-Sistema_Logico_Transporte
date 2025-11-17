@@ -17,6 +17,14 @@ spring:
     schemas: ms_cliente
     locations: classpath:db/migration
 
+springdoc:
+  api-docs:
+    path: /cliente/v3/api-docs
+  swagger-ui:
+    path: /cliente/swagger-ui
+    config-url: /cliente/v3/api-docs/swagger-config
+    url: /cliente/v3/api-docs
+
 logging:
   level:
     '[ar.edu.utn.frc.backend.logistica]': INFO

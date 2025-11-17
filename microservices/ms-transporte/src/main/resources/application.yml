@@ -25,6 +25,14 @@ spring:
           issuer-uri: ${EXTERNAL_ISSUER_URI:https://localhost:8443/realms/logistica}
           jwk-set-uri: ${KEYCLOAK_JWK_URI:http://keycloak:8080/realms/logistica/protocol/openid-connect/certs}
 
+springdoc:
+  api-docs:
+    path: /transporte/v3/api-docs
+  swagger-ui:
+    path: /transporte/swagger-ui
+    config-url: /transporte/v3/api-docs/swagger-config
+    url: /transporte/v3/api-docs
+
 google:
   maps:
     api:

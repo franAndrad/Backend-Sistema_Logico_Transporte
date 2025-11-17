@@ -26,6 +26,8 @@ Este proyecto implementa una solución backend basada en microservicios para ges
 
 ## 🏗️ Arquitectura del Sistema
 
+
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │                         CLIENTE                              │
@@ -284,3 +286,4 @@ Invoke-RestMethod -Uri "http://localhost:8080/api/v1/clientes/1" -Headers $heade
 - [Villaba Alex - 400249]
 
 Trabajo desarrollado para la asignatura Backend de Aplicaciones - 2025
+
