@@ -4,11 +4,15 @@
 
 - [Descripción del proyecto](#descripción-del-proyecto)
 - [🏗️ Arquitectura del Sistema](#️-arquitectura-del-sistema)
+- [📊 Diagramas](#diagramas)
+- [🧾 Documentación Swagger](#-documentación-swagger)
 - [🚀 Inicio Rápido](#-inicio-rápido)
 - [🔐 Usuarios de Prueba](#-usuarios-de-prueba)
 - [📡 Endpoints Principales](#-endpoints-principales)
-- [Tecnologías utilizadas](#tecnologías-utilizadas)
-- [Requisitos](#ejecución-proyecto)
+- [🛠️ Tecnologías utilizadas](#tecnologías-utilizadas)
+- [📦 Microservicios y responsabilidades](#microservicios-y-responsabilidades)
+- [🖥️ Ejecución del proyecto](#ejecución-del-proyecto)
+- [👨‍💻 Autores](#autores)
 
 ---
 
@@ -26,10 +30,21 @@ Este proyecto implementa una solución backend basada en microservicios para ges
 
 ---
 
-### Diagramas
+### 📊 Diagramas
 
 - [📊 Diagrama Entidad-Relación](docs/diagrams/ER/entidad_relacion.plantuml) - Modelo de datos completo
 - [🏛️ Vista de Despliegue General](docs/diagrams/VDG/arquitectura.relese.puml) - Arquitectura de despliegue
+
+
+## 🧾 Documentación Swagger
+
+La API de cada microservicio expone su documentación Swagger/OpenAPI:
+
+- **[ms-cliente]**  
+  - Swagger UI: https://localhost:8443/cliente/swagger-ui/index.html
+
+- **[ms-transporte]**  
+  - Swagger UI: https://localhost:8443/transporte/swagger-ui/index.html
 
 
 ## 🚀 Inicio Rápido
@@ -80,7 +95,7 @@ docker compose up -d --build
 
 ---
 
-## Tecnologías utilizadas
+## 🛠️ Tecnologías utilizadas
 
 ### Backend
 - **Java 21**: Lenguaje de programación principal
@@ -115,7 +130,7 @@ docker compose up -d --build
 ### Integración externa
 - **Google Maps Directions API**: Para cálculo de rutas y distancias
 
-## Microservicios y responsabilidades
+## 📦 Microservicios y responsabilidades
 
 ### API Gateway
 - Punto único de entrada al sistema
@@ -136,17 +151,18 @@ docker compose up -d --build
 - Cálculo de costos y tiempos
 - Seguimiento por estados de solicitudes y tramos
 
-## Ejecución del proyecto
+## 🖥️ Ejecución del proyecto
 
 ### Requisitos previos
 - Java 21
 - Docker y Docker Compose
 - Maven
 
-## Autores
+## 👨‍💻 Autores
 - [Andrade Francisco - 403499]
 - [Bottero Constantino - 400892]
 - [Ramirez Hernan - 83397]
 - [Villaba Alex - 400249]
 
 Trabajo desarrollado para la asignatura Backend de Aplicaciones - 2025
+

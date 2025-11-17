@@ -36,6 +36,33 @@ public class RouteConfig {
                 .route(spec -> spec
                         .path("/api/v1/rutas/**","/api/v1/distancia/**", "/api/v1/tramos/**", "/api/v1/tarifas/**", "/api/v1/camiones/**", "/api/v1/depositos/**", "/api/v1/transportes/**")
                         .uri("http://ms-transporte:8080"))
+
+
+                //   SWAGGER ms-cliente
+
+                .route("ms-cliente-swagger", r -> r
+                        .path(
+                                "/cliente/swagger-ui/**",
+                                "/cliente/swagger-ui.html",
+                                "/cliente/v3/api-docs/**",
+                                "/cliente/v3/api-docs"
+                        )
+
+                        .uri("http://ms-cliente:8080"))
+
+
+                //   SWAGGER ms-cliente
+
+
+                .route("ms-transporte-swagger", r -> r
+                        .path(
+                                "/transporte/swagger-ui/**",
+                                "/transporte/swagger-ui.html",
+                                "/transporte/v3/api-docs/**",
+                                "/transporte/v3/api-docs"
+                        )
+                        .uri("http://ms-transporte:8080"))
+
                 .build();
     }
 }

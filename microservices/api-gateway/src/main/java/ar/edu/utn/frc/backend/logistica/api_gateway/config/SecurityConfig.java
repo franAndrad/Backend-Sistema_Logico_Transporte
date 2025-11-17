@@ -102,6 +102,12 @@ public class SecurityConfig {
                 .pathMatchers(HttpMethod.POST, "/api/v1/tarifas").hasRole("ADMIN")
                 .pathMatchers(HttpMethod.PUT, "/api/v1/tarifas/*").hasRole("ADMIN")
 
+                // ===================== Swagger =====================
+                .pathMatchers(
+                        "/cliente/swagger-ui/**", "/cliente/swagger-ui.html", "/cliente/v3/api-docs/**",
+                        "/transporte/swagger-ui/**", "/transporte/swagger-ui.html", "/transporte/v3/api-docs/**"
+                ).permitAll()
+
                 .anyExchange().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2
